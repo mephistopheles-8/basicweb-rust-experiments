@@ -5,6 +5,7 @@ table! {
         email -> Text,
         password -> Binary,
         uuid -> Binary,
+        code -> Nullable<Text>,
         permissions -> Integer,
     }
 }

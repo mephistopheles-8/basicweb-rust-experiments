@@ -5,5 +5,6 @@ CREATE TABLE users (
     email TEXT NOT NULL UNIQUE,
     password BLOB NOT NULL,
     uuid BLOB NOT NULL UNIQUE,
+    code TEXT, /* Verification code */
     permissions INTEGER NOT NULL DEFAULT 0
 );

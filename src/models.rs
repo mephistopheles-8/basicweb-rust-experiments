@@ -1,13 +1,14 @@
 
 use super::schema::users;
 
-#[derive(Queryable)]
+#[derive(Queryable,Identifiable)]
 pub struct User {
     pub id: i32,
     pub name: String,
     pub email: String,
     pub password: Vec<u8>,
     pub uuid: Vec<u8>,
+    pub code: Option<String>,
     pub permissions: i32,
 }
 
