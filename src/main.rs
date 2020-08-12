@@ -8,6 +8,10 @@ use actix_files as fs;
 use actix_identity::Identity;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::{middleware, web, App, HttpResponse, HttpServer};
+use actix_http::{body::Body, Response};
+use actix_web::dev::ServiceResponse;
+use actix_web::http::StatusCode;
+use actix_web::middleware::errhandlers::{ErrorHandlerResponse, ErrorHandlers};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use argon2::{self, Config};
@@ -105,15 +109,22 @@ fn user_update_password_by_uuid(
 
 fn user_update_code_by_email(
     email0 : &str
-  , code0 : &str
   , conn: &SqliteConnection 
 ) -> Result<bool, diesel::result::Error> {
     use crate::schema::users::dsl::*;
 
-    let user = users
-        .filter(email.eq(email0));
+    // A multiple of 3 bytes typically results in a base64-encoded
+    // string with no padding
 
-    let n = diesel::update(user).set(code.eq(code0)).execute(conn)?;
+    let code0 = rand::thread_rng().gen::<[u8; 9]>();
+
+    let b64 = base64::encode(code0);
+
+    let user = users
+        .filter(email.eq(email0.to_ascii_lowercase()));
+
+    let n = diesel::update(user).set(code.eq(b64)).execute(conn)?;
+
     Ok(n > 0)
 }
 
@@ -460,27 +471,32 @@ async fn recover_password_action(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
-    // A multiple of 3 bytes typically results in a base64-encoded
-    // string with no padding
-
-    let code = rand::thread_rng().gen::<[u8; 9]>();
-
-    let b64 = base64::encode(code);
 
     web::block(move || {
         let is_acct = 
             user_update_code_by_email(
-                &b64, &data.email, &conn
-              ).map_err(|_| RecoverPasswordError::DbError)?;
+                &data.email, &conn
+              ).map_err(|e| {
+                  eprintln!("{}", e);
+                  RecoverPasswordError::DbError
+              })?;
     
         // Watch out for timing attacks.  They could know
         // when they found a user by request duration
+        // ALSO: this blocks a long time before erroring out!
         if is_acct {
             let user 
                 = user_by_email( &data.email, &conn )
-                   .map_err(|_| RecoverPasswordError::DbError)?.unwrap();
+                   .map_err(|e| {
+                       eprintln!("{}", e);
+                       RecoverPasswordError::DbError
+                   })?.unwrap();
+
             send_validation_email(user)
-                .map_err(|_| RecoverPasswordError::EmailError)?;
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    RecoverPasswordError::EmailError
+                })?;
         }
         Ok::<(),RecoverPasswordError>(()) 
     }).await
@@ -542,6 +558,8 @@ async fn main() -> std::io::Result<()> {
                     .name("sessid")
                     .secure(false),
             ))
+            // error handlers
+            .wrap(error_handlers())
             // logger (must be last)
             .wrap(middleware::Logger::default())
             .service(web::resource("/verify-account")
@@ -574,4 +592,55 @@ async fn main() -> std::io::Result<()> {
     .bind("127.0.0.1:8080")?
     .run()
     .await
+}
+
+// Error logic taken from examples
+
+// Custom error handlers, to return HTML responses when an error occurs.
+fn error_handlers() -> ErrorHandlers<Body> {
+    ErrorHandlers::new().handler(StatusCode::NOT_FOUND, not_found)
+}
+
+// Error handler for a 404 Page not found error.
+fn not_found<B>(res: ServiceResponse<B>) -> actix_web::Result<ErrorHandlerResponse<B>> {
+    let response = get_error_response(&res, "Page not found");
+    Ok(ErrorHandlerResponse::Response(
+        res.into_response(response.into_body()),
+    ))
+}
+
+// Generic error handler.
+fn get_error_response<B>(res: &ServiceResponse<B>, error: &str) -> Response<Body> {
+    let request = res.request();
+
+    // Provide a fallback to a simple plain text response in case an error occurs during the
+    // rendering of the error page.
+    let fallback = |e: &str| {
+        Response::build(res.status())
+            .content_type("text/plain")
+            .body(e.to_string())
+    };
+
+    let hb = request
+        .app_data::<web::Data<Handlebars>>()
+        .map(|t| t.get_ref());
+    match hb {
+        Some(hb) => {
+            let data = json!({
+                "title": error
+              , "parent" : "main"
+              , "error": error
+              , "status_code": res.status().as_str()
+            });
+            let body = hb.render("error", &data);
+
+            match body {
+                Ok(body) => Response::build(res.status())
+                    .content_type("text/html")
+                    .body(body),
+                Err(_) => fallback(error),
+            }
+        }
+        None => fallback(error),
+    }
 }
