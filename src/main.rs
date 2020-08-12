@@ -17,12 +17,13 @@ use handlebars::Handlebars;
 mod schema;
 mod models;
 
-async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+async fn index(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
-        "title": "Hello!"
-      , "content" : "content/index"
+        "title": "Welcome"
+      , "parent" : "main"
+      , "logged_in" : id.identity().is_some()
     });
-    let body = hb.render("main", &data).unwrap();
+    let body = hb.render("content/index", &data).unwrap();
 
     HttpResponse::Ok().body(body)
 }
@@ -108,7 +109,10 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/manage-account").route(web::get().to(manage_account)))
             .service(web::resource("/register").to(index))
             .service(web::resource("/logout").to(logout))
-            .service(web::resource("/login").route(web::post().to(login)))
+            .service(web::resource("/login")
+                    .route(web::post().to(login))
+                    .route(web::get().to(index))
+            )
             .service(web::resource("/").route(web::get().to(index)))
     })
     .bind("127.0.0.1:8080")?

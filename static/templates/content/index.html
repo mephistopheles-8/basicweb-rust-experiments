@@ -1,1 +1,4 @@
-<h1>Hello World!</h1>
+{{#*inline "content"}}
+  <p>Rendered in partial, parent is {{parent}}</p>
+{{/inline}}
+{{~> (parent)~}}
