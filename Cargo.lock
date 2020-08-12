@@ -388,6 +388,7 @@ dependencies = [
  "actix-identity",
  "actix-rt",
  "actix-web",
+ "base64 0.12.3",
  "bytes",
  "diesel",
  "dotenv",

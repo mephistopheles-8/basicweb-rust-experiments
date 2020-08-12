@@ -6,11 +6,15 @@ extern crate serde_json;
 
 use actix_identity::Identity;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
-use actix_web::{middleware, web, App, HttpRequest, HttpResponse, HttpServer};
+use actix_web::{middleware, web, App, HttpResponse, HttpServer};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use argon2::{self, Config};
+use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
+
+
+
 use handlebars::Handlebars;
 use rand::Rng;
 use regex::Regex;
@@ -86,7 +90,7 @@ fn user_update_password_by_uuid(
     uuid0 : Uuid
   , pw0 : &str
   , conn: &SqliteConnection 
-) -> Result<(), diesel::result::Error> {
+) -> Result<bool, diesel::result::Error> {
     use crate::schema::users::dsl::*;
 
     let salt = rand::thread_rng().gen::<[u8; 32]>();
@@ -96,13 +100,27 @@ fn user_update_password_by_uuid(
     let user = users
         .filter(uuid.eq(uuid0.as_bytes().to_vec()));
 
-    diesel::update(user).set(password.eq(hash)).execute(conn);
-    Ok(())
+    let n = diesel::update(user).set(password.eq(hash)).execute(conn)?;
+    Ok(n > 0)
+}
+
+fn user_update_code_by_email(
+    email0 : &str
+  , code0 : &str
+  , conn: &SqliteConnection 
+) -> Result<bool, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
+
+    let user = users
+        .filter(email.eq(email0));
+
+    let n = diesel::update(user).set(code.eq(code0)).execute(conn)?;
+    Ok(n > 0)
 }
 
 fn user_verify_by_uuid( 
     uuid0: Uuid
-  , code : &str
+  , code0 : &str
   , conn: &SqliteConnection 
 ) -> Result<bool, diesel::result::Error> {
 
@@ -110,14 +128,18 @@ fn user_verify_by_uuid(
     let user = user_by_uuid(uuid0, conn)?;
 
     if let Some(u0) = user {
-        if let Some(code0) = u0.code {
-            let user = users
-                .filter(uuid.eq(uuid0.as_bytes().to_vec()));
-            
-            // TODO: Fix race-condition
+        if let Some(code1) = u0.code {
+            if code0 == code1 {
+                let user = users
+                    .filter(uuid.eq(uuid0.as_bytes().to_vec()));
+                
+                // TODO: Fix race-condition
 
-            diesel::update(user).set(permissions.eq(u0.permissions | 1)).execute(conn);
-            Ok(true)
+                diesel::update(user).set(permissions.eq(u0.permissions | 1)).execute(conn)?;
+                Ok(true)
+            }else{
+                Ok(false)
+            }
         }else {
             Ok(false)
         }
@@ -375,6 +397,11 @@ async fn verify_account_action(
     }
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct RecoverPasswordParams {
+    email: String,
+}
+
 async fn recover_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     if id.identity().is_none() {
         let data = json!({
@@ -390,6 +417,83 @@ async fn recover_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> H
     }
 }
 
+fn send_validation_email( user : models::User ) 
+    -> Result<lettre::transport::smtp::response::Response, lettre::transport::smtp::error::Error> {
+
+    let from = std::env::var("EMAIL_NOREPLY").expect("EMAIL_NOREPLY");
+    let reply_to = std::env::var("EMAIL_REPLY_TO").expect("EMAIL_REPLY_TO");
+    let smtp_host = std::env::var("SMTP_HOST").expect("SMTP_HOST");
+    let smtp_username = std::env::var("SMTP_USERNAME").expect("SMTP_USERNAME");
+    let smtp_password = std::env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD");
+
+    let body = 
+        format!("Hello {},\n\nYour verification code is {}.", user.name, user.code.unwrap()); 
+
+    let email = Message::builder()
+        .from(from.parse().unwrap())
+        .reply_to(reply_to.parse().unwrap())
+        .to(user.email.parse().unwrap())
+        .subject("Verify Your Account")
+        .body(body)
+        .unwrap();
+
+    let creds = Credentials::new(smtp_username.to_string(), smtp_password.to_string());
+
+    // Open a remote connection to gmail
+    let mailer = SmtpTransport::relay(&smtp_host)
+        .unwrap()
+        .credentials(creds)
+        .build();
+
+    // Send the email
+    mailer.send(&email) 
+}
+
+#[derive(Debug)]
+enum RecoverPasswordError {
+    DbError, EmailError 
+}
+
+async fn recover_password_action(
+    pool: web::Data<DbPool>
+  , data: web::Form<RecoverPasswordParams>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    // A multiple of 3 bytes typically results in a base64-encoded
+    // string with no padding
+
+    let code = rand::thread_rng().gen::<[u8; 9]>();
+
+    let b64 = base64::encode(code);
+
+    web::block(move || {
+        let is_acct = 
+            user_update_code_by_email(
+                &b64, &data.email, &conn
+              ).map_err(|_| RecoverPasswordError::DbError)?;
+    
+        // Watch out for timing attacks.  They could know
+        // when they found a user by request duration
+        if is_acct {
+            let user 
+                = user_by_email( &data.email, &conn )
+                   .map_err(|_| RecoverPasswordError::DbError)?.unwrap();
+            send_validation_email(user)
+                .map_err(|_| RecoverPasswordError::EmailError)?;
+        }
+        Ok::<(),RecoverPasswordError>(()) 
+    }).await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+
+
+    Ok(HttpResponse::Found().header("location", "/recover-password").finish())
+}
+
 async fn manage_account(id: Identity) -> String {
     format!(
         "Hello {}",
@@ -402,24 +506,6 @@ async fn logout(id: Identity) -> HttpResponse {
     HttpResponse::Found().header("location", "/").finish()
 }
 
-fn send_email() {
-    let email = Message::builder()
-        .from("NoBody <nobody@domain.tld>".parse().unwrap())
-        .reply_to("Yuin <yuin@domain.tld>".parse().unwrap())
-        .to("Hei <hei@domain.tld>".parse().unwrap())
-        .subject("Happy new year")
-        .body("Be happy!")
-        .unwrap();
-
-    // Open a local connection on port 25
-    let mailer = SmtpTransport::unencrypted_localhost();
-
-    // Send the email
-    match mailer.send(&email) {
-        Ok(_) => println!("Email sent successfully!"),
-        Err(e) => panic!("Could not send email: {:?}", e),
-    }
-}
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -469,6 +555,7 @@ async fn main() -> std::io::Result<()> {
              )
             .service(web::resource("/recover-password")
                 .route(web::get().to(recover_password_form))
+                .route(web::post().to(recover_password_action))
             )
             .service(web::resource("/manage-account")
                 .route(web::get().to(manage_account))
