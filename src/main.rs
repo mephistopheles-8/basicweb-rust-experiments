@@ -100,6 +100,33 @@ fn user_update_password_by_uuid(
     Ok(())
 }
 
+fn user_verify_by_uuid( 
+    uuid0: Uuid
+  , code : &str
+  , conn: &SqliteConnection 
+) -> Result<bool, diesel::result::Error> {
+
+    use crate::schema::users::dsl::*;
+    let user = user_by_uuid(uuid0, conn)?;
+
+    if let Some(u0) = user {
+        if let Some(code0) = u0.code {
+            let user = users
+                .filter(uuid.eq(uuid0.as_bytes().to_vec()));
+            
+            // TODO: Fix race-condition
+
+            diesel::update(user).set(permissions.eq(u0.permissions | 1)).execute(conn);
+            Ok(true)
+        }else {
+            Ok(false)
+        }
+    }else{
+        Ok(false)
+    }
+}
+
+
 fn user_by_login( 
     login: &LoginParams
   , conn: &SqliteConnection 
@@ -294,6 +321,11 @@ async fn reset_password_action(
     }
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct VerifyAccountParams {
+    code: String,
+}
+
 async fn verify_account_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     if id.identity().is_some() {
         let data = json!({
@@ -306,6 +338,40 @@ async fn verify_account_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> Htt
         HttpResponse::Ok().body(body)
     }else{
         HttpResponse::Found().header("location", "/login").finish()
+    }
+}
+
+async fn verify_account_action(
+    id: Identity
+  , pool: web::Data<DbPool>
+  , data: web::Form<VerifyAccountParams>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    
+    if let Some(uuid) = id.identity() {
+          let uuid0 = Uuid::parse_str(&uuid)
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+          let verified = web::block(move || 
+            user_verify_by_uuid(
+                uuid0, &data.code, &conn
+              )
+            ).await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?;
+
+          if verified {
+            Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+          }else {
+            Ok(HttpResponse::Found().header("location", "/verify-account").finish())
+          }
+    }else{
+        Ok(HttpResponse::Found().header("location", "/login").finish())
     }
 }
 
@@ -395,6 +461,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service(web::resource("/verify-account")
                 .route(web::get().to(verify_account_form))
+                .route(web::post().to(verify_account_action))
             )
             .service(web::resource("/reset-password")
                 .route(web::get().to(reset_password_form))
