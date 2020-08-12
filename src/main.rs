@@ -28,6 +28,77 @@ async fn index(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     HttpResponse::Ok().body(body)
 }
 
+async fn login_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+    if id.identity().is_none() {
+        let data = json!({
+            "title": "Login"
+          , "parent" : "main"
+          , "logged_in" : false 
+        });
+        let body = hb.render("content/login", &data).unwrap();
+
+        HttpResponse::Ok().body(body)
+    }else{
+        HttpResponse::Found().header("location", "/manage-account").finish()
+    }
+}
+
+async fn register_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+    let data = json!({
+        "title": "Register"
+      , "parent" : "main"
+      , "logged_in" : id.identity().is_some()
+    });
+    let body = hb.render("content/register", &data).unwrap();
+
+    HttpResponse::Ok().body(body)
+}
+
+async fn reset_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+    if id.identity().is_some() {
+        let data = json!({
+            "title": "Reset Password"
+          , "parent" : "main"
+          , "logged_in" : true
+        });
+        let body = hb.render("content/reset-password", &data).unwrap();
+
+        HttpResponse::Ok().body(body)
+    }else{
+        HttpResponse::Found().header("location", "/login").finish()
+    }
+}
+
+async fn verify_account_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+    if id.identity().is_some() {
+        let data = json!({
+            "title": "Verify Account"
+          , "parent" : "main"
+          , "logged_in" : true
+        });
+        let body = hb.render("content/verify-account", &data).unwrap();
+
+        HttpResponse::Ok().body(body)
+    }else{
+        HttpResponse::Found().header("location", "/login").finish()
+    }
+}
+
+async fn recover_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+    if id.identity().is_none() {
+        let data = json!({
+            "title": "Recover Password"
+          , "parent" : "main"
+          , "logged_in" : false
+        });
+        let body = hb.render("content/recover-password", &data).unwrap();
+
+        HttpResponse::Ok().body(body)
+    }else{
+        HttpResponse::Found().header("location", "/reset-password").finish()
+    }
+}
+
 async fn manage_account(id: Identity) -> String {
     format!(
         "Hello {}",
@@ -102,16 +173,25 @@ async fn main() -> std::io::Result<()> {
             ))
             // logger (must be last)
             .wrap(middleware::Logger::default())
-            .service(web::resource("/index.html").to(|| async { "Hello world!" }))
-            .service(web::resource("/verify-account").to(index))
-            .service(web::resource("/reset-password").to(index))
-            .service(web::resource("/recover-password").to(index))
-            .service(web::resource("/manage-account").route(web::get().to(manage_account)))
-            .service(web::resource("/register").to(index))
+            .service(web::resource("/verify-account")
+                .route(web::get().to(verify_account_form))
+            )
+            .service(web::resource("/reset-password")
+                .route(web::get().to(reset_password_form))
+             )
+            .service(web::resource("/recover-password")
+                .route(web::get().to(recover_password_form))
+            )
+            .service(web::resource("/manage-account")
+                .route(web::get().to(manage_account))
+            )
+            .service(web::resource("/register")
+                .route(web::get().to(register_form))
+            )
             .service(web::resource("/logout").to(logout))
             .service(web::resource("/login")
                     .route(web::post().to(login))
-                    .route(web::get().to(index))
+                    .route(web::get().to(login_form))
             )
             .service(web::resource("/").route(web::get().to(index)))
     })
