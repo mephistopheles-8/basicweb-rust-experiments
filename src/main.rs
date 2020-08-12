@@ -4,6 +4,7 @@ extern crate diesel;
 #[macro_use]
 extern crate serde_json;
 
+use actix_files as fs;
 use actix_identity::Identity;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::{middleware, web, App, HttpResponse, HttpServer};
@@ -12,8 +13,6 @@ use diesel::r2d2::{self, ConnectionManager};
 use argon2::{self, Config};
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
-
-
 
 use handlebars::Handlebars;
 use rand::Rng;
@@ -570,6 +569,7 @@ async fn main() -> std::io::Result<()> {
                     .route(web::get().to(login_form))
             )
             .service(web::resource("/").route(web::get().to(index)))
+            .service(fs::Files::new("/", "./static/root/"))
     })
     .bind("127.0.0.1:8080")?
     .run()
