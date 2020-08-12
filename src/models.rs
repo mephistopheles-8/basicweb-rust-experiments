@@ -6,7 +6,7 @@ pub struct User {
     pub id: i32,
     pub name: String,
     pub email: String,
-    pub password: Vec<u8>,
+    pub password: String,
     pub uuid: Vec<u8>,
     pub code: Option<String>,
     pub permissions: i32,
@@ -17,7 +17,7 @@ pub struct User {
 pub struct NewUser<'a> {
     pub name: &'a str,
     pub email: &'a str,
-    pub password: &'a [u8],
+    pub password: &'a str,
     pub uuid: &'a [u8],
     pub permissions: i32,
 }

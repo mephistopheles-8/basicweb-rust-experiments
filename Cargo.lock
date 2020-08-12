@@ -397,6 +397,7 @@ dependencies = [
  "lettre",
  "r2d2",
  "rand",
+ "regex",
  "rust-argon2",
  "serde",
  "serde_json",

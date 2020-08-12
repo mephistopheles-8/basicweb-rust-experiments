@@ -1,9 +1,9 @@
 table! {
     users (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         name -> Text,
         email -> Text,
-        password -> Binary,
+        password -> Text,
         uuid -> Binary,
         code -> Nullable<Text>,
         permissions -> Integer,
