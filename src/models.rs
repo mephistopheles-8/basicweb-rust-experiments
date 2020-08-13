@@ -1,5 +1,6 @@
 
 use super::schema::users;
+use chrono::NaiveDateTime;
 
 #[derive(Queryable,Identifiable)]
 pub struct User {
@@ -10,6 +11,8 @@ pub struct User {
     pub uuid: Vec<u8>,
     pub code: Option<String>,
     pub permissions: i32,
+    pub created: NaiveDateTime, 
+    pub updated: NaiveDateTime, 
 }
 
 #[derive(Insertable)]

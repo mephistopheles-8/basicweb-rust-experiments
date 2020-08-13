@@ -7,5 +7,7 @@ table! {
         uuid -> Binary,
         code -> Nullable<Text>,
         permissions -> Integer,
+        created -> Timestamp,
+        updated -> Timestamp,
     }
 }
