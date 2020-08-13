@@ -1,4 +1,5 @@
-
+#[macro_use]
+extern crate diesel;
 #[macro_use]
 extern crate serde_json;
 
@@ -12,6 +13,8 @@ use actix_web::middleware::errhandlers::{ErrorHandlerResponse, ErrorHandlers};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 
+mod schema;
+mod models;
 
 async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
