@@ -5,7 +5,7 @@ extern crate diesel;
 extern crate serde_json;
 
 use actix_files as fs;
-use actix_identity::Identity;
+use actix_identity::{Identity,RequestIdentity};
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::{middleware, web, App, HttpResponse, HttpServer};
 use actix_http::{body::Body, Response};
@@ -552,14 +552,14 @@ async fn main() -> std::io::Result<()> {
             .data(pool.clone())
             // handlebars
             .app_data(handlebars_ref.clone())
-            // identity
+            // error handlers
+            .wrap(error_handlers())
+            // identity (error handlers must be first)
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&private_key)
                     .name("sessid")
                     .secure(false),
             ))
-            // error handlers
-            .wrap(error_handlers())
             // logger (must be last)
             .wrap(middleware::Logger::default())
             .service(web::resource("/verify-account")
@@ -624,11 +624,15 @@ fn get_error_response<B>(res: &ServiceResponse<B>, error: &str) -> Response<Body
     let hb = request
         .app_data::<web::Data<Handlebars>>()
         .map(|t| t.get_ref());
+   
+    let id = request.get_identity();
+
     match hb {
         Some(hb) => {
             let data = json!({
                 "title": error
               , "parent" : "main"
+              , "logged_in" : id.is_some()
               , "error": error
               , "status_code": res.status().as_str()
             });
