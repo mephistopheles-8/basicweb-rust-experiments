@@ -3,9 +3,9 @@
 /// a SQLite database as a blob type
 
 use uuid::Uuid;
-use serde::{de,ser, Serialize, Deserialize, Deserializer, Serializer};
+use serde::{de,ser, Deserialize, Deserializer, Serializer};
 
-fn uuid_serialize<S>(v:&Vec<u8>,serializer:S) 
+pub fn serialize<S>(v:&Vec<u8>,serializer:S) 
     -> Result<S::Ok, S::Error>
     where S: Serializer
 {
@@ -20,7 +20,7 @@ fn uuid_serialize<S>(v:&Vec<u8>,serializer:S)
 }
 
 
-fn uuid_deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
     where D: Deserializer<'de>
 {
     let s = String::deserialize(deserializer)?;
