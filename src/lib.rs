@@ -4,14 +4,8 @@ extern crate diesel;
 #[macro_use]
 extern crate serde_json;
 
-use actix_files as fs;
-use actix_identity::{Identity,RequestIdentity};
-use actix_identity::{CookieIdentityPolicy, IdentityService};
-use actix_web::{middleware, web, App, HttpResponse, HttpServer};
-use actix_http::{body::Body, Response};
-use actix_web::dev::ServiceResponse;
-use actix_web::http::StatusCode;
-use actix_web::middleware::errhandlers::{ErrorHandlerResponse, ErrorHandlers};
+use actix_identity::{Identity};
+use actix_web::{web, HttpResponse};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use argon2::{self, Config};
@@ -24,33 +18,23 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-mod schema;
-mod models;
+pub mod schema;
+pub mod models;
 
-type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
+pub type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
 // Taken from w3c html5 spec
 // https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
 const EMAIL_REGEXP : &str  = r"^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
 
-async fn index(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
-    let data = json!({
-        "title": "Welcome"
-      , "parent" : "main"
-      , "logged_in" : id.identity().is_some()
-    });
-    let body = hb.render("content/index", &data).unwrap();
-
-    HttpResponse::Ok().body(body)
-}
 
 #[derive(Serialize, Deserialize)]
 pub struct LoginParams {
-    email: String,
-    password: String,
+    pub email: String,
+    pub password: String,
 }
 
-async fn login_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+pub async fn login_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     if id.identity().is_none() {
         let data = json!({
             "title": "Login"
@@ -65,7 +49,7 @@ async fn login_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse
     }
 }
 
-fn user_by_email(
+pub fn user_by_email(
     email0 : &str
   , conn: &SqliteConnection 
 ) -> Result<Option<models::User>, diesel::result::Error> {
@@ -77,7 +61,7 @@ fn user_by_email(
     Ok(user)
 }
 
-fn user_by_uuid(
+pub fn user_by_uuid(
     uuid0 : Uuid  
   , conn: &SqliteConnection 
 ) -> Result<Option<models::User>, diesel::result::Error> {
@@ -89,7 +73,7 @@ fn user_by_uuid(
     Ok(user)
 }
 
-fn user_update_password_by_uuid(
+pub fn user_update_password_by_uuid(
     uuid0 : Uuid
   , pw0 : &str
   , conn: &SqliteConnection 
@@ -107,7 +91,7 @@ fn user_update_password_by_uuid(
     Ok(n > 0)
 }
 
-fn user_update_code_by_email(
+pub fn user_update_code_by_email(
     email0 : &str
   , conn: &SqliteConnection 
 ) -> Result<bool, diesel::result::Error> {
@@ -128,7 +112,7 @@ fn user_update_code_by_email(
     Ok(n > 0)
 }
 
-fn user_verify_by_uuid( 
+pub fn user_verify_by_uuid( 
     uuid0: Uuid
   , code0 : &str
   , conn: &SqliteConnection 
@@ -159,7 +143,7 @@ fn user_verify_by_uuid(
 }
 
 
-fn user_by_login( 
+pub fn user_by_login( 
     login: &LoginParams
   , conn: &SqliteConnection 
 ) -> Result<Option<models::User>, diesel::result::Error> {
@@ -179,7 +163,7 @@ fn user_by_login(
     }
 }
 
-fn user_register(
+pub fn user_register(
     name0 : &str
   , email0 : &str
   , pw0 : &str
@@ -207,7 +191,7 @@ fn user_register(
     Ok(uuid0)
 }
 
-async fn login_action(
+pub async fn login_action(
     id: Identity
   , pool: web::Data<DbPool>
   , data: web::Form<LoginParams>
@@ -245,13 +229,13 @@ async fn login_action(
 
 #[derive(Serialize, Deserialize)]
 pub struct RegisterParams {
-    name: String,
-    email: String,
-    password: String,
-    confirm_password: String,
+    pub name: String,
+    pub email: String,
+    pub password: String,
+    pub confirm_password: String,
 }
 
-async fn register_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+pub async fn register_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
         "title": "Register"
       , "parent" : "main"
@@ -262,7 +246,7 @@ async fn register_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpRespo
     HttpResponse::Ok().body(body)
 }
 
-async fn register_action(
+pub async fn register_action(
     id: Identity
   , pool: web::Data<DbPool>
   , data: web::Form<RegisterParams>
@@ -297,11 +281,11 @@ async fn register_action(
 
 #[derive(Serialize, Deserialize)]
 pub struct ResetPasswordParams {
-    password: String,
-    confirm_password: String,
+    pub password: String,
+    pub confirm_password: String,
 }
 
-async fn reset_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+pub async fn reset_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     if id.identity().is_some() {
         let data = json!({
             "title": "Reset Password"
@@ -316,7 +300,7 @@ async fn reset_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> Htt
     }
 }
 
-async fn reset_password_action(
+pub async fn reset_password_action(
     id: Identity
   , pool: web::Data<DbPool>
   , data: web::Form<ResetPasswordParams>
@@ -355,10 +339,10 @@ async fn reset_password_action(
 
 #[derive(Serialize, Deserialize)]
 pub struct VerifyAccountParams {
-    code: String,
+    pub code: String,
 }
 
-async fn verify_account_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+pub async fn verify_account_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     if id.identity().is_some() {
         let data = json!({
             "title": "Verify Account"
@@ -373,7 +357,7 @@ async fn verify_account_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> Htt
     }
 }
 
-async fn verify_account_action(
+pub async fn verify_account_action(
     id: Identity
   , pool: web::Data<DbPool>
   , data: web::Form<VerifyAccountParams>
@@ -409,10 +393,10 @@ async fn verify_account_action(
 
 #[derive(Serialize, Deserialize)]
 pub struct RecoverPasswordParams {
-    email: String,
+    pub email: String,
 }
 
-async fn recover_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+pub async fn recover_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     if id.identity().is_none() {
         let data = json!({
             "title": "Recover Password"
@@ -427,7 +411,7 @@ async fn recover_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> H
     }
 }
 
-fn send_validation_email( user : models::User ) 
+pub fn send_validation_email( user : models::User ) 
     -> Result<lettre::transport::smtp::response::Response, lettre::transport::smtp::error::Error> {
 
     let from = std::env::var("EMAIL_NOREPLY").expect("EMAIL_NOREPLY");
@@ -460,11 +444,11 @@ fn send_validation_email( user : models::User )
 }
 
 #[derive(Debug)]
-enum RecoverPasswordError {
+pub enum RecoverPasswordError {
     DbError, EmailError 
 }
 
-async fn recover_password_action(
+pub async fn recover_password_action(
     pool: web::Data<DbPool>
   , data: web::Form<RecoverPasswordParams>
  ) -> Result<HttpResponse,actix_web::Error> {
@@ -509,142 +493,43 @@ async fn recover_password_action(
     Ok(HttpResponse::Found().header("location", "/recover-password").finish())
 }
 
-async fn manage_account(id: Identity) -> String {
+pub async fn manage_account(id: Identity) -> String {
     format!(
         "Hello {}",
         id.identity().unwrap_or_else(|| "Anonymous".to_owned())
     )
 }
 
-async fn logout(id: Identity) -> HttpResponse {
+pub async fn logout(id: Identity) -> HttpResponse {
     id.forget();
     HttpResponse::Found().header("location", "/").finish()
 }
 
 
-#[actix_rt::main]
-async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "actix_web=info");
-    env_logger::init();
-    dotenv::dotenv().ok();
-
-    // set up database connection pool
-    let connspec = std::env::var("DATABASE_URL").expect("DATABASE_URL");
-    let manager = ConnectionManager::<SqliteConnection>::new(connspec);
-    let pool = r2d2::Pool::builder()
-        .build(manager)
-        .expect("Failed to create pool.");
-
-    // Random session private key
-    let private_key = rand::thread_rng().gen::<[u8; 32]>();
-
-    // Handlebar templates
-    
-    let mut handlebars = Handlebars::new();
-    handlebars
-        .register_templates_directory(".html", "./static/templates")
-        .unwrap();
-    let handlebars_ref = web::Data::new(handlebars);
-
-    HttpServer::new(move || {
-        App::new()
-            // db pool
-            .data(pool.clone())
-            // handlebars
-            .app_data(handlebars_ref.clone())
-            // error handlers
-            .wrap(error_handlers())
-            // identity (error handlers must be first)
-            .wrap(IdentityService::new(
-                CookieIdentityPolicy::new(&private_key)
-                    .name("sessid")
-                    .secure(false),
-            ))
-            // logger (must be last)
-            .wrap(middleware::Logger::default())
-            .service(web::resource("/verify-account")
-                .route(web::get().to(verify_account_form))
-                .route(web::post().to(verify_account_action))
-            )
-            .service(web::resource("/reset-password")
-                .route(web::get().to(reset_password_form))
-                .route(web::post().to(reset_password_action))
-             )
-            .service(web::resource("/recover-password")
-                .route(web::get().to(recover_password_form))
-                .route(web::post().to(recover_password_action))
-            )
-            .service(web::resource("/manage-account")
-                .route(web::get().to(manage_account))
-            )
-            .service(web::resource("/register")
-                .route(web::get().to(register_form))
-                .route(web::post().to(register_action))
-            )
-            .service(web::resource("/logout").to(logout))
-            .service(web::resource("/login")
-                    .route(web::post().to(login_action))
-                    .route(web::get().to(login_form))
-            )
-            .service(web::resource("/").route(web::get().to(index)))
-            .service(fs::Files::new("/", "./static/root/"))
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
-}
-
-// Error logic taken from examples
-
-// Custom error handlers, to return HTML responses when an error occurs.
-fn error_handlers() -> ErrorHandlers<Body> {
-    ErrorHandlers::new().handler(StatusCode::NOT_FOUND, not_found)
-}
-
-// Error handler for a 404 Page not found error.
-fn not_found<B>(res: ServiceResponse<B>) -> actix_web::Result<ErrorHandlerResponse<B>> {
-    let response = get_error_response(&res, "Page not found");
-    Ok(ErrorHandlerResponse::Response(
-        res.into_response(response.into_body()),
-    ))
-}
-
-// Generic error handler.
-fn get_error_response<B>(res: &ServiceResponse<B>, error: &str) -> Response<Body> {
-    let request = res.request();
-
-    // Provide a fallback to a simple plain text response in case an error occurs during the
-    // rendering of the error page.
-    let fallback = |e: &str| {
-        Response::build(res.status())
-            .content_type("text/plain")
-            .body(e.to_string())
-    };
-
-    let hb = request
-        .app_data::<web::Data<Handlebars>>()
-        .map(|t| t.get_ref());
-   
-    let id = request.get_identity();
-
-    match hb {
-        Some(hb) => {
-            let data = json!({
-                "title": error
-              , "parent" : "main"
-              , "logged_in" : id.is_some()
-              , "error": error
-              , "status_code": res.status().as_str()
-            });
-            let body = hb.render("error", &data);
-
-            match body {
-                Ok(body) => Response::build(res.status())
-                    .content_type("text/html")
-                    .body(body),
-                Err(_) => fallback(error),
-            }
-        }
-        None => fallback(error),
-    }
+pub fn users_api( cfg: &mut web::ServiceConfig ) {
+    cfg
+    .service(web::resource("/verify-account")
+        .route(web::get().to(verify_account_form))
+        .route(web::post().to(verify_account_action))
+    )
+    .service(web::resource("/reset-password")
+        .route(web::get().to(reset_password_form))
+        .route(web::post().to(reset_password_action))
+     )
+    .service(web::resource("/recover-password")
+        .route(web::get().to(recover_password_form))
+        .route(web::post().to(recover_password_action))
+    )
+    .service(web::resource("/manage-account")
+        .route(web::get().to(manage_account))
+    )
+    .service(web::resource("/register")
+        .route(web::get().to(register_form))
+        .route(web::post().to(register_action))
+    )
+    .service(web::resource("/logout").to(logout))
+    .service(web::resource("/login")
+            .route(web::post().to(login_action))
+            .route(web::get().to(login_form))
+    );
 }
