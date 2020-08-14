@@ -1,8 +1,9 @@
 
 use super::schema::*;
 use chrono::NaiveDateTime;
+use serde::{Serialize,Deserialize};
 
-#[derive(Queryable,Identifiable)]
+#[derive(Queryable,Identifiable,Serialize,Deserialize)]
 #[table_name = "galleries"]
 pub struct Gallery {
     pub id: i32,
@@ -10,7 +11,7 @@ pub struct Gallery {
     pub name: String,
     pub description: String,
     pub uuid: Vec<u8>,
-    pub created: NaiveDateTime, 
+    pub created: NaiveDateTime,
     pub updated: NaiveDateTime, 
 }
 
@@ -23,7 +24,7 @@ pub struct NewGallery<'a> {
     pub uuid: &'a [u8],
 }
 
-#[derive(Queryable,Identifiable)]
+#[derive(Queryable,Identifiable,Serialize,Deserialize)]
 #[table_name = "gallery_items"]
 pub struct GalleryItem {
     pub id: i32,
@@ -48,7 +49,7 @@ pub struct NewGalleryItem<'a> {
     pub uuid: &'a [u8],
 }
 
-#[derive(Queryable,Identifiable)]
+#[derive(Queryable,Identifiable,Serialize,Deserialize)]
 #[table_name = "resources"]
 pub struct Resource {
     pub id: i32,

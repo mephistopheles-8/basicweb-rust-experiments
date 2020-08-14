@@ -10,11 +10,66 @@ use actix_http::{body::Body, Response};
 use actix_web::dev::ServiceResponse;
 use actix_web::http::StatusCode;
 use actix_web::middleware::errhandlers::{ErrorHandlerResponse, ErrorHandlers};
+use actix_multipart::Multipart;
+use async_std::prelude::*;
+use futures::{StreamExt, TryStreamExt};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 
 mod schema;
 mod models;
+
+async fn save_file(mut payload: Multipart) -> Result<HttpResponse, actix_web::Error> {
+    // iterate over multipart stream
+    while let Ok(Some(mut field)) = payload.try_next().await {
+        let content_type = field
+            .content_disposition()
+            .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
+        let filename = content_type
+            .get_filename()
+            .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
+        let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
+        let mut f = async_std::fs::File::create(filepath).await?;
+
+        // Field in turn is stream of *Bytes* object
+        while let Some(chunk) = field.next().await {
+            let data = chunk.unwrap();
+            f.write_all(&data).await?;
+        }
+    }
+    Ok(HttpResponse::Ok().into())
+}
+
+fn file_upload() -> HttpResponse {
+    let html = r#"<html>
+        <head><title>Upload Test</title></head>
+        <body>
+            <form target="/" method="post" enctype="multipart/form-data">
+                <input type="file" multiple name="file"/>
+                <button type="submit">Submit</button>
+            </form>
+        </body>
+    </html>"#;
+
+    HttpResponse::Ok().body(html)
+}
+
+fn galleries_all ( conn: &SqliteConnection ) 
+    -> Result<Vec<models::Gallery>, diesel::result::Error> {
+
+    use crate::schema::galleries::dsl::*;
+    let g0s = galleries.load( conn )?; 
+    Ok(g0s)
+}
+
+fn gallery_items_by_gallery ( gallery_id: i32, conn: &SqliteConnection ) 
+    -> Result<Vec<models::GalleryItem>, diesel::result::Error> {
+
+    use crate::schema::gallery_items::dsl::*;
+    let g0s = gallery_items.filter(gallery.eq(gallery_id)).load( conn )?; 
+    Ok(g0s)
+}
+
 
 async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
@@ -58,6 +113,10 @@ async fn main() -> std::io::Result<()> {
             .wrap(error_handlers())
             // logger (must be last)
             .wrap(middleware::Logger::default())
+            .service(web::resource("/file-upload")
+                .route(web::get().to(file_upload))
+                .route(web::post().to(save_file))
+            )
             .service(web::resource("/").route(web::get().to(index)))
             .service(fs::Files::new("/", "./static/root/"))
     })
