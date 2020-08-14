@@ -16,25 +16,6 @@ BEGIN
    UPDATE galleries SET updated = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
 
-CREATE TABLE gallery_items (
-    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    gallery INTEGER NOT NULL,
-    resource INTEGER NOT NULL,
-    kind INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    description TEXT NOT NULL,
-    uuid BLOB NOT NULL UNIQUE,
-    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TRIGGER trigger_gallery_items_update
-AFTER UPDATE On gallery_items
-BEGIN
-   UPDATE gallery_items SET updated = CURRENT_TIMESTAMP WHERE id = NEW.id;
-END;
-
-
 CREATE TABLE resources (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     filepath TEXT NOT NULL UNIQUE,
@@ -50,6 +31,23 @@ BEGIN
    UPDATE resources SET updated = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
 
+CREATE TABLE gallery_items (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    gallery INTEGER NOT NULL,
+    resource INTEGER NOT NULL,
+    kind INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    uuid BLOB NOT NULL UNIQUE,
+    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(gallery) REFERENCES galleries(id),
+    FOREIGN KEY(resource) REFERENCES resources(id)
+);
 
-
+CREATE TRIGGER trigger_gallery_items_update
+AFTER UPDATE On gallery_items
+BEGIN
+   UPDATE gallery_items SET updated = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 

@@ -35,6 +35,9 @@ table! {
     }
 }
 
+joinable!(gallery_items -> galleries (gallery));
+joinable!(gallery_items -> resources (resource));
+
 allow_tables_to_appear_in_same_query!(
     galleries,
     gallery_items,
