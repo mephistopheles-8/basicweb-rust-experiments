@@ -1,28 +1,19 @@
 
+extern crate min;
 #[macro_use]
 extern crate serde_json;
 
 use actix_files as fs;
-use handlebars::Handlebars;
-use actix_web::{middleware, web, App, HttpResponse, HttpServer};
 use actix_http::{body::Body, Response};
 use actix_web::dev::ServiceResponse;
 use actix_web::http::StatusCode;
 use actix_web::middleware::errhandlers::{ErrorHandlerResponse, ErrorHandlers};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
+use handlebars::Handlebars;
+use actix_web::{middleware, web, App, HttpServer};
 
-
-async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
-    let data = json!({
-        "title": "Welcome"
-      , "parent" : "main"
-    });
-    let body = hb.render("content/index", &data).unwrap();
-
-    HttpResponse::Ok().body(body)
-}
-
+use min::min_api;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -55,7 +46,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(error_handlers())
             // logger (must be last)
             .wrap(middleware::Logger::default())
-            .service(web::resource("/").route(web::get().to(index)))
+            // the gallery api
+            .configure(min_api)
             .service(fs::Files::new("/", "./static/root/"))
     })
     .bind("127.0.0.1:8080")?
@@ -63,7 +55,7 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-// Error logic taken from examples
+// Error logic taken from actix-web/examples
 
 // Custom error handlers, to return HTML responses when an error occurs.
 fn error_handlers() -> ErrorHandlers<Body> {

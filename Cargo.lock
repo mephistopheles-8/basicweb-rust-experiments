@@ -1062,7 +1062,6 @@ dependencies = [
  "actix-http",
  "actix-rt",
  "actix-web",
- "bytes",
  "chrono",
  "diesel",
  "dotenv",
