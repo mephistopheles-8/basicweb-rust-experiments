@@ -435,6 +435,57 @@ async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     HttpResponse::Ok().body(body)
 }
 
+fn gallery_api_read( cfg: &mut web::ServiceConfig ) {
+    cfg
+    .service(web::resource("/galleries")
+        .route(web::get().to(gallery_listing_json))
+    )
+    .service(web::resource("/galleries/{id}")
+        .route(web::get().to(gallery_json))
+    )
+    .service(web::resource("/galleries/{id}/items")
+        .route(web::get().to(gallery_items_json))
+    )
+    .service(web::resource("/galleries/{id}/item-create")
+        .route(web::get().to(gallery_item_form))
+     )
+    .service(web::resource("/galleries/{gallery}/items/{id}")
+        .route(web::get().to(gallery_item_json))
+    );
+}
+
+fn gallery_api_write( cfg: &mut web::ServiceConfig ) {
+    cfg
+    .service(web::resource("/galleries")
+        .route(web::post().to(gallery_create_json))
+    )
+    .service(web::resource("/galleries/{id}/items")
+        .route(web::post().to(gallery_item_multipart))
+    );
+}
+
+
+fn gallery_api( cfg: &mut web::ServiceConfig ) {
+    cfg
+    .service(web::resource("/galleries")
+        .route(web::get().to(gallery_listing_json))
+        .route(web::post().to(gallery_create_json))
+    )
+    .service(web::resource("/galleries/{id}")
+        .route(web::get().to(gallery_json))
+    )
+    .service(web::resource("/galleries/{id}/items")
+        .route(web::get().to(gallery_items_json))
+        .route(web::post().to(gallery_item_multipart))
+    )
+    .service(web::resource("/galleries/{id}/item-create")
+        .route(web::get().to(gallery_item_form))
+     )
+    .service(web::resource("/galleries/{gallery}/items/{id}")
+        .route(web::get().to(gallery_item_json))
+    );
+}
+
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -467,27 +518,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(error_handlers())
             // logger (must be last)
             .wrap(middleware::Logger::default())
-            .service(web::resource("/galleries")
-                .route(web::get().to(gallery_listing_json))
-                .route(web::post().to(gallery_create_json))
-            )
-            .service(web::resource("/galleries/{id}")
-                .route(web::get().to(gallery_json))
-            )
-            .service(web::resource("/galleries/{id}/items")
-                .route(web::get().to(gallery_items_json))
-                .route(web::post().to(gallery_item_multipart))
-            )
-            .service(web::resource("/galleries/{id}/item-create")
-                .route(web::get().to(gallery_item_form))
-             )
-            .service(web::resource("/galleries/{gallery}/items/{id}")
-                .route(web::get().to(gallery_item_json))
-            )
-            .service(web::resource("/file-upload")
-                .route(web::get().to(file_upload))
-                .route(web::post().to(save_file))
-            )
+            // the gallery api
+            .configure(gallery_api)
             .service(web::resource("/").route(web::get().to(index)))
             .service(fs::Files::new("/", "./static/root/"))
     })
