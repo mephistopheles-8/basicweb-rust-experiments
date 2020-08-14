@@ -1,5 +1,5 @@
 
-extern crate gallery;
+extern crate galleries;
 #[macro_use]
 extern crate serde_json;
 
@@ -13,7 +13,7 @@ use diesel::r2d2::{self, ConnectionManager};
 use handlebars::Handlebars;
 use actix_web::{middleware, web, App, HttpServer};
 
-use gallery::gallery_api;
+use galleries::gallery_api;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
