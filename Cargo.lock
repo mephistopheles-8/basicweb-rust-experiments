@@ -403,32 +403,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "base"
-version = "0.1.0"
-dependencies = [
- "actix-files",
- "actix-http",
- "actix-identity",
- "actix-rt",
- "actix-web",
- "base64 0.12.3",
- "chrono",
- "diesel",
- "dotenv",
- "env_logger",
- "futures",
- "handlebars",
- "lettre",
- "r2d2",
- "rand",
- "regex",
- "rust-argon2",
- "serde",
- "serde_json",
- "uuid",
-]
-
-[[package]]
 name = "base64"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2056,6 +2030,32 @@ dependencies = [
  "idna",
  "matches",
  "percent-encoding",
+]
+
+[[package]]
+name = "users"
+version = "0.1.0"
+dependencies = [
+ "actix-files",
+ "actix-http",
+ "actix-identity",
+ "actix-rt",
+ "actix-web",
+ "base64 0.12.3",
+ "chrono",
+ "diesel",
+ "dotenv",
+ "env_logger",
+ "futures",
+ "handlebars",
+ "lettre",
+ "r2d2",
+ "rand",
+ "regex",
+ "rust-argon2",
+ "serde",
+ "serde_json",
+ "uuid",
 ]
 
 [[package]]

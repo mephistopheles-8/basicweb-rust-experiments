@@ -1,9 +1,9 @@
 #[macro_use]
 extern crate serde_json;
 
-extern crate base; 
+extern crate users; 
 
-use base::users_api;
+use users::users_api;
 
 use actix_files as fs;
 use actix_identity::{Identity,RequestIdentity};
