@@ -958,7 +958,6 @@ dependencies = [
  "actix-rt",
  "actix-web",
  "async-std",
- "bytes",
  "chrono",
  "diesel",
  "dotenv",
