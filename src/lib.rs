@@ -5,6 +5,7 @@ extern crate serde_json;
 use handlebars::Handlebars;
 use actix_web::{web,HttpResponse};
 
+pub mod util;
 
 pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
