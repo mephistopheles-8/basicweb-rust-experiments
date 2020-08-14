@@ -1,5 +1,5 @@
 
-extern crate min;
+extern crate locations;
 #[macro_use]
 extern crate serde_json;
 
@@ -13,7 +13,7 @@ use diesel::r2d2::{self, ConnectionManager};
 use handlebars::Handlebars;
 use actix_web::{middleware, web, App, HttpServer};
 
-use min::min_api;
+use locations::locations_api;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -46,8 +46,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(error_handlers())
             // logger (must be last)
             .wrap(middleware::Logger::default())
-            // the gallery api
-            .configure(min_api)
+            // the location api
+            .configure(locations_api)
             .service(fs::Files::new("/", "./static/root/"))
     })
     .bind("127.0.0.1:8080")?

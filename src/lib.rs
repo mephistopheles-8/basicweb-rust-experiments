@@ -15,7 +15,8 @@ pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
 
     HttpResponse::Ok().body(body)
 }
-pub fn min_api( cfg: &mut web::ServiceConfig ) {
+
+pub fn locations_api( cfg: &mut web::ServiceConfig ) {
     cfg
       .service(web::resource("/").route(web::get().to(index)));
 }
