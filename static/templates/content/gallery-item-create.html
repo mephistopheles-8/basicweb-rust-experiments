@@ -1,5 +1,5 @@
 {{#*inline "content"}}
-<form method="POST" action="{{action}}" enctype="multipart/form-data">
+<form id="gallery-form" method="POST" action="{{action}}" enctype="multipart/form-data">
     <div>
         <label for="name">Name</label>
         <input type="text" name="name" id="name" title="Name" required> 
@@ -14,5 +14,28 @@
     </div>
     <input type="submit" value="Upload" title="Upload">
 </form>
+<script type="text/javascript">
+(function() {
+    var form = 
+        document.getElementById("gallery-form");
+
+    form.addEventListener("submit", function (e) {
+        var name = form.elements.name; 
+        var description = form.elements.description;
+        var jsonInput = document.createElement("input");
+        jsonInput.name = "json";
+        jsonInput.type = "hidden"; 
+        jsonInput.value = JSON.stringify({
+            name: name.value
+          , description: description.value
+          , kind: 0
+        }); 
+        name.parentNode.insertBefore(jsonInput,name);
+        name.parentNode.removeChild(name); 
+        description.parentNode.removeChild(description); 
+    },false);
+
+})();
+</script>
 {{/inline}}
 {{~> (parent)~}}
