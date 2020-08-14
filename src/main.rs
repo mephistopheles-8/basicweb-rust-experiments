@@ -83,7 +83,7 @@ fn user_by_uuid(
 ) -> Result<Option<models::User>, diesel::result::Error> {
     use crate::schema::users::dsl::*;
     let user = users
-        .filter(uuid.eq(uuid0.as_bytes().to_vec()))
+        .filter(uuid.eq(uuid0.as_bytes().as_ref()))
         .first::<models::User>(conn)
         .optional()?;
     Ok(user)
@@ -101,7 +101,7 @@ fn user_update_password_by_uuid(
     let hash = argon2::hash_encoded(pw0.as_bytes(), &salt, &config).unwrap();
 
     let user = users
-        .filter(uuid.eq(uuid0.as_bytes().to_vec()));
+        .filter(uuid.eq(uuid0.as_bytes().as_ref()));
 
     let n = diesel::update(user).set(password.eq(hash)).execute(conn)?;
     Ok(n > 0)
@@ -141,7 +141,7 @@ fn user_verify_by_uuid(
         if let Some(code1) = u0.code {
             if code0 == code1 {
                 let user = users
-                    .filter(uuid.eq(uuid0.as_bytes().to_vec()));
+                    .filter(uuid.eq(uuid0.as_bytes().as_ref()));
                 
                 // TODO: Fix race-condition
 
