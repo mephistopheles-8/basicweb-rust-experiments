@@ -340,48 +340,53 @@ async fn gallery_item_multipart(
 
    let conn = pool.get().expect("couldn't get db connection from pool");
 
+   let mut buf = vec![];
+   // NOTE: the outstanding mutable reference makes this
+   // hang.  You need to process fields in individual blocks.
+   // (eg, cannot call payload.try_next().await within this block)
    if let Ok(Some(mut field)) = payload.try_next().await {
         let content_type = field
             .content_disposition()
             .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
 
-        let mut buf = vec![];
+        println!("name: {}", content_type.get_name().unwrap());
 
         while let Some(chunk) = field.next().await {
             let data = chunk.unwrap();
             buf.push(data);
         }
-        
-       let item : GalleryItemPost 
-            = serde_json::from_slice(buf.concat().as_slice())
-                .map_err(|_| actix_web::error::ParseError::Incomplete)?; 
-
-       if let Ok(Some(mut field)) = payload.try_next().await {
-            let content_type = field
-                .content_disposition()
-                .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
-            let filename = content_type
-                .get_filename()
-                .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
-            let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
-            let mut f = async_std::fs::File::create(&filepath).await?;
-
-            // Field in turn is stream of *Bytes* object
-            while let Some(chunk) = field.next().await {
-                let data = chunk.unwrap();
-                f.write_all(&data).await?;
-            }
-
-            // use web::block to offload blocking Diesel code without blocking server thread
-            let _uuid = web::block(move || 
-                gallery_item_resource_create(&item.name, &item.description, (item.kind,0), &filepath, *path, &conn))
-                .await
-                .map_err(|e| {
-                    eprintln!("{}", e);
-                    HttpResponse::InternalServerError().finish()
-                })?;
-       }
    }
+
+   let item : GalleryItemPost 
+        = serde_json::from_slice(buf.concat().as_slice())
+            .map_err(|_| actix_web::error::ParseError::Incomplete)?;
+
+   if let Ok(Some(mut field)) = payload.try_next().await {
+        let content_type = field
+            .content_disposition()
+            .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
+        let filename = content_type
+            .get_filename()
+            .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
+        let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
+        let mut f = async_std::fs::File::create(&filepath).await?;
+
+        // Field in turn is stream of *Bytes* object
+        while let Some(chunk) = field.next().await {
+            let data = chunk.unwrap();
+            f.write_all(&data).await?;
+        }
+
+        // use web::block to offload blocking Diesel code without blocking server thread
+        let _uuid = web::block(move || 
+            gallery_item_resource_create(&item.name, &item.description, (item.kind,0), &filepath, *path, &conn))
+            .await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?;
+   }
+        
    Ok(HttpResponse::Ok().into())
 }
 
@@ -406,6 +411,19 @@ async fn gallery_item_json(
     }
 }
 
+async fn gallery_item_form(
+    path: web::Path<i32>,
+    hb: web::Data<Handlebars<'_>>
+    ) -> HttpResponse {
+    let data = json!({
+        "title": "Add New Gallery Item"
+      , "parent" : "main"
+      , "action": format!("/galleries/{}/items", *path)
+    });
+    let body = hb.render("content/gallery-item-create", &data).unwrap();
+
+    HttpResponse::Ok().body(body)
+}
 
 async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
@@ -460,6 +478,9 @@ async fn main() -> std::io::Result<()> {
                 .route(web::get().to(gallery_items_json))
                 .route(web::post().to(gallery_item_multipart))
             )
+            .service(web::resource("/galleries/{id}/item-create")
+                .route(web::get().to(gallery_item_form))
+             )
             .service(web::resource("/galleries/{gallery}/items/{id}")
                 .route(web::get().to(gallery_item_json))
             )
