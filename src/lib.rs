@@ -908,8 +908,89 @@ pub fn locations_api_write( cfg: &mut web::ServiceConfig ) {
         );
 }
 
+pub fn locations_api_all( cfg: &mut web::ServiceConfig ) {
+    cfg
+      .service(
+          web::resource("/locations")
+            .route(web::get().to(locations_listing_json))
+        )
+      .service(
+          web::resource("/locations/create")
+            .route(web::post().to(location_create_json))
+        )
+      .service(
+          web::resource("/locations/by_distance/{lat}/{lng}/{distance}")
+            .route(web::get().to(index))
+        )
+      .service(
+          web::resource("/locations/{id}")
+            .route(web::get().to(location_by_id_json))
+            .route(web::post().to(location_update_by_id_json))
+            .route(web::delete().to(location_delete_by_id_json))
+        )
+      .service(
+          web::resource("/locations/{id}/name")
+            .route(web::get().to(location_name_by_id_json))
+            .route(web::post().to(location_update_name_by_id_json))
+            .route(web::put().to(location_update_name_by_id_json))
+        )
+      .service(
+          web::resource("/locations/{id}/description")
+            .route(web::get().to(location_description_by_id_json))
+            .route(web::post().to(location_update_description_by_id_json))
+            .route(web::put().to(location_update_description_by_id_json))
+            .route(web::delete().to(location_clear_description_by_id_json))
+        )
+      .service(
+          web::resource("/locations/{id}/address")
+            .route(web::get().to(location_address_by_id_json))
+            .route(web::post().to(location_update_address_by_id_json))
+            .route(web::put().to(location_update_address_by_id_json))
+            .route(web::delete().to(location_clear_address_by_id_json))
+        )
+      .service(
+          web::resource("/locations/{id}/city")
+            .route(web::get().to(location_city_by_id_json))
+            .route(web::post().to(location_update_city_by_id_json))
+            .route(web::put().to(location_update_city_by_id_json))
+            .route(web::delete().to(location_clear_city_by_id_json))
+        )
+      .service(
+          web::resource("/locations/{id}/region")
+            .route(web::get().to(location_region_by_id_json))
+            .route(web::post().to(location_update_region_by_id_json))
+            .route(web::put().to(location_update_region_by_id_json))
+            .route(web::delete().to(location_clear_region_by_id_json))
+        )
+      .service(
+          web::resource("/locations/{id}/postal")
+            .route(web::get().to(location_postal_by_id_json))
+            .route(web::post().to(location_update_postal_by_id_json))
+            .route(web::put().to(location_update_postal_by_id_json))
+            .route(web::delete().to(location_clear_postal_by_id_json))
+        )
+      .service(
+          web::resource("/locations/{id}/country")
+            .route(web::get().to(location_country_by_id_json))
+            .route(web::post().to(location_update_country_by_id_json))
+            .route(web::put().to(location_update_country_by_id_json))
+            .route(web::delete().to(location_clear_country_by_id_json))
+        )
+      .service(
+          web::resource("/locations/{id}/lat")
+            .route(web::get().to(location_lat_by_id_json))
+            .route(web::post().to(location_update_lat_by_id_json))
+            .route(web::put().to(location_update_lat_by_id_json))
+        )
+      .service(
+          web::resource("/locations/{id}/lng")
+            .route(web::get().to(location_lng_by_id_json))
+            .route(web::post().to(location_update_lng_by_id_json))
+            .route(web::put().to(location_update_lng_by_id_json))
+        );
+}
+
 pub fn locations_api( cfg: &mut web::ServiceConfig ) {
-    locations_api_read(cfg);
-    locations_api_write(cfg);
+    locations_api_all(cfg);
 }
 
