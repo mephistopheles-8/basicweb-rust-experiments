@@ -21,6 +21,21 @@ pub struct Location {
     pub updated: NaiveDateTime, 
 }
 
+#[derive(AsChangeset)]
+#[table_name = "locations"]
+pub struct LocationUpdate<'a> {
+    pub name: &'a str,
+    pub description: Option<&'a str>,
+    pub address: Option<&'a str>,
+    pub city: Option<&'a str>,
+    pub region: Option<&'a str>,
+    pub postal: Option<&'a str>,
+    pub country: Option<&'a str>,
+    pub lat: f64,
+    pub lng: f64,
+}
+
+
 #[derive(Insertable)]
 #[table_name = "locations"]
 pub struct NewLocation<'a> {
