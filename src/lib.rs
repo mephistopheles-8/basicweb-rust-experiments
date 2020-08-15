@@ -191,6 +191,38 @@ pub fn user_register(
     Ok(uuid0)
 }
 
+pub async fn login_action_json(
+    id: Identity
+  , pool: web::Data<DbPool>
+  , data: web::Json<LoginParams>
+ ) -> Result<HttpResponse,actix_web::Error> {
+    id.forget();
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    
+    // use web::block to offload blocking Diesel code without blocking server thread
+    let user = web::block(move || user_by_login(&data, &conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+
+    if let Some(user) = user {
+        let uuid 
+            = uuid::Builder::from_slice(&user.uuid)
+             .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+             })?.build().to_hyphenated().to_string();
+
+        id.remember(uuid);
+        Ok(HttpResponse::NoContent().finish())
+
+    } else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
 pub async fn login_action(
     id: Identity
   , pool: web::Data<DbPool>
@@ -235,6 +267,20 @@ pub struct RegisterParams {
     pub confirm_password: String,
 }
 
+fn email_is_valid(email: &str) -> bool {
+    let re = Regex::new(EMAIL_REGEXP).unwrap();
+    re.is_match(email)
+}
+
+impl RegisterParams {
+    fn is_valid(&self) -> bool {
+        self.name.len() > 0 &&
+           email_is_valid(&self.email) &&
+           self.password.len() > 8 &&
+           self.password == self.confirm_password
+    }
+}
+
 pub async fn register_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
         "title": "Register"
@@ -246,6 +292,7 @@ pub async fn register_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpR
     HttpResponse::Ok().body(body)
 }
 
+
 pub async fn register_action(
     id: Identity
   , pool: web::Data<DbPool>
@@ -254,13 +301,9 @@ pub async fn register_action(
 
     id.forget();
     
-    let re = Regex::new(EMAIL_REGEXP).unwrap();
     let conn = pool.get().expect("couldn't get db connection from pool");
     
-    if data.name.len() > 0 &&
-       re.is_match(&data.email) &&
-       data.password.len() > 8 &&
-       data.password == data.confirm_password {
+    if data.is_valid() {
 
         let uuid = web::block(move || 
             user_register(
@@ -278,6 +321,34 @@ pub async fn register_action(
         Ok(HttpResponse::Found().header("location", "/register").finish())
     }
 }
+
+pub async fn register_action_json(
+    pool: web::Data<DbPool>
+  , data: web::Json<RegisterParams>
+ ) -> Result<HttpResponse,actix_web::Error> {
+    
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if data.is_valid() {
+
+        let _uuid = web::block(move || 
+            user_register(
+                &data.name, &data.email.to_ascii_lowercase(), &data.password, &conn
+              )
+            ).await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?;
+
+        Ok(HttpResponse::NoContent().finish())
+
+    }else{
+        Ok(HttpResponse::BadRequest().finish())
+    }
+    
+}
+
 
 #[derive(Serialize, Deserialize)]
 pub struct ResetPasswordParams {
@@ -337,6 +408,7 @@ pub async fn reset_password_action(
     }
 }
 
+
 #[derive(Serialize, Deserialize)]
 pub struct VerifyAccountParams {
     pub code: String,
@@ -390,6 +462,42 @@ pub async fn verify_account_action(
         Ok(HttpResponse::Found().header("location", "/login").finish())
     }
 }
+
+pub async fn verify_account_action_json(
+    id: Identity
+  , pool: web::Data<DbPool>
+  , data: web::Form<VerifyAccountParams>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    
+    if let Some(uuid) = id.identity() {
+          let uuid0 = Uuid::parse_str(&uuid)
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+          let verified = web::block(move || 
+            user_verify_by_uuid(
+                uuid0, &data.code, &conn
+              )
+            ).await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?;
+
+          if verified {
+            Ok(HttpResponse::NoContent().finish())
+          }else {
+            Ok(HttpResponse::BadRequest().finish())
+          }
+    }else{
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
+// TODO: We need some form of nonce or recaptcha for this one
 
 #[derive(Serialize, Deserialize)]
 pub struct RecoverPasswordParams {
@@ -455,42 +563,134 @@ pub async fn recover_password_action(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
+    if email_is_valid( &data.email ) { 
+        web::block(move || {
+            let is_acct = 
+                user_update_code_by_email(
+                    &data.email, &conn
+                  ).map_err(|e| {
+                      eprintln!("{}", e);
+                      RecoverPasswordError::DbError
+                  })?;
+        
+            // Watch out for timing attacks.  They could know
+            // when they found a user by request duration
+            // ALSO: this blocks a long time before erroring out!
+            if is_acct {
+                let user 
+                    = user_by_email( &data.email, &conn )
+                       .map_err(|e| {
+                           eprintln!("{}", e);
+                           RecoverPasswordError::DbError
+                       })?.unwrap();
 
-    web::block(move || {
-        let is_acct = 
-            user_update_code_by_email(
-                &data.email, &conn
-              ).map_err(|e| {
-                  eprintln!("{}", e);
-                  RecoverPasswordError::DbError
-              })?;
-    
-        // Watch out for timing attacks.  They could know
-        // when they found a user by request duration
-        // ALSO: this blocks a long time before erroring out!
-        if is_acct {
-            let user 
-                = user_by_email( &data.email, &conn )
-                   .map_err(|e| {
-                       eprintln!("{}", e);
-                       RecoverPasswordError::DbError
-                   })?.unwrap();
+                send_validation_email(user)
+                    .map_err(|e| {
+                        eprintln!("{}", e);
+                        RecoverPasswordError::EmailError
+                    })?;
+            }
+            Ok::<(),RecoverPasswordError>(()) 
+        }).await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?;
 
-            send_validation_email(user)
+
+        Ok(HttpResponse::Found().header("location", "/recover-password").finish())
+    } else {
+        Ok(HttpResponse::Found().header("location", "/recover-password").finish())
+    }
+}
+
+pub async fn recover_password_action_json(
+    pool: web::Data<DbPool>
+  , data: web::Json<RecoverPasswordParams>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if email_is_valid( &data.email ) { 
+        web::block(move || {
+            let is_acct = 
+                user_update_code_by_email(
+                    &data.email, &conn
+                  ).map_err(|e| {
+                      eprintln!("{}", e);
+                      RecoverPasswordError::DbError
+                  })?;
+        
+            // Watch out for timing attacks.  They could know
+            // when they found a user by request duration
+            // ALSO: this blocks a long time before erroring out!
+            // TODO: Another actor should be responsible for sending
+            // emails.
+
+            if is_acct {
+                let user 
+                    = user_by_email( &data.email, &conn )
+                       .map_err(|e| {
+                           eprintln!("{}", e);
+                           RecoverPasswordError::DbError
+                       })?.unwrap();
+
+                send_validation_email(user)
+                    .map_err(|e| {
+                        eprintln!("{}", e);
+                        RecoverPasswordError::EmailError
+                    })?;
+            }
+            // We don't want an indicator of whether or not the account
+            // exists
+            Ok::<(),RecoverPasswordError>(()) 
+        }).await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?;
+
+        // Do not indicate whether or not the email refers to an account
+
+        Ok(HttpResponse::NoContent().finish())
+    }else {
+        Ok(HttpResponse::BadRequest().finish())
+    }
+}
+
+pub async fn user_update_password_json(
+    id: Identity
+  , pool: web::Data<DbPool>
+  , data: web::Json<String>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(uuid) = id.identity() {
+       if data.len() > 8 {
+              let uuid0 = Uuid::parse_str(&uuid)
+                    .map_err(|e| {
+                        eprintln!("{}", e);
+                        HttpResponse::InternalServerError().finish()
+                    })?;
+
+              web::block(move || 
+                user_update_password_by_uuid(
+                    uuid0, &data, &conn
+                  )
+                ).await
                 .map_err(|e| {
                     eprintln!("{}", e);
-                    RecoverPasswordError::EmailError
+                    HttpResponse::InternalServerError().finish()
                 })?;
-        }
-        Ok::<(),RecoverPasswordError>(()) 
-    }).await
-        .map_err(|e| {
-            eprintln!("{}", e);
-            HttpResponse::InternalServerError().finish()
-        })?;
 
-
-    Ok(HttpResponse::Found().header("location", "/recover-password").finish())
+            Ok(HttpResponse::NoContent().finish())
+       }else {
+            Ok(HttpResponse::BadRequest().finish())
+       }
+    }else{
+        Ok(HttpResponse::Unauthorized().finish())
+    }
 }
 
 pub async fn manage_account(id: Identity) -> String {
@@ -505,6 +705,34 @@ pub async fn logout(id: Identity) -> HttpResponse {
     HttpResponse::Found().header("location", "/").finish()
 }
 
+pub async fn logout_json(id: Identity) -> HttpResponse {
+    if id.identity().is_some() {
+        id.forget();
+        HttpResponse::NoContent().finish()
+    }else {
+        HttpResponse::Unauthorized().finish()
+    }
+}
+
+pub fn users_api_json( cfg: &mut web::ServiceConfig ) {
+    cfg
+    .service(web::resource("/verify-account")
+        .route(web::post().to(verify_account_action_json))
+    )
+    .service(web::resource("/recover-password")
+        .route(web::post().to(recover_password_action_json))
+    )
+    .service(web::resource("/register")
+        .route(web::post().to(register_action_json))
+    )
+    .service(web::resource("/logout").to(logout_json))
+    .service(web::resource("/login")
+            .route(web::post().to(login_action_json))
+    )
+    .service(web::resource("/user/password")
+        .route(web::post().to(user_update_password_json))
+    );
+}
 
 pub fn users_api( cfg: &mut web::ServiceConfig ) {
     cfg
