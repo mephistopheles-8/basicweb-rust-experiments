@@ -45,7 +45,9 @@ pub fn initialize( conn: &SqliteConnection )
         let lat0r = lat0.to_radians();
         let lat1r = lat1.to_radians();
          
-        let a  = ((d_lat/2.0).sin()) * ((d_lat/2.0).sin()) + ((d_lon/2.0).sin()) * ((d_lon/2.0).sin()) * (lat0r.cos()) * (lat1r.cos());
+        let a  = ((d_lat/2.0).sin()) * ((d_lat/2.0).sin()) 
+               + ((d_lon/2.0).sin()) * ((d_lon/2.0).sin()) * (lat0r.cos()) * (lat1r.cos());
+
         let c  = 2.0 * ((a.sqrt()).atan2((1.0-a).sqrt()));
 
         r * c
