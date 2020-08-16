@@ -81,7 +81,7 @@ pub fn post_replies ( pid0: i32, n: i64, page: i64, conn: &SqliteConnection )
     use crate::schema::posts::dsl::*;
     let g0s = 
         posts.filter(parent.eq(pid0))
-            .order_by(created.desc())
+            .order_by(created.asc())
             .limit(n)
             .offset(n*page)
             .load( conn )?;
@@ -248,14 +248,27 @@ pub async fn posts_replies_default_json(
   , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
     let conn = pool.get().expect("couldn't get db connection from pool");
-    let posts = web::block(move || post_replies(*path,64,0,&conn))
+    let posts = web::block(move || {
+        let parent = post_by_id(*path,&conn)?;
+        if parent.is_some() {
+            let replies = post_replies(*path,64,0,&conn)?;
+            Ok::<_,diesel::result::Error>(Some(replies))
+        }else{
+            Ok(None)
+
+        }
+    })
         .await
         .map_err(|e| {
             eprintln!("{}", e);
             HttpResponse::InternalServerError().finish()
         })?;
-    
-    Ok(HttpResponse::Ok().json(posts))
+   
+    if let Some(posts) = posts {
+        Ok(HttpResponse::Ok().json(posts))
+    }else {
+        Ok(HttpResponse::NotFound().finish())
+    }
 }
 
 pub async fn posts_replies_json(
@@ -263,14 +276,27 @@ pub async fn posts_replies_json(
   , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
     let conn = pool.get().expect("couldn't get db connection from pool");
-    let posts = web::block(move || post_replies(path.0,path.1,path.2,&conn))
+    let posts = web::block(move || {
+        let parent = post_by_id(path.0,&conn)?;
+        if parent.is_some() {
+            let replies = post_replies(path.0,path.1,path.2,&conn)?;
+            Ok::<_,diesel::result::Error>(Some(replies))
+        }else{
+            Ok(None)
+
+        }
+    })
         .await
         .map_err(|e| {
             eprintln!("{}", e);
             HttpResponse::InternalServerError().finish()
         })?;
-    
-    Ok(HttpResponse::Ok().json(posts))
+   
+    if let Some(posts) = posts {
+        Ok(HttpResponse::Ok().json(posts))
+    }else {
+        Ok(HttpResponse::NotFound().finish())
+    }
 }
 
 pub async fn post_by_id_json(
@@ -473,8 +499,9 @@ pub fn min_api( cfg: &mut web::ServiceConfig ) {
           .route(web::get().to(posts_root_default_json))
           .route(web::post().to(post_create_json))
       )
-      .service(web::resource("/posts/{n}/{page}")
-          .route(web::get().to(posts_root_json))
+      .service(web::resource("/posts/{id}")
+          .route(web::get().to(post_by_id_json))
+          .route(web::post().to(post_update_by_id_json))
         )
       .service(web::resource("/posts/{id}/replies")
           .route(web::get().to(posts_replies_default_json))
@@ -482,10 +509,6 @@ pub fn min_api( cfg: &mut web::ServiceConfig ) {
         )
       .service(web::resource("/posts/{id}/replies/{n}/{page}")
           .route(web::get().to(posts_replies_json))
-        )
-      .service(web::resource("/posts/{id}")
-          .route(web::get().to(post_by_id_json))
-          .route(web::post().to(post_update_by_id_json))
         )
       .service(web::resource("/posts/{id}/title")
           .route(web::get().to(post_title_by_id_json))
@@ -498,6 +521,10 @@ pub fn min_api( cfg: &mut web::ServiceConfig ) {
       .service(web::resource("/posts/{id}/body")
           .route(web::get().to(post_body_by_id_json))
           .route(web::post().to(post_update_body_by_id_json))
-        );
+        )
+      .service(web::resource("/posts/{n}/{page}")
+          .route(web::get().to(posts_root_json))
+        )
+      ;
 }
 
