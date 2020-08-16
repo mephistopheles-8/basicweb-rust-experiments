@@ -16,109 +16,163 @@ pub mod util;
 
 pub type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
-pub fn item_create( 
-        item0: &models::ItemPost, conn: &SqliteConnection 
+pub fn post_create( 
+        post0: &models::PostPost, conn: &SqliteConnection 
     ) -> Result<Uuid, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
+    use crate::schema::posts::dsl::*;
 
     let uuid0 = Uuid::new_v4();
 
-    let new_item = models::NewItem {
-        name: &item0.name,
-        description: item0.description.as_deref(),
+    let new_post = models::NewPost {
+        parent: None,
+        depth: 0,
+        title: post0.title.as_deref(),
+        description: post0.description.as_deref(),
+        body: &post0.body,
+        status: 0,
         uuid: uuid0.as_bytes(),
     };
 
-    diesel::insert_into(items).values(&new_item).execute(conn)?;
+    diesel::insert_into(posts).values(&new_post).execute(conn)?;
     Ok(uuid0)
 }
 
-pub fn items_all ( conn: &SqliteConnection ) 
-    -> Result<Vec<models::Item>, diesel::result::Error> {
+pub fn post_reply_create(
+      parent0: &models::Post
+    , post0: &models::PostPost
+    , conn: &SqliteConnection 
+    ) -> Result<Uuid, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
-    let g0s = items.order_by(name).load( conn )?; 
+    use crate::schema::posts::dsl::*;
+
+    let uuid0 = Uuid::new_v4();
+
+    let new_post = models::NewPost {
+        parent: Some(parent0.id),
+        depth: parent0.depth + 1,
+        title: post0.title.as_deref(),
+        description: post0.description.as_deref(),
+        body: &post0.body,
+        status: 0,
+        uuid: uuid0.as_bytes(),
+    };
+
+    diesel::insert_into(posts).values(&new_post).execute(conn)?;
+    Ok(uuid0)
+}
+
+pub fn posts_root ( n: i64, page: i64, conn: &SqliteConnection ) 
+    -> Result<Vec<models::Post>, diesel::result::Error> {
+
+    use crate::schema::posts::dsl::*;
+    let g0s = 
+        posts.filter(parent.is_null().and(status.eq(0)))
+            .order_by(created.desc())
+            .limit(n)
+            .offset(n*page)
+            .load( conn )?;
     Ok(g0s)
 }
 
-pub fn item_by_id ( id0: i32, conn: &SqliteConnection ) 
-    -> Result<Option<models::Item>, diesel::result::Error> {
+pub fn post_replies ( pid0: i32, n: i64, page: i64, conn: &SqliteConnection ) 
+    -> Result<Vec<models::Post>, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
-    let g0s = items
+    use crate::schema::posts::dsl::*;
+    let g0s = 
+        posts.filter(parent.eq(pid0))
+            .order_by(created.desc())
+            .limit(n)
+            .offset(n*page)
+            .load( conn )?;
+    Ok(g0s)
+}
+
+pub fn post_by_id ( id0: i32, conn: &SqliteConnection ) 
+    -> Result<Option<models::Post>, diesel::result::Error> {
+
+    use crate::schema::posts::dsl::*;
+    let g0s = posts
              .filter(id.eq(id0))
-             .first::<models::Item>( conn )
+             .first::<models::Post>( conn )
              .optional()?; 
     Ok(g0s)
 }
 
-pub fn item_by_uuid ( uuid0: Uuid, conn: &SqliteConnection ) 
-    -> Result<Option<models::Item>, diesel::result::Error> {
+pub fn post_by_uuid ( uuid0: Uuid, conn: &SqliteConnection ) 
+    -> Result<Option<models::Post>, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
-    let g0s = items
+    use crate::schema::posts::dsl::*;
+    let g0s = posts
               .filter(uuid.eq(uuid0.as_bytes().as_ref()))
-              .first::<models::Item>( conn )
+              .first::<models::Post>( conn )
               .optional()?; 
     Ok(g0s)
 }
 
-pub fn item_delete_by_id ( id0: i32, conn: &SqliteConnection ) 
+pub fn post_delete_by_id ( id0: i32, conn: &SqliteConnection ) 
     -> Result<usize, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
-    diesel::delete(items.filter(id.eq(id0))).execute(conn)
+    use crate::schema::posts::dsl::*;
+    diesel::delete(posts.filter(id.eq(id0))).execute(conn)
 }
 
-pub fn item_delete_by_uuid ( uuid0: Uuid, conn: &SqliteConnection ) 
+pub fn post_delete_by_uuid ( uuid0: Uuid, conn: &SqliteConnection ) 
     -> Result<usize, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
-    diesel::delete(items.filter(uuid.eq(uuid0.as_bytes().as_ref()))).execute(conn)
+    use crate::schema::posts::dsl::*;
+    diesel::delete(posts.filter(uuid.eq(uuid0.as_bytes().as_ref()))).execute(conn)
 }
 
-pub fn item_update_by_id( 
-        data: &models::ItemPost, id0: i32, conn: &SqliteConnection 
+pub fn post_update_by_id( 
+        data: &models::PostPost, id0: i32, conn: &SqliteConnection 
     ) -> Result<usize, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
+    use crate::schema::posts::dsl::*;
 
-    diesel::update(items.filter(id.eq(id0))).set(data).execute(conn)
+    diesel::update(posts.filter(id.eq(id0))).set(data).execute(conn)
 }
 
-pub fn item_update_by_uuid( 
-        data: &models::ItemPost, uuid0: Uuid, conn: &SqliteConnection 
+pub fn post_update_by_uuid( 
+        data: &models::PostPost, uuid0: Uuid, conn: &SqliteConnection 
     ) -> Result<usize, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
+    use crate::schema::posts::dsl::*;
 
-    diesel::update(items.filter(uuid.eq(uuid0.as_bytes().as_ref()))).set(data).execute(conn)
+    diesel::update(posts.filter(uuid.eq(uuid0.as_bytes().as_ref()))).set(data).execute(conn)
 }
 
-pub fn item_update_name_by_id ( name0: &str, id0: i32, conn: &SqliteConnection ) 
+pub fn post_update_title_by_id ( title0: Option<&str>, id0: i32, conn: &SqliteConnection ) 
     -> Result<usize, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
-    diesel::update(items.filter(id.eq(id0))).set(name.eq(name0)).execute(conn)
+    use crate::schema::posts::dsl::*;
+    diesel::update(posts.filter(id.eq(id0))).set(title.eq(title0)).execute(conn)
 }
 
-pub fn item_update_description_by_id ( description0: Option<&str>, id0: i32, conn: &SqliteConnection ) 
+pub fn post_update_description_by_id ( description0: Option<&str>, id0: i32, conn: &SqliteConnection ) 
     -> Result<usize, diesel::result::Error> {
 
-    use crate::schema::items::dsl::*;
-    diesel::update(items.filter(id.eq(id0))).set(description.eq(description0)).execute(conn)
+    use crate::schema::posts::dsl::*;
+    diesel::update(posts.filter(id.eq(id0))).set(description.eq(description0)).execute(conn)
 }
 
-pub async fn item_create_json(
-     data : web::Json<models::ItemPost>
+pub fn post_update_body_by_id ( body0: &str, id0: i32, conn: &SqliteConnection ) 
+    -> Result<usize, diesel::result::Error> {
+
+    use crate::schema::posts::dsl::*;
+    diesel::update(posts.filter(id.eq(id0))).set(body.eq(body0)).execute(conn)
+}
+
+
+pub async fn post_create_json(
+     data : web::Json<models::PostPost>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
     // use web::block to offload blocking Diesel code without blocking server thread
-    let uuid = web::block(move || item_create(&data, &conn))
+    let uuid = web::block(move || post_create(&data, &conn))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
@@ -128,21 +182,98 @@ pub async fn item_create_json(
     Ok(HttpResponse::Ok().json(uuid))
 }
 
-pub async fn items_all_json(
-   pool: web::Data<DbPool>
+pub async fn post_reply_create_json(
+     path : web::Path<i32>
+   , data : web::Json<models::PostPost>
+   , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    // use web::block to offload blocking Diesel code without blocking server thread
+    let uuid = web::block(move || {
+        let post = post_by_id(*path,&conn)?;
+        if let Some(post) = post {
+             let uuid = post_reply_create(&post, &data, &conn)?;
+             Ok::<_,diesel::result::Error>(Some(uuid))
+        }else{
+            Ok::<_,diesel::result::Error>(None)
+        }
+    })
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+
+    if let Some(uuid) = uuid {
+        Ok(HttpResponse::Ok().json(uuid))
+    }else{
+        Ok(HttpResponse::NotFound().finish())
+    }
+}
+
+
+pub async fn posts_root_default_json(
+    pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
     let conn = pool.get().expect("couldn't get db connection from pool");
-    let items = web::block(move || items_all(&conn))
+    let posts = web::block(move || posts_root(64,0,&conn))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
             HttpResponse::InternalServerError().finish()
         })?;
     
-    Ok(HttpResponse::Ok().json(items))
+    Ok(HttpResponse::Ok().json(posts))
 }
 
-pub async fn item_by_id_json(
+pub async fn posts_root_json(
+    path: web::Path<(i64,i64)>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || posts_root(path.0,path.1,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(posts))
+}
+
+pub async fn posts_replies_default_json(
+    path: web::Path<i32>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || post_replies(*path,64,0,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(posts))
+}
+
+pub async fn posts_replies_json(
+    path: web::Path<(i32,i64,i64)>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || post_replies(path.0,path.1,path.2,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(posts))
+}
+
+pub async fn post_by_id_json(
      path: web::Path<i32>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
@@ -150,7 +281,7 @@ pub async fn item_by_id_json(
     let conn = pool.get().expect("couldn't get db connection from pool");
 
     // use web::block to offload blocking Diesel code without blocking server thread
-    let loc = web::block(move || item_by_id(*path, &conn))
+    let loc = web::block(move || post_by_id(*path, &conn))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
@@ -164,7 +295,7 @@ pub async fn item_by_id_json(
     }
 }
 
-pub async fn item_name_by_id_json(
+pub async fn post_title_by_id_json(
      path: web::Path<i32>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
@@ -172,20 +303,20 @@ pub async fn item_name_by_id_json(
     let conn = pool.get().expect("couldn't get db connection from pool");
 
     // use web::block to offload blocking Diesel code without blocking server thread
-    let loc = web::block(move || item_by_id(*path, &conn))
+    let loc = web::block(move || post_by_id(*path, &conn))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
             HttpResponse::InternalServerError().finish()
         })?;
     if let Some(loc) = loc {
-        Ok(HttpResponse::Ok().json(loc.name))
+        Ok(HttpResponse::Ok().json(loc.title))
     }else {
         Ok(HttpResponse::NotFound().finish())
     }
 }
 
-pub async fn item_description_by_id_json(
+pub async fn post_description_by_id_json(
      path: web::Path<i32>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
@@ -193,7 +324,7 @@ pub async fn item_description_by_id_json(
     let conn = pool.get().expect("couldn't get db connection from pool");
 
     // use web::block to offload blocking Diesel code without blocking server thread
-    let loc = web::block(move || item_by_id(*path, &conn))
+    let loc = web::block(move || post_by_id(*path, &conn))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
@@ -206,7 +337,7 @@ pub async fn item_description_by_id_json(
     }
 }
 
-pub async fn item_delete_by_id_json(
+pub async fn post_body_by_id_json(
      path: web::Path<i32>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
@@ -214,7 +345,28 @@ pub async fn item_delete_by_id_json(
     let conn = pool.get().expect("couldn't get db connection from pool");
 
     // use web::block to offload blocking Diesel code without blocking server thread
-    web::block(move || item_delete_by_id(*path, &conn))
+    let loc = web::block(move || post_by_id(*path, &conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    if let Some(loc) = loc {
+        Ok(HttpResponse::Ok().json(loc.body))
+    }else {
+        Ok(HttpResponse::NotFound().finish())
+    }
+}
+
+pub async fn post_delete_by_id_json(
+     path: web::Path<i32>
+   , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    // use web::block to offload blocking Diesel code without blocking server thread
+    web::block(move || post_delete_by_id(*path, &conn))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
@@ -224,9 +376,9 @@ pub async fn item_delete_by_id_json(
     Ok(HttpResponse::NoContent().finish())
 }
 
-pub async fn item_update_by_id_json(
+pub async fn post_update_by_id_json(
      path: web::Path<i32>
-   , data : web::Json<models::ItemPost>
+   , data : web::Json<models::PostPost>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -234,37 +386,17 @@ pub async fn item_update_by_id_json(
 
     let id = *path;
     // use web::block to offload blocking Diesel code without blocking server thread
-    web::block(move || item_update_by_id(&data,id, &conn))
+    web::block(move || post_update_by_id(&data,id, &conn))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
             HttpResponse::InternalServerError().finish()
         })?;
 
-    item_by_id_json(path,pool).await
+    post_by_id_json(path,pool).await
 }
 
-pub async fn item_update_name_by_id_json(
-     path: web::Path<i32>
-   , data: web::Json<String>
-   , pool: web::Data<DbPool>
-  ) -> Result<HttpResponse,actix_web::Error> {
-
-    let conn = pool.get().expect("couldn't get db connection from pool");
-
-    let id = *path;
-    // use web::block to offload blocking Diesel code without blocking server thread
-    web::block(move || item_update_name_by_id(&data, id, &conn))
-        .await
-        .map_err(|e| {
-            eprintln!("{}", e);
-            HttpResponse::InternalServerError().finish()
-        })?;
-
-    item_name_by_id_json(path,pool).await
-}
-
-pub async fn item_update_description_by_id_json(
+pub async fn post_update_title_by_id_json(
      path: web::Path<i32>
    , data: web::Json<Option<String>>
    , pool: web::Data<DbPool>
@@ -274,18 +406,19 @@ pub async fn item_update_description_by_id_json(
 
     let id = *path;
     // use web::block to offload blocking Diesel code without blocking server thread
-    web::block(move || item_update_description_by_id(data.as_deref(), id, &conn))
+    web::block(move || post_update_title_by_id(data.as_deref(), id, &conn))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
             HttpResponse::InternalServerError().finish()
         })?;
 
-    item_description_by_id_json(path,pool).await
+    post_title_by_id_json(path,pool).await
 }
 
-pub async fn item_clear_description_by_id_json(
+pub async fn post_update_description_by_id_json(
      path: web::Path<i32>
+   , data: web::Json<Option<String>>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -293,14 +426,34 @@ pub async fn item_clear_description_by_id_json(
 
     let id = *path;
     // use web::block to offload blocking Diesel code without blocking server thread
-    web::block(move || item_update_description_by_id(None, id, &conn))
+    web::block(move || post_update_description_by_id(data.as_deref(), id, &conn))
         .await
         .map_err(|e| {
             eprintln!("{}", e);
             HttpResponse::InternalServerError().finish()
         })?;
 
-    item_description_by_id_json(path,pool).await
+    post_description_by_id_json(path,pool).await
+}
+
+pub async fn post_update_body_by_id_json(
+     path: web::Path<i32>
+   , data: web::Json<String>
+   , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    let id = *path;
+    // use web::block to offload blocking Diesel code without blocking server thread
+    web::block(move || post_update_body_by_id(&data, id, &conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+
+    post_body_by_id_json(path,pool).await
 }
 
 pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
@@ -316,22 +469,35 @@ pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
 pub fn min_api( cfg: &mut web::ServiceConfig ) {
     cfg
       .service(web::resource("/").route(web::get().to(index)))
-      .service(web::resource("/items")
-          .route(web::get().to(items_all_json))
-          .route(web::post().to(item_create_json))
+      .service(web::resource("/posts")
+          .route(web::get().to(posts_root_default_json))
+          .route(web::post().to(post_create_json))
+      )
+      .service(web::resource("/posts/{n}/{page}")
+          .route(web::get().to(posts_root_json))
         )
-      .service(web::resource("/items/{id}")
-          .route(web::get().to(item_by_id_json))
-          .route(web::post().to(item_update_by_id_json))
+      .service(web::resource("/posts/{id}/replies")
+          .route(web::get().to(posts_replies_default_json))
+          .route(web::post().to(post_reply_create_json))
         )
-      .service(web::resource("/items/{id}/name")
-          .route(web::get().to(item_name_by_id_json))
-          .route(web::post().to(item_update_name_by_id_json))
+      .service(web::resource("/posts/{id}/replies/{n}/{page}")
+          .route(web::get().to(posts_replies_json))
         )
-      .service(web::resource("/items/{id}/description")
-          .route(web::get().to(item_description_by_id_json))
-          .route(web::post().to(item_update_description_by_id_json))
-          .route(web::delete().to(item_clear_description_by_id_json))
+      .service(web::resource("/posts/{id}")
+          .route(web::get().to(post_by_id_json))
+          .route(web::post().to(post_update_by_id_json))
+        )
+      .service(web::resource("/posts/{id}/title")
+          .route(web::get().to(post_title_by_id_json))
+          .route(web::post().to(post_update_title_by_id_json))
+        )
+      .service(web::resource("/posts/{id}/description")
+          .route(web::get().to(post_description_by_id_json))
+          .route(web::post().to(post_update_description_by_id_json))
+        )
+      .service(web::resource("/posts/{id}/body")
+          .route(web::get().to(post_body_by_id_json))
+          .route(web::post().to(post_update_body_by_id_json))
         );
 }
 

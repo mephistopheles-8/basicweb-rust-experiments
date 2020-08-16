@@ -1,8 +1,13 @@
 table! {
-    items (id) {
+    posts (id) {
         id -> Integer,
-        name -> Text,
+        parent -> Nullable<Integer>,
+        depth -> Integer,
+        title -> Nullable<Text>,
         description -> Nullable<Text>,
+        body -> Text,
+        status -> Integer,
+        flagged -> Bool,
         uuid -> Binary,
         created -> Timestamp,
         updated -> Timestamp,
