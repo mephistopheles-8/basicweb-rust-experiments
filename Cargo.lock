@@ -382,6 +382,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b41b7ea54a0c9d92199de89e20e58d49f02f8e699814ef3fdf266f6f748d15c7"
 
 [[package]]
+name = "basic"
+version = "0.1.0"
+dependencies = [
+ "actix-files",
+ "actix-http",
+ "actix-rt",
+ "actix-web",
+ "chrono",
+ "diesel",
+ "dotenv",
+ "env_logger",
+ "futures",
+ "handlebars",
+ "r2d2",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1052,26 +1072,6 @@ checksum = "2684d4c2e97d99848d30b324b00c8fcc7e5c897b7cbb5819b09e7c90e8baf212"
 dependencies = [
  "mime",
  "unicase",
-]
-
-[[package]]
-name = "min"
-version = "0.1.0"
-dependencies = [
- "actix-files",
- "actix-http",
- "actix-rt",
- "actix-web",
- "chrono",
- "diesel",
- "dotenv",
- "env_logger",
- "futures",
- "handlebars",
- "r2d2",
- "serde",
- "serde_json",
- "uuid",
 ]
 
 [[package]]
