@@ -9,8 +9,11 @@ use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use uuid::Uuid;
 use serde::{Serialize,Deserialize};
-
 use handlebars::Handlebars;
+
+use ::r2d2::CustomizeConnection;
+
+use diesel::sql_types::Double;
 
 pub mod models;
 pub mod schema;
@@ -31,11 +34,54 @@ pub struct NewLocationPost{
     pub lng: f64,
 }
 
+sql_function!(fn haversine(lat0: Double, lng0: Double, lat1: Double, lng1: Double) -> Double);
+
+pub fn initialize( conn: &SqliteConnection ) 
+    -> Result<(), diesel::result::Error> {
+    haversine::register_impl(&conn, |lat0: f64, lng0: f64, lat1: f64, lng1: f64| {
+        let r = 6371.0; // radius of earth in kilometers
+        let d_lat = (lat1 - lat0).to_radians();
+        let d_lon = (lng1 - lng0).to_radians();
+        let lat0r = lat0.to_radians();
+        let lat1r = lat1.to_radians();
+         
+        let a  = ((d_lat/2.0).sin()) * ((d_lat/2.0).sin()) + ((d_lon/2.0).sin()) * ((d_lon/2.0).sin()) * (lat0r.cos()) * (lat1r.cos());
+        let c  = 2.0 * ((a.sqrt()).atan2((1.0-a).sqrt()));
+
+        r * c
+    })
+}
+
+// FIXME: This is erroring out with r2d2 Pool builder; wrong error type?
+#[derive(Debug)]
+pub struct LocationSqliteCustomizer;
+impl CustomizeConnection<SqliteConnection,diesel::result::Error> for LocationSqliteCustomizer {
+    fn on_acquire(&self, conn: &mut SqliteConnection) -> Result<(),diesel::result::Error> {
+        initialize(conn)
+    }
+}
+
 pub fn locations_all ( conn: &SqliteConnection ) 
     -> Result<Vec<models::Location>, diesel::result::Error> {
 
     use crate::schema::locations::dsl::*;
-    let g0s = locations.load( conn )?; 
+    let g0s = locations.order_by(name).load( conn )?; 
+    Ok(g0s)
+}
+
+pub fn locations_by_distance ( lat0: f64, lng0: f64, dist: f64, conn: &SqliteConnection ) 
+    -> Result<Vec<(f64,models::Location)>, diesel::result::Error> {
+
+    use crate::schema::locations::dsl::*;
+    // TODO: Make sure this doesn't have side-effects
+    initialize(conn)?;
+    // FIXME: this calls haversine 3 times per result! Fix it.
+    let dist_calc = haversine(lat,lng,lat0,lng0);
+    let g0s = locations.select(
+          ( dist_calc, locations::all_columns() )
+        ).filter(
+            dist_calc.lt(dist)
+        ).order_by(dist_calc.asc()).load( conn )?; 
     Ok(g0s)
 }
 
@@ -782,6 +828,21 @@ pub async fn locations_listing_json(
     Ok(HttpResponse::Ok().json(locations))
 }
 
+pub async fn locations_by_distance_json(
+    params: web::Path<(f64,f64,f64)>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let locations = web::block(move || locations_by_distance(params.0,params.1,params.2,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(locations))
+}
+
 pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
         "title": "Welcome"
@@ -800,7 +861,7 @@ pub fn locations_api_read( cfg: &mut web::ServiceConfig ) {
         )
       .service(
           web::resource("/locations/by_distance/{lat}/{lng}/{distance}")
-            .route(web::get().to(index))
+            .route(web::get().to(locations_by_distance_json))
         )
       .service(
           web::resource("/locations/{id}")
@@ -920,7 +981,7 @@ pub fn locations_api_all( cfg: &mut web::ServiceConfig ) {
         )
       .service(
           web::resource("/locations/by_distance/{lat}/{lng}/{distance}")
-            .route(web::get().to(index))
+            .route(web::get().to(locations_by_distance_json))
         )
       .service(
           web::resource("/locations/{id}")
