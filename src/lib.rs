@@ -62,6 +62,30 @@ pub fn post_reply_create(
     Ok(uuid0)
 }
 
+pub fn posts_all ( conn: &SqliteConnection ) 
+    -> Result<Vec<models::Post>, diesel::result::Error> {
+
+    use crate::schema::posts::dsl::*;
+    let g0s = 
+        posts.filter(status.eq(0))
+            .order_by(created.desc())
+            .load( conn )?;
+    Ok(g0s)
+}
+
+pub fn posts_all_paginated ( n: i64, page: i64, conn: &SqliteConnection ) 
+    -> Result<Vec<models::Post>, diesel::result::Error> {
+
+    use crate::schema::posts::dsl::*;
+    let g0s = 
+        posts.filter(status.eq(0))
+            .order_by(created.desc())
+            .limit(n)
+            .offset(n*page)
+            .load( conn )?;
+    Ok(g0s)
+}
+
 pub fn posts_root ( n: i64, page: i64, conn: &SqliteConnection ) 
     -> Result<Vec<models::Post>, diesel::result::Error> {
 
@@ -85,6 +109,45 @@ pub fn post_replies ( pid0: i32, n: i64, page: i64, conn: &SqliteConnection )
             .limit(n)
             .offset(n*page)
             .load( conn )?;
+    Ok(g0s)
+}
+
+pub fn post_thread ( pid0: i32, max_depth: i64, conn: &SqliteConnection ) 
+    -> Result<Vec<models::Post>, diesel::result::Error> {
+
+    let g0s =
+        diesel::sql_query(format!("
+        WITH RECURSIVE
+          posts_in_thread(p,d) AS (
+            VALUES({},1)
+            UNION ALL
+            SELECT id, d + 1 FROM posts, posts_in_thread
+             WHERE posts.parent=posts_in_thread.p
+               AND d <= {}
+          )
+        SELECT posts.* FROM posts, posts_in_thread
+         WHERE posts.id = posts_in_thread.p
+        ", pid0, max_depth)).load(conn)?;
+
+    Ok(g0s)
+}
+
+pub fn post_thread_full ( pid0: i32, conn: &SqliteConnection ) 
+    -> Result<Vec<models::Post>, diesel::result::Error> {
+
+    let g0s =
+        diesel::sql_query(format!("
+        WITH RECURSIVE
+          posts_in_thread(p) AS (
+            VALUES({})
+            UNION ALL
+            SELECT id FROM posts, posts_in_thread
+             WHERE posts.parent=posts_in_thread.p
+          )
+        SELECT posts.* FROM posts, posts_in_thread
+         WHERE posts.id = posts_in_thread.p
+        ", pid0)).load(conn)?;
+
     Ok(g0s)
 }
 
@@ -213,6 +276,35 @@ pub async fn post_reply_create_json(
     }
 }
 
+pub async fn posts_all_default_json(
+    pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || posts_all(&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(posts))
+}
+
+pub async fn posts_all_json(
+    path: web::Path<(i64,i64)>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || posts_all_paginated(path.0,path.1,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(posts))
+}
+
 
 pub async fn posts_root_default_json(
     pool: web::Data<DbPool>
@@ -298,6 +390,64 @@ pub async fn posts_replies_json(
         Ok(HttpResponse::NotFound().finish())
     }
 }
+
+pub async fn posts_thread_default_json(
+    path: web::Path<i32>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || {
+        let parent = post_by_id(*path,&conn)?;
+        if parent.is_some() {
+            let replies = post_thread_full(*path,&conn)?;
+            Ok::<_,diesel::result::Error>(Some(replies))
+        }else{
+            Ok(None)
+
+        }
+    })
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+   
+    if let Some(posts) = posts {
+        Ok(HttpResponse::Ok().json(posts))
+    }else {
+        Ok(HttpResponse::NotFound().finish())
+    }
+}
+
+
+pub async fn posts_thread_json(
+    path: web::Path<(i32,i64)>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || {
+        let parent = post_by_id(path.0,&conn)?;
+        if parent.is_some() {
+            let replies = post_thread(path.0,path.1,&conn)?;
+            Ok::<_,diesel::result::Error>(Some(replies))
+        }else{
+            Ok(None)
+
+        }
+    })
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+   
+    if let Some(posts) = posts {
+        Ok(HttpResponse::Ok().json(posts))
+    }else {
+        Ok(HttpResponse::NotFound().finish())
+    }
+}
+
 
 pub async fn post_by_id_json(
      path: web::Path<i32>
@@ -499,10 +649,22 @@ pub fn min_api( cfg: &mut web::ServiceConfig ) {
           .route(web::get().to(posts_root_default_json))
           .route(web::post().to(post_create_json))
       )
+      .service(web::resource("/posts/all")
+          .route(web::get().to(posts_all_default_json))
+      )
+      .service(web::resource("/posts/all/{n}/{page}")
+          .route(web::get().to(posts_all_json))
+      )
       .service(web::resource("/posts/{id}")
           .route(web::get().to(post_by_id_json))
           .route(web::post().to(post_update_by_id_json))
         )
+      .service(web::resource("/posts/{id}/thread")
+          .route(web::get().to(posts_thread_default_json))
+      )
+      .service(web::resource("/posts/{id}/thread/{depth}")
+          .route(web::get().to(posts_thread_json))
+      )
       .service(web::resource("/posts/{id}/replies")
           .route(web::get().to(posts_replies_default_json))
           .route(web::post().to(post_reply_create_json))

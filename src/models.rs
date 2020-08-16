@@ -4,7 +4,8 @@ use crate::util::uuid_json;
 use serde::{Serialize,Deserialize};
 
 
-#[derive(Queryable,Identifiable,Serialize,Deserialize)]
+#[derive(Queryable,QueryableByName,Identifiable,Serialize,Deserialize)]
+#[table_name = "posts"]
 pub struct Post {
     pub id: i32,
     pub parent: Option<i32>,
