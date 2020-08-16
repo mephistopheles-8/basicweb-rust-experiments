@@ -16,6 +16,7 @@ use handlebars::Handlebars;
 use rand::Rng;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use chrono::NaiveDateTime;
 use uuid::Uuid;
 
 pub mod schema;
@@ -71,6 +72,34 @@ pub fn user_by_uuid(
         .first::<models::User>(conn)
         .optional()?;
     Ok(user)
+}
+
+pub fn user_update_name_by_uuid(
+    uuid0 : Uuid
+  , name0 : &str
+  , conn: &SqliteConnection 
+) -> Result<bool, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
+
+    let user = users
+        .filter(uuid.eq(uuid0.as_bytes().as_ref()));
+
+    let n = diesel::update(user).set(name.eq(name0)).execute(conn)?;
+    Ok(n > 0)
+}
+
+pub fn user_update_email_by_uuid(
+    uuid0 : Uuid
+  , email0 : &str
+  , conn: &SqliteConnection 
+) -> Result<bool, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
+
+    let user = users
+        .filter(uuid.eq(uuid0.as_bytes().as_ref()));
+
+    let n = diesel::update(user).set(email.eq(email0)).execute(conn)?;
+    Ok(n > 0)
 }
 
 pub fn user_update_password_by_uuid(
@@ -693,6 +722,149 @@ pub async fn user_update_password_json(
     }
 }
 
+#[derive(Serialize,Deserialize)]
+pub struct UserPublic {
+    pub name: String,
+    pub email: String,
+    pub uuid: Uuid,
+    pub permissions: i32,
+    pub created: NaiveDateTime, 
+    pub updated: NaiveDateTime, 
+}
+
+pub async fn user_by_login_json(
+    id: Identity
+  , pool: web::Data<DbPool>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(uuid) = id.identity() {
+        let uuid0 = Uuid::parse_str(&uuid)
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+        let user =
+          web::block(move || 
+            user_by_uuid(
+                uuid0, &conn
+              )
+            ).await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?.unwrap();
+
+        Ok(HttpResponse::Ok().json(UserPublic {
+            name : user.name
+          , email : user.email
+          , uuid : uuid0
+          , permissions : user.permissions
+          , created: user.created
+          , updated : user.updated
+        }))
+    }else{
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
+pub async fn user_name_by_login_json(
+    id: Identity
+  , pool: web::Data<DbPool>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(uuid) = id.identity() {
+        let uuid0 = Uuid::parse_str(&uuid)
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+        let user =
+          web::block(move || 
+            user_by_uuid(
+                uuid0, &conn
+              )
+            ).await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?.unwrap();
+
+        Ok(HttpResponse::Ok().json(user.name))
+    }else{
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
+pub async fn user_update_name_by_login_json(
+    id: Identity
+  , name : web::Json<String>
+  , pool: web::Data<DbPool>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(uuid) = id.identity() {
+        if name.len() > 0 {
+            let uuid0 = Uuid::parse_str(&uuid)
+                    .map_err(|e| {
+                        eprintln!("{}", e);
+                        HttpResponse::InternalServerError().finish()
+                    })?;
+
+            let _user =
+              web::block(move || 
+                user_update_name_by_uuid(
+                    uuid0, &name, &conn
+                  )
+                ).await
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+
+            user_name_by_login_json(id,pool).await
+        }else{
+            Ok(HttpResponse::BadRequest().finish())
+        }
+    }else{
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
+pub async fn user_email_by_login_json(
+    id: Identity
+  , pool: web::Data<DbPool>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(uuid) = id.identity() {
+        let uuid0 = Uuid::parse_str(&uuid)
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+        let user =
+          web::block(move || 
+            user_by_uuid(
+                uuid0, &conn
+              )
+            ).await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?.unwrap();
+
+        Ok(HttpResponse::Ok().json(user.email))
+    }else{
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
 pub async fn manage_account(id: Identity) -> String {
     format!(
         "Hello {}",
@@ -728,6 +900,17 @@ pub fn users_api_json( cfg: &mut web::ServiceConfig ) {
     .service(web::resource("/logout").to(logout_json))
     .service(web::resource("/login")
             .route(web::post().to(login_action_json))
+    )
+    .service(web::resource("/user")
+        .route(web::get().to(user_by_login_json))
+    )
+    .service(web::resource("/user/name")
+        .route(web::get().to(user_name_by_login_json))
+        .route(web::post().to(user_update_name_by_login_json))
+        .route(web::put().to(user_update_name_by_login_json))
+    )
+    .service(web::resource("/user/email")
+        .route(web::get().to(user_email_by_login_json))
     )
     .service(web::resource("/user/password")
         .route(web::post().to(user_update_password_json))
