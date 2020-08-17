@@ -692,17 +692,74 @@ pub async fn post_update_body_by_id_json(
     post_body_by_id_json(path,pool).await
 }
 
-pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+pub async fn index(
+    hb: web::Data<Handlebars<'_>>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse, actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || posts_root(64,0,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
     let data = json!({
         "title": "Welcome"
       , "parent" : "main"
+      , "posts" : posts
     });
     let body = hb.render("content/index", &data).unwrap();
 
-    HttpResponse::Ok().body(body)
+    Ok(HttpResponse::Ok().body(body))
 }
 
-pub fn min_api( cfg: &mut web::ServiceConfig ) {
+pub async fn post_thread_html(
+     path: web::Path<i32>
+   , hb: web::Data<Handlebars<'_>>
+   , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let id = *path;
+    let posts = web::block(move || {
+        let parent = post_by_id(id,&conn)?;
+        if parent.is_some() {
+            let replies = post_thread_full(id,&conn)?;
+            Ok::<_,diesel::result::Error>(Some(replies))
+        }else{
+            Ok(None)
+
+        }
+    }).await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+   
+    if let Some(posts) = posts {
+        let data = json!({
+            "title": "Thread"
+          , "parent" : "main"
+          , "data" : posts
+        });
+        let body = hb.render("content/thread", &data).unwrap();
+        Ok(HttpResponse::Ok().body(body))
+    }else {
+        Ok(HttpResponse::NotFound().finish())
+    }
+}
+
+pub fn api_html( cfg: &mut web::ServiceConfig ) {
+    cfg
+      .service(web::resource("/").route(web::get().to(index)))
+      .service(web::resource("/posts/{id}")
+          .route(web::get().to(post_thread_html))
+      )
+      ;
+}
+
+pub fn api_v1_json( cfg: &mut web::ServiceConfig ) {
     cfg
       .service(web::resource("/").route(web::get().to(index)))
       .service(web::resource("/posts")

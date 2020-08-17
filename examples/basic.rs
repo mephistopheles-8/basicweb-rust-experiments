@@ -13,7 +13,7 @@ use diesel::r2d2::{self, ConnectionManager};
 use handlebars::Handlebars;
 use actix_web::{middleware, web, App, HttpServer};
 
-use board::min_api;
+use board::{api_html,api_v1_json};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -47,7 +47,11 @@ async fn main() -> std::io::Result<()> {
             // logger (must be last)
             .wrap(middleware::Logger::default())
             // the gallery api
-            .configure(min_api)
+            .service( 
+                web::scope("/api/v1/")
+                    .configure(api_v1_json)
+            )
+            .configure(api_html)
             .service(fs::Files::new("/", "./static/root/"))
     })
     .bind("127.0.0.1:8080")?
