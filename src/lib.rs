@@ -113,7 +113,9 @@ pub fn post_replies ( pid0: i32, n: i64, page: i64, conn: &SqliteConnection )
 }
 
 pub fn post_thread ( pid0: i32, max_depth: i64, conn: &SqliteConnection ) 
-    -> Result<Vec<models::Post>, diesel::result::Error> {
+    -> Result<Option<models::PostTree>, diesel::result::Error> {
+
+    use models::PostTree;
 
     let g0s =
         diesel::sql_query(format!("
@@ -127,9 +129,37 @@ pub fn post_thread ( pid0: i32, max_depth: i64, conn: &SqliteConnection )
           )
         SELECT posts.* FROM posts, posts_in_thread
          WHERE posts.id = posts_in_thread.p
+         ORDER BY depth, created DESC
         ", pid0, max_depth)).load(conn)?;
+    
+    let mut g1s 
+        = g0s
+        .into_iter()
+        .map(|post| PostTree::from_post(post) )  
+        .collect::<Vec<PostTree>>();
 
-    Ok(g0s)
+    let mut p0 = None;
+
+    // TODO: Make sure this is correct...
+    // the ordering should make it so
+
+    while let Some(post) = g1s.pop() {
+        if post.id == pid0 {
+            p0 = Some(post);
+            break;
+        }else {
+            if let Some(pid1) = post.parent {
+                for i in 0..g1s.len() {
+                    if g1s[i].id == pid1 {
+                        g1s[i].replies.push(post);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(p0)
 }
 
 pub fn post_thread_full ( pid0: i32, conn: &SqliteConnection ) 
@@ -148,6 +178,7 @@ pub fn post_thread_full ( pid0: i32, conn: &SqliteConnection )
           )
         SELECT posts.* FROM posts, posts_in_thread
          WHERE posts.id = posts_in_thread.p
+         ORDER BY depth, created DESC
         ", pid0)).load(conn)?;
 
     let mut g1s 
