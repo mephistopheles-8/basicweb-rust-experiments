@@ -1,10 +1,24 @@
 table! {
-    items (id) {
+    tag_bindings (id) {
         id -> Integer,
-        name -> Text,
-        description -> Nullable<Text>,
-        uuid -> Binary,
+        kind -> Integer,
+        item_id -> Integer,
+        tag -> Integer,
         created -> Timestamp,
-        updated -> Timestamp,
     }
 }
+
+table! {
+    tags (id) {
+        id -> Integer,
+        name -> Text,
+        created -> Timestamp,
+    }
+}
+
+joinable!(tag_bindings -> tags (tag));
+
+allow_tables_to_appear_in_same_query!(
+    tag_bindings,
+    tags,
+);
