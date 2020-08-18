@@ -13,7 +13,6 @@ pub mod util;
 pub mod actions;
 pub mod routes;
 
-use routes::item::*;
 
 pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
@@ -28,6 +27,7 @@ pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
 pub fn min_api( cfg: &mut web::ServiceConfig ) {
     cfg
       .service(web::resource("/").route(web::get().to(index)))
+      /*
       .service(web::resource("/items")
           .route(web::get().to(items_all_json))
           .route(web::post().to(item_create_json))
@@ -44,6 +44,6 @@ pub fn min_api( cfg: &mut web::ServiceConfig ) {
           .route(web::get().to(item_description_by_id_json))
           .route(web::post().to(item_update_description_by_id_json))
           .route(web::delete().to(item_clear_description_by_id_json))
-        );
+        )*/;
 }
 
