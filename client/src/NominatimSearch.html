@@ -1,0 +1,46 @@
+<script>
+    import {search, reverse, lookup} from "./nominatim.js";
+    import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
+
+    let textElm;
+    let queryResult;
+
+    export let selected;
+
+    function handleQuery () {
+        let q = textElm.value;
+        queryResult 
+            = search({ q, format : "json" })
+            . then( res => res.json() ); 
+    }
+
+    function clearResult() {
+       queryResult = null; 
+    }
+
+    function selectItem( res ) {
+        selected = res;
+        textElm.value = res.display_name; 
+        dispatch("selected", res);
+        clearResult();
+    }
+</script>
+
+<input bind:this={textElm} on:change={clearResult} type="text" /><button on:click={handleQuery}>GO</button>
+{#if queryResult}
+{#await queryResult}
+<p>...</p>
+{:then results}
+<ul>
+    {#each results as res}
+    <li on:click={() => selectItem(res)}>
+        {res.display_name} 
+    </li>
+    {/each}
+</ul>
+{:catch err}
+<p>Query failed: {err.message}</p>
+{/await}
+{/if}

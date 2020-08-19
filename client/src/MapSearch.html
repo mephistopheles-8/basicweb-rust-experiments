@@ -1,0 +1,17 @@
+<script>
+    import NominatimSearch from "./NominatimSearch.html"
+    import Leaflet         from "./Leaflet.html"
+
+    let leaflet;
+
+    function mapSelected( evt ) {
+        let {lat,lon} = evt.detail;
+        let latlng = [lat,lon];
+        leaflet.clearMarkers();
+        leaflet.addMarker( latlng );
+        leaflet.zoomToLocation( latlng );
+    }
+</script>
+
+<NominatimSearch on:selected={mapSelected}/>
+<Leaflet mapType="OpenStreetMap" bind:this={leaflet} />

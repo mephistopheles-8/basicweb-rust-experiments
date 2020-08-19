@@ -1,0 +1,119 @@
+<script>
+    import { onMount } from 'svelte';
+    import Leaflet from "leaflet";
+
+    export const OpenStreetMap = "OpenStreetMap";
+    export const StamenToner   = "StamenToner";
+    export const NationalMap   = "NationalMap";
+
+    const L = Leaflet;
+
+    export let mapType = OpenStreetMap;
+
+    let mapElement;
+    let map;
+    let markers = [];
+
+    function openStreetMapSetup( map ) {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+    }
+
+    function stamenTonerSetup( map ) {
+        var attribution 
+            = `Map tiles by <a href="http://stamen.com">Stamen Design</a>, `
+            + `under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. `
+            + `Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, `
+            + `under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.`;
+
+        var tnmBasemapViewer = L.tileLayer(
+            'http://tile.stamen.com/toner/{z}/{x}/{y}.png', {
+                attribution: attribution
+                }).addTo(map);
+    }
+
+    function nationalMapSetup( map ) {
+       // Define the TNM Layers
+        var attribution 
+            = `<a href="https://www.doi.gov">U.S. Department of the Interior</a>` 
+            + `| <a href="https://www.usgs.gov">U.S. Geological Survey</a>`
+            + `| <a href="https://www.usgs.gov/laws/policies_notices.html">Policies</a>`;
+
+
+        var tnmBasemapViewer = L.tileLayer(
+            'https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 14,
+                attribution: attribution
+                });
+
+        var tnmBasemapNavigator = L.tileLayer(
+            'https://navigator.er.usgs.gov/tiles/tcr.cgi/{z}/{x}/{y}.png', {
+                maxZoom: 20,
+                attribution: attribution
+                });
+
+        // Add overlays
+        var highways = L.tileLayer.wms(
+            "https://services.nationalmap.gov/ArcGIS/services/transportation/MapServer/WMSServer?", {
+            layers: '6',
+            format: 'image/png',
+            transparent: true,
+        });
+
+        // Add baselayers and overlays to groups
+        var baseLayers = {
+            "The National Map (Viewer)" : tnmBasemapViewer,
+            "The National Map (Navigator)" : tnmBasemapNavigator
+        };
+        var overlays = {
+            "Highways": highways
+        };
+        var controlLayers = L.control.layers(baseLayers, overlays);
+
+        // Add the main baselayer to the map as a default (so it loads when the map
+        // is loaded
+        tnmBasemapViewer.addTo(map);
+
+        // Add the layer selector control to the map
+        controlLayers.addTo(map);
+
+    } // end [nationalMapSetup]
+
+
+    export function zoomToLocation( latlng, zoom = 14 ) {
+        map.setView(latlng, zoom)
+    }
+
+    export function addMarker( latlng, opts ) {
+        let marker = L.marker(latlng,opts).addTo(map);
+        markers.push( marker );
+    }
+
+    export function clearMarkers() {
+        markers.forEach((m) => map.removeLayer(m) );
+    }
+
+	onMount(() => {
+        map = L.map(mapElement).setView([35.513151077520035, -96.416015625], 3);
+        switch( mapType ) {
+        case OpenStreetMap:
+            openStreetMapSetup( map );
+            break;
+        case StamenToner:
+            stamenTonerSetup( map );
+            break;
+        case NationalMap:
+            nationalMapSetup( map );
+            break;
+        default: throw "[Leaflet.onMount] Unknown map type";
+        }
+	});
+</script>
+<style>
+.map-container {
+    height: 300px;
+}
+</style>
+
+<div class="map-container" bind:this={mapElement}></div>
