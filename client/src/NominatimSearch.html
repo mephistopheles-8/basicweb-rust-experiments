@@ -12,7 +12,11 @@
     function handleQuery () {
         let q = textElm.value;
         queryResult 
-            = search({ q, format : "json" })
+            = search({ q, 
+                format : "json"
+              , addressdetails : "1" 
+              , namedetails : "1" 
+             })
             . then( res => res.json() ); 
     }
 
@@ -28,7 +32,7 @@
     }
 </script>
 
-<input bind:this={textElm} on:change={clearResult} type="text" /><button on:click={handleQuery}>GO</button>
+<input bind:this={textElm} on:change={clearResult} on:change type="text"/><button on:click={handleQuery}>GO</button>
 {#if queryResult}
 {#await queryResult}
 <p>...</p>

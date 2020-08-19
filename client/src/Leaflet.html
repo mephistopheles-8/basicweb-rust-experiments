@@ -80,6 +80,29 @@
 
     } // end [nationalMapSetup]
 
+    export function getMap () {
+        return map;
+    }
+    
+    export function leaflet ( ) {
+        return L;
+    }
+    
+    export function icon ( opts ) {
+        return L.icon(opts);
+    }
+    
+    export function divIcon ( opts ) {
+        return L.divIcon(opts);
+    }
+    
+    export function getBounds() {
+        return map.getBounds();
+    }
+    
+    export function fitBounds( bounds, opts ) {
+        return map.fitBounds( bounds, opts );
+    }
 
     export function zoomToLocation( latlng, zoom = 14 ) {
         map.setView(latlng, zoom)

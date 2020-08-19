@@ -2,6 +2,8 @@
     import NominatimSearch from "./NominatimSearch.html"
     import Leaflet         from "./Leaflet.html"
 
+    export let mapType = "OpenStreetMap";
+
     let leaflet;
 
     function mapSelected( evt ) {
@@ -13,5 +15,5 @@
     }
 </script>
 
-<NominatimSearch on:selected={mapSelected}/>
-<Leaflet mapType="OpenStreetMap" bind:this={leaflet} />
+<NominatimSearch on:selected={mapSelected} on:selected on:change />
+<Leaflet mapType={mapType} bind:this={leaflet} />

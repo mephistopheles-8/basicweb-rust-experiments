@@ -12,7 +12,12 @@
     <div id="main"></div>
     <script src="js/basicweb_locations_client.js"></script>
     <script>
-        basicweb_locations_client.main( document.getElementById( "main" ) );
+       (() => {
+            const bwlc = basicweb_locations_client;
+            bwlc.iconDefaultImagePath("images/");
+            bwlc.locationCreate( document.getElementById( "main" ));
+
+       })();
     </script>
 </body>
 </html>

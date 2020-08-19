@@ -11,9 +11,21 @@ use actix_web::middleware::errhandlers::{ErrorHandlerResponse, ErrorHandlers};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use handlebars::Handlebars;
-use actix_web::{middleware, web, App, HttpServer};
+use actix_web::{middleware, web, App, HttpServer, HttpResponse};
 
 use locations::locations_api;
+
+
+async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+    let data = json!({
+        "title": "Welcome"
+      , "parent" : "main"
+    });
+    let body = hb.render("content/index", &data).unwrap();
+
+    HttpResponse::Ok().body(body)
+}
+
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -48,6 +60,10 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             // the location api
             .configure(locations_api)
+            .service(
+                web::resource("/")
+                  .route(web::get().to(index))
+            )
             .service(fs::Files::new("/", "./static/root/"))
     })
     .bind("127.0.0.1:8080")?

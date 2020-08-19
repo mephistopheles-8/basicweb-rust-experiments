@@ -976,6 +976,15 @@ var basicweb_locations_client = (function () {
           }
       };
   }
+  // TODO figure out if we still want to support
+  // shorthand events, or if we want to implement
+  // a real bubbling mechanism
+  function bubble(component, event) {
+      var callbacks = component.$$.callbacks[event.type];
+      if (callbacks) {
+          callbacks.slice().forEach(function (fn) { return fn(event); });
+      }
+  }
 
   var dirty_components = [];
   var binding_callbacks = [];
@@ -1297,7 +1306,7 @@ var basicweb_locations_client = (function () {
   	return child_ctx;
   }
 
-  // (32:0) {#if queryResult}
+  // (36:0) {#if queryResult}
   function create_if_block(ctx) {
   	var await_block_anchor;
   	var promise;
@@ -1345,7 +1354,7 @@ var basicweb_locations_client = (function () {
   	};
   }
 
-  // (43:0) {:catch err}
+  // (47:0) {:catch err}
   function create_catch_block(ctx) {
   	var p;
   	var t0;
@@ -1372,7 +1381,7 @@ var basicweb_locations_client = (function () {
   	};
   }
 
-  // (35:0) {:then results}
+  // (39:0) {:then results}
   function create_then_block(ctx) {
   	var ul;
   	var each_value = /*results*/ ctx[9];
@@ -1428,7 +1437,7 @@ var basicweb_locations_client = (function () {
   	};
   }
 
-  // (37:4) {#each results as res}
+  // (41:4) {#each results as res}
   function create_each_block(ctx) {
   	var li;
   	var t0_value = /*res*/ ctx[10].display_name + "";
@@ -1472,7 +1481,7 @@ var basicweb_locations_client = (function () {
   	};
   }
 
-  // (33:20)  <p>...</p> {:then results}
+  // (37:20)  <p>...</p> {:then results}
   function create_pending_block(ctx) {
   	var p;
 
@@ -1566,7 +1575,13 @@ var basicweb_locations_client = (function () {
 
   	function handleQuery() {
   		var q = textElm.value;
-  		$$invalidate(1, queryResult = search({ q: q, format: "json" }).then(function (res) { return res.json(); }));
+
+  		$$invalidate(1, queryResult = search({
+  			q: q,
+  			format: "json",
+  			addressdetails: "1",
+  			namedetails: "1"
+  		}).then(function (res) { return res.json(); }));
   	}
 
   	function clearResult() {
@@ -15718,14 +15733,14 @@ var basicweb_locations_client = (function () {
   		},
   		m: function m(target, anchor) {
   			insert(target, div, anchor);
-  			/*div_binding*/ ctx[8](div);
+  			/*div_binding*/ ctx[14](div);
   		},
   		p: noop$1,
   		i: noop$1,
   		o: noop$1,
   		d: function d(detaching) {
   			if (detaching) { detach(div); }
-  			/*div_binding*/ ctx[8](null);
+  			/*div_binding*/ ctx[14](null);
   		}
   	};
   }
@@ -15782,6 +15797,30 @@ var basicweb_locations_client = (function () {
   		controlLayers.addTo(map);
   	} // end [nationalMapSetup]
 
+  	function getMap() {
+  		return map;
+  	}
+
+  	function leaflet() {
+  		return L;
+  	}
+
+  	function icon(opts) {
+  		return L.icon(opts);
+  	}
+
+  	function divIcon(opts) {
+  		return L.divIcon(opts);
+  	}
+
+  	function getBounds() {
+  		return map.getBounds();
+  	}
+
+  	function fitBounds(bounds, opts) {
+  		return map.fitBounds(bounds, opts);
+  	}
+
   	function zoomToLocation(latlng, zoom) {
   		if ( zoom === void 0 ) zoom = 14;
 
@@ -15832,6 +15871,12 @@ var basicweb_locations_client = (function () {
   		StamenToner,
   		NationalMap,
   		mapType,
+  		getMap,
+  		leaflet,
+  		icon,
+  		divIcon,
+  		getBounds,
+  		fitBounds,
   		zoomToLocation,
   		addMarker,
   		clearMarkers,
@@ -15848,9 +15893,15 @@ var basicweb_locations_client = (function () {
   			StamenToner: 2,
   			NationalMap: 3,
   			mapType: 4,
-  			zoomToLocation: 5,
-  			addMarker: 6,
-  			clearMarkers: 7
+  			getMap: 5,
+  			leaflet: 6,
+  			icon: 7,
+  			divIcon: 8,
+  			getBounds: 9,
+  			fitBounds: 10,
+  			zoomToLocation: 11,
+  			addMarker: 12,
+  			clearMarkers: 13
   		});
   	}
 
@@ -15858,7 +15909,7 @@ var basicweb_locations_client = (function () {
   	Leaflet_1.prototype = Object.create( SvelteComponent && SvelteComponent.prototype );
   	Leaflet_1.prototype.constructor = Leaflet_1;
 
-  	var prototypeAccessors = { OpenStreetMap: { configurable: true },StamenToner: { configurable: true },NationalMap: { configurable: true },zoomToLocation: { configurable: true },addMarker: { configurable: true },clearMarkers: { configurable: true } };
+  	var prototypeAccessors = { OpenStreetMap: { configurable: true },StamenToner: { configurable: true },NationalMap: { configurable: true },getMap: { configurable: true },leaflet: { configurable: true },icon: { configurable: true },divIcon: { configurable: true },getBounds: { configurable: true },fitBounds: { configurable: true },zoomToLocation: { configurable: true },addMarker: { configurable: true },clearMarkers: { configurable: true } };
 
   	prototypeAccessors.OpenStreetMap.get = function () {
   		return this.$$.ctx[1];
@@ -15872,16 +15923,40 @@ var basicweb_locations_client = (function () {
   		return this.$$.ctx[3];
   	};
 
-  	prototypeAccessors.zoomToLocation.get = function () {
+  	prototypeAccessors.getMap.get = function () {
   		return this.$$.ctx[5];
   	};
 
-  	prototypeAccessors.addMarker.get = function () {
+  	prototypeAccessors.leaflet.get = function () {
   		return this.$$.ctx[6];
   	};
 
-  	prototypeAccessors.clearMarkers.get = function () {
+  	prototypeAccessors.icon.get = function () {
   		return this.$$.ctx[7];
+  	};
+
+  	prototypeAccessors.divIcon.get = function () {
+  		return this.$$.ctx[8];
+  	};
+
+  	prototypeAccessors.getBounds.get = function () {
+  		return this.$$.ctx[9];
+  	};
+
+  	prototypeAccessors.fitBounds.get = function () {
+  		return this.$$.ctx[10];
+  	};
+
+  	prototypeAccessors.zoomToLocation.get = function () {
+  		return this.$$.ctx[11];
+  	};
+
+  	prototypeAccessors.addMarker.get = function () {
+  		return this.$$.ctx[12];
+  	};
+
+  	prototypeAccessors.clearMarkers.get = function () {
+  		return this.$$.ctx[13];
   	};
 
   	Object.defineProperties( Leaflet_1.prototype, prototypeAccessors );
@@ -15897,10 +15972,11 @@ var basicweb_locations_client = (function () {
   	var leaflet_1;
   	var current;
   	nominatimsearch = new NominatimSearch({});
-  	nominatimsearch.$on("selected", /*mapSelected*/ ctx[1]);
-  	var leaflet_1_props = { mapType: "OpenStreetMap" };
+  	nominatimsearch.$on("selected", /*mapSelected*/ ctx[2]);
+  	nominatimsearch.$on("selected", /*selected_handler*/ ctx[3]);
+  	var leaflet_1_props = { mapType: /*mapType*/ ctx[0] };
   	leaflet_1 = new Leaflet_1({ props: leaflet_1_props });
-  	/*leaflet_1_binding*/ ctx[2](leaflet_1);
+  	/*leaflet_1_binding*/ ctx[4](leaflet_1);
 
   	return {
   		c: function c() {
@@ -15918,6 +15994,7 @@ var basicweb_locations_client = (function () {
   			var dirty = ref[0];
 
   			var leaflet_1_changes = {};
+  			if (dirty & /*mapType*/ 1) { leaflet_1_changes.mapType = /*mapType*/ ctx[0]; }
   			leaflet_1.$set(leaflet_1_changes);
   		},
   		i: function i(local) {
@@ -15934,13 +16011,14 @@ var basicweb_locations_client = (function () {
   		d: function d(detaching) {
   			destroy_component(nominatimsearch, detaching);
   			if (detaching) { detach(t); }
-  			/*leaflet_1_binding*/ ctx[2](null);
+  			/*leaflet_1_binding*/ ctx[4](null);
   			destroy_component(leaflet_1, detaching);
   		}
   	};
   }
 
   function instance$2($$self, $$props, $$invalidate) {
+  	var mapType = $$props.mapType; if ( mapType === void 0 ) mapType = "OpenStreetMap";
   	var leaflet;
 
   	function mapSelected(evt) {
@@ -15953,20 +16031,28 @@ var basicweb_locations_client = (function () {
   		leaflet.zoomToLocation(latlng);
   	}
 
+  	function selected_handler(event) {
+  		bubble($$self, event);
+  	}
+
   	function leaflet_1_binding($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
   			leaflet = $$value;
-  			$$invalidate(0, leaflet);
+  			$$invalidate(1, leaflet);
   		});
   	}
 
-  	return [leaflet, mapSelected, leaflet_1_binding];
+  	$$self.$$set = function ($$props) {
+  		if ("mapType" in $$props) { $$invalidate(0, mapType = $$props.mapType); }
+  	};
+
+  	return [mapType, leaflet, mapSelected, selected_handler, leaflet_1_binding];
   }
 
   var MapSearch = /*@__PURE__*/(function (SvelteComponent) {
   	function MapSearch(options) {
   		SvelteComponent.call(this);
-  		init(this, options, instance$2, create_fragment$2, safe_not_equal, {});
+  		init(this, options, instance$2, create_fragment$2, safe_not_equal, { mapType: 0 });
   	}
 
   	if ( SvelteComponent ) MapSearch.__proto__ = SvelteComponent;
@@ -15976,9 +16062,483 @@ var basicweb_locations_client = (function () {
   	return MapSearch;
   }(SvelteComponent));
 
+  /* src/MapListing.html generated by Svelte v3.24.1 */
+
+  function create_fragment$3(ctx) {
+  	var leaflet_1;
+  	var current;
+  	var leaflet_1_props = { mapType: /*mapType*/ ctx[0] };
+  	leaflet_1 = new Leaflet_1({ props: leaflet_1_props });
+  	/*leaflet_1_binding*/ ctx[5](leaflet_1);
+
+  	return {
+  		c: function c() {
+  			create_component(leaflet_1.$$.fragment);
+  		},
+  		m: function m(target, anchor) {
+  			mount_component(leaflet_1, target, anchor);
+  			current = true;
+  		},
+  		p: function p(ctx, ref) {
+  			var dirty = ref[0];
+
+  			var leaflet_1_changes = {};
+  			if (dirty & /*mapType*/ 1) { leaflet_1_changes.mapType = /*mapType*/ ctx[0]; }
+  			leaflet_1.$set(leaflet_1_changes);
+  		},
+  		i: function i(local) {
+  			if (current) { return; }
+  			transition_in(leaflet_1.$$.fragment, local);
+  			current = true;
+  		},
+  		o: function o(local) {
+  			transition_out(leaflet_1.$$.fragment, local);
+  			current = false;
+  		},
+  		d: function d(detaching) {
+  			/*leaflet_1_binding*/ ctx[5](null);
+  			destroy_component(leaflet_1, detaching);
+  		}
+  	};
+  }
+
+  function instance$3($$self, $$props, $$invalidate) {
+  	var locations = $$props.locations; if ( locations === void 0 ) locations = [];
+  	var mapType = $$props.mapType; if ( mapType === void 0 ) mapType = "OpenStreetMap";
+  	var leaflet;
+  	
+
+  	function setLocations(locs) {
+  		$$invalidate(2, locations = locs);
+  	}
+
+  	function addLocation(loc) {
+  		var bounds = leaflet.getBounds();
+  		var latlng = [loc.lat, loc.lng];
+  		bounds.extend(latlng);
+  		leaflet.addMarker(latlng);
+  		leaflet.fitBounds(bounds);
+  	}
+
+  	function leaflet_1_binding($$value) {
+  		binding_callbacks[$$value ? "unshift" : "push"](function () {
+  			leaflet = $$value;
+  			$$invalidate(1, leaflet);
+  		});
+  	}
+
+  	$$self.$$set = function ($$props) {
+  		if ("locations" in $$props) { $$invalidate(2, locations = $$props.locations); }
+  		if ("mapType" in $$props) { $$invalidate(0, mapType = $$props.mapType); }
+  	};
+
+  	$$self.$$.update = function () {
+  		if ($$self.$$.dirty & /*leaflet, locations*/ 6) {
+  			 {
+  				if (leaflet) {
+  					leaflet.clearMarkers();
+
+  					var bounds = locations.map(function (loc) {
+  						var latlng = [loc.lat, loc.lng];
+  						leaflet.addMarker(latlng, loc.marker);
+  						return latlng;
+  					});
+
+  					if (bounds.length) { leaflet.fitBounds(bounds, { padding: [50, 50] }); }
+  				}
+  			}
+  		}
+  	};
+
+  	return [mapType, leaflet, locations, setLocations, addLocation, leaflet_1_binding];
+  }
+
+  var MapListing = /*@__PURE__*/(function (SvelteComponent) {
+  	function MapListing(options) {
+  		SvelteComponent.call(this);
+
+  		init(this, options, instance$3, create_fragment$3, safe_not_equal, {
+  			locations: 2,
+  			mapType: 0,
+  			setLocations: 3,
+  			addLocation: 4
+  		});
+  	}
+
+  	if ( SvelteComponent ) MapListing.__proto__ = SvelteComponent;
+  	MapListing.prototype = Object.create( SvelteComponent && SvelteComponent.prototype );
+  	MapListing.prototype.constructor = MapListing;
+
+  	var prototypeAccessors = { setLocations: { configurable: true },addLocation: { configurable: true } };
+
+  	prototypeAccessors.setLocations.get = function () {
+  		return this.$$.ctx[3];
+  	};
+
+  	prototypeAccessors.addLocation.get = function () {
+  		return this.$$.ctx[4];
+  	};
+
+  	Object.defineProperties( MapListing.prototype, prototypeAccessors );
+
+  	return MapListing;
+  }(SvelteComponent));
+
+  /* src/LocationCreate.html generated by Svelte v3.24.1 */
+
+  function create_else_block(ctx) {
+  	var await_block_anchor;
+  	var promise;
+
+  	var info = {
+  		ctx: ctx,
+  		current: null,
+  		token: null,
+  		pending: create_pending_block$1,
+  		then: create_then_block$1,
+  		catch: create_catch_block$1,
+  		value: 6,
+  		error: 7
+  	};
+
+  	handle_promise(promise = /*result*/ ctx[2], info);
+
+  	return {
+  		c: function c() {
+  			await_block_anchor = empty();
+  			info.block.c();
+  		},
+  		m: function m(target, anchor) {
+  			insert(target, await_block_anchor, anchor);
+  			info.block.m(target, info.anchor = anchor);
+  			info.mount = function () { return await_block_anchor.parentNode; };
+  			info.anchor = await_block_anchor;
+  		},
+  		p: function p(new_ctx, dirty) {
+  			ctx = new_ctx;
+  			info.ctx = ctx;
+
+  			if (dirty & /*result*/ 4 && promise !== (promise = /*result*/ ctx[2]) && handle_promise(promise, info)) ; else {
+  				var child_ctx = ctx.slice();
+  				child_ctx[6] = info.resolved;
+  				info.block.p(child_ctx, dirty);
+  			}
+  		},
+  		i: noop$1,
+  		o: noop$1,
+  		d: function d(detaching) {
+  			if (detaching) { detach(await_block_anchor); }
+  			info.block.d(detaching);
+  			info.token = null;
+  			info = null;
+  		}
+  	};
+  }
+
+  // (75:0) {#if !submitted}
+  function create_if_block$1(ctx) {
+  	var mapsearch;
+  	var t0;
+  	var button;
+  	var t1;
+  	var button_disabled_value;
+  	var current;
+  	var mounted;
+  	var dispose;
+  	mapsearch = new MapSearch({});
+  	mapsearch.$on("selected", /*mapSelected*/ ctx[3]);
+
+  	return {
+  		c: function c() {
+  			create_component(mapsearch.$$.fragment);
+  			t0 = space();
+  			button = element("button");
+  			t1 = text("Add Location");
+  			button.disabled = button_disabled_value = !/*selectedLocation*/ ctx[1];
+  		},
+  		m: function m(target, anchor) {
+  			mount_component(mapsearch, target, anchor);
+  			insert(target, t0, anchor);
+  			insert(target, button, anchor);
+  			append(button, t1);
+  			current = true;
+
+  			if (!mounted) {
+  				dispose = listen(button, "click", /*submitLocation*/ ctx[4]);
+  				mounted = true;
+  			}
+  		},
+  		p: function p(ctx, dirty) {
+  			if (!current || dirty & /*selectedLocation*/ 2 && button_disabled_value !== (button_disabled_value = !/*selectedLocation*/ ctx[1])) {
+  				button.disabled = button_disabled_value;
+  			}
+  		},
+  		i: function i(local) {
+  			if (current) { return; }
+  			transition_in(mapsearch.$$.fragment, local);
+  			current = true;
+  		},
+  		o: function o(local) {
+  			transition_out(mapsearch.$$.fragment, local);
+  			current = false;
+  		},
+  		d: function d(detaching) {
+  			destroy_component(mapsearch, detaching);
+  			if (detaching) { detach(t0); }
+  			if (detaching) { detach(button); }
+  			mounted = false;
+  			dispose();
+  		}
+  	};
+  }
+
+  // (84:0) {:catch err}
+  function create_catch_block$1(ctx) {
+  	var p;
+  	var t0;
+  	var t1_value = /*err*/ ctx[7].message + "";
+  	var t1;
+
+  	return {
+  		c: function c() {
+  			p = element("p");
+  			t0 = text("An error occured: ");
+  			t1 = text(t1_value);
+  		},
+  		m: function m(target, anchor) {
+  			insert(target, p, anchor);
+  			append(p, t0);
+  			append(p, t1);
+  		},
+  		p: function p(ctx, dirty) {
+  			if (dirty & /*result*/ 4 && t1_value !== (t1_value = /*err*/ ctx[7].message + "")) { set_data(t1, t1_value); }
+  		},
+  		d: function d(detaching) {
+  			if (detaching) { detach(p); }
+  		}
+  	};
+  }
+
+  // (81:0) {:then res}
+  function create_then_block$1(ctx) {
+  	var p;
+  	var t1;
+  	var button;
+  	var mounted;
+  	var dispose;
+
+  	return {
+  		c: function c() {
+  			p = element("p");
+  			p.textContent = "The location has been added!";
+  			t1 = space();
+  			button = element("button");
+  			button.textContent = "Add Another Location";
+  		},
+  		m: function m(target, anchor) {
+  			insert(target, p, anchor);
+  			insert(target, t1, anchor);
+  			insert(target, button, anchor);
+
+  			if (!mounted) {
+  				dispose = listen(button, "click", /*reset*/ ctx[5]);
+  				mounted = true;
+  			}
+  		},
+  		p: noop$1,
+  		d: function d(detaching) {
+  			if (detaching) { detach(p); }
+  			if (detaching) { detach(t1); }
+  			if (detaching) { detach(button); }
+  			mounted = false;
+  			dispose();
+  		}
+  	};
+  }
+
+  // (79:15)  <p>Submitting request..</p> {:then res}
+  function create_pending_block$1(ctx) {
+  	var p;
+
+  	return {
+  		c: function c() {
+  			p = element("p");
+  			p.textContent = "Submitting request..";
+  		},
+  		m: function m(target, anchor) {
+  			insert(target, p, anchor);
+  		},
+  		p: noop$1,
+  		d: function d(detaching) {
+  			if (detaching) { detach(p); }
+  		}
+  	};
+  }
+
+  function create_fragment$4(ctx) {
+  	var current_block_type_index;
+  	var if_block;
+  	var if_block_anchor;
+  	var current;
+  	var if_block_creators = [create_if_block$1, create_else_block];
+  	var if_blocks = [];
+
+  	function select_block_type(ctx, dirty) {
+  		if (!/*submitted*/ ctx[0]) { return 0; }
+  		return 1;
+  	}
+
+  	current_block_type_index = select_block_type(ctx);
+  	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+
+  	return {
+  		c: function c() {
+  			if_block.c();
+  			if_block_anchor = empty();
+  		},
+  		m: function m(target, anchor) {
+  			if_blocks[current_block_type_index].m(target, anchor);
+  			insert(target, if_block_anchor, anchor);
+  			current = true;
+  		},
+  		p: function p(ctx, ref) {
+  			var dirty = ref[0];
+
+  			var previous_block_index = current_block_type_index;
+  			current_block_type_index = select_block_type(ctx);
+
+  			if (current_block_type_index === previous_block_index) {
+  				if_blocks[current_block_type_index].p(ctx, dirty);
+  			} else {
+  				group_outros();
+
+  				transition_out(if_blocks[previous_block_index], 1, 1, function () {
+  					if_blocks[previous_block_index] = null;
+  				});
+
+  				check_outros();
+  				if_block = if_blocks[current_block_type_index];
+
+  				if (!if_block) {
+  					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+  					if_block.c();
+  				}
+
+  				transition_in(if_block, 1);
+  				if_block.m(if_block_anchor.parentNode, if_block_anchor);
+  			}
+  		},
+  		i: function i(local) {
+  			if (current) { return; }
+  			transition_in(if_block);
+  			current = true;
+  		},
+  		o: function o(local) {
+  			transition_out(if_block);
+  			current = false;
+  		},
+  		d: function d(detaching) {
+  			if_blocks[current_block_type_index].d(detaching);
+  			if (detaching) { detach(if_block_anchor); }
+  		}
+  	};
+  }
+
+  function instance$4($$self, $$props, $$invalidate) {
+  	var submitted = false;
+  	var selectedLocation;
+  	var result;
+
+  	function mapSelected(evt) {
+  		$$invalidate(1, selectedLocation = evt.detail);
+  	}
+
+  	function submitLocation() {
+  		var loc = selectedLocation;
+  		var lat = loc.lat;
+  		var lng = loc.lon;
+
+  		var name = loc.namedetails && loc.namedetails.name
+  		? loc.namedetails.name
+  		: loc.display_name;
+
+  		var address = loc.address && loc.address.house_number && loc.address.road
+  		? ((loc.address.house_number) + " " + (loc.address.road))
+  		: null;
+
+  		var city = loc.address && loc.address.city
+  		? loc.address.city
+  		: null;
+
+  		var region = loc.address && loc.address.state
+  		? loc.address.state
+  		: null;
+
+  		var postal = loc.address && loc.address.postcode
+  		? loc.address.postcode
+  		: null;
+
+  		var country = loc.address && loc.address.country
+  		? loc.address.country
+  		: null;
+
+  		$$invalidate(2, result = fetch("http://localhost:8080/locations/create", {
+  			method: "POST",
+  			headers: { "Content-Type": "application/json" },
+  			credentials: "same-origin",
+  			body: JSON.stringify({
+  				name: name,
+  				address: address,
+  				city: city,
+  				region: region,
+  				postal: postal,
+  				country: country,
+  				lat: lat,
+  				lng: lng
+  			})
+  		}).then(function (res) { return res.json(); }));
+  	}
+
+  	function reset() {
+  		$$invalidate(1, selectedLocation = null);
+  		$$invalidate(2, result = null);
+  		$$invalidate(0, submitted = false);
+  	}
+
+  	return [submitted, selectedLocation, result, mapSelected, submitLocation, reset];
+  }
+
+  var LocationCreate = /*@__PURE__*/(function (SvelteComponent) {
+  	function LocationCreate(options) {
+  		SvelteComponent.call(this);
+  		init(this, options, instance$4, create_fragment$4, safe_not_equal, {});
+  	}
+
+  	if ( SvelteComponent ) LocationCreate.__proto__ = SvelteComponent;
+  	LocationCreate.prototype = Object.create( SvelteComponent && SvelteComponent.prototype );
+  	LocationCreate.prototype.constructor = LocationCreate;
+
+  	return LocationCreate;
+  }(SvelteComponent));
+
+  var L$1 = leafletSrc;
+
   var main = {
-      main: function main( target, props ){ 
+      L: L$1,
+      icon: function icon( opts ) {
+          return L$1.icon( opts );
+      },
+      iconDefaultImagePath: function iconDefaultImagePath( str ) {
+          return L$1.Icon.Default.prototype.options.imagePath = str;
+      },
+      mapSearch: function mapSearch( target, props ){ 
           return  new MapSearch({target: target,props: props}); 
+      },
+      mapListing: function mapListing( target, props ){ 
+          return  new MapListing({target: target,props: props}); 
+      },
+      locationCreate: function locationCreate( target, props ){ 
+          return  new LocationCreate({target: target,props: props}); 
       }
   };
 

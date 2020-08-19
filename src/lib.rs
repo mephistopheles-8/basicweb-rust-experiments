@@ -845,12 +845,38 @@ pub async fn locations_by_distance_json(
     Ok(HttpResponse::Ok().json(locations))
 }
 
-pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+pub async fn location_create_form(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
-        "title": "Welcome"
+        "title": "Add A Location"
       , "parent" : "main"
     });
-    let body = hb.render("content/index", &data).unwrap();
+    let body = hb.render("content/location-create", &data).unwrap();
+
+    HttpResponse::Ok().body(body)
+}
+
+pub async fn location_show_all_html(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+    let data = json!({
+        "title": "Locations"
+      , "parent" : "main"
+      , "json_url" : "http://localhost:8080/locations"
+    });
+    let body = hb.render("content/location-show", &data).unwrap();
+
+    HttpResponse::Ok().body(body)
+}
+
+pub async fn location_show_html(
+     path: web::Path<i32>
+   , hb: web::Data<Handlebars<'_>>
+) -> HttpResponse {
+    // FIXME: 404, etc.
+    let data = json!({
+        "title": "Locations"
+      , "parent" : "main"
+      , "json_url" : format!("http://localhost:8080/locations/{}", *path)
+    });
+    let body = hb.render("content/location-show", &data).unwrap();
 
     HttpResponse::Ok().body(body)
 }
@@ -978,7 +1004,16 @@ pub fn locations_api_all( cfg: &mut web::ServiceConfig ) {
             .route(web::get().to(locations_listing_json))
         )
       .service(
+          web::resource("/locations/show")
+            .route(web::get().to(location_show_all_html))
+        )
+      .service(
+          web::resource("/locations/show/{location}")
+            .route(web::get().to(location_show_html))
+        )
+      .service(
           web::resource("/locations/create")
+            .route(web::get().to(location_create_form))
             .route(web::post().to(location_create_json))
         )
       .service(
