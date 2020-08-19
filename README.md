@@ -1,7 +1,3 @@
-# svelte-v3-buble-template
+# svelte-stripe
 
-A template for JS projects that use:
-
-- svelte
-- buble
-- rollup
+Utilities for Stripe in svelte

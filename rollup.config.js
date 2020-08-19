@@ -8,7 +8,7 @@ import polyfill from 'rollup-plugin-polyfill'
 import { terser } from 'rollup-plugin-terser';
 
 const prod = process.env.TARGET === "min";
-const project = "svelte_v3_buble_template";
+const project = "svelte_stripe";
 const author  = "M. Bellaire";
 const year    = "2020";
 const banner=

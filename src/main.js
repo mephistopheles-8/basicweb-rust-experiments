@@ -1,5 +1,5 @@
-import HelloWorld from "./HelloWorld.html"
+import CreditCardForm from "./CreditCardForm.html"
 
 export default {
-    main( target, props ){ return  new HelloWorld({target,props}); }
+    creditCardForm( target, props ){ return  new CreditCardForm({target,props}); }
 }
