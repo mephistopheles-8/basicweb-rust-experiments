@@ -42,6 +42,14 @@ pub struct Gallery {
     pub updated: NaiveDateTime, 
 }
 
+#[derive(AsChangeset,Serialize,Deserialize)]
+#[table_name = "galleries"]
+pub struct GalleryPost {
+    pub kind: i32,
+    pub name: String,
+    pub description: String,
+}
+
 #[derive(Insertable)]
 #[table_name = "galleries"]
 pub struct NewGallery<'a> {
@@ -64,6 +72,14 @@ pub struct GalleryItem {
     pub uuid: Vec<u8>,
     pub created: NaiveDateTime, 
     pub updated: NaiveDateTime, 
+}
+
+#[derive(AsChangeset,Serialize,Deserialize)]
+#[table_name = "gallery_items"]
+pub struct GalleryItemPost {
+    pub name : String,
+    pub description : String,
+    pub kind : i32,
 }
 
 #[derive(Insertable)]
