@@ -9,7 +9,6 @@
     "build:install": "TARGET=install rollup -c && cp ./node_modules/leaflet/dist/leaflet.css ../static/root/css"
   },
   "author": "M. Bellaire",
-  "license": "ISC",
   "devDependencies": {
     "@rollup/plugin-buble": "^0.21.1",
     "@rollup/plugin-commonjs": "^11.0.2",
