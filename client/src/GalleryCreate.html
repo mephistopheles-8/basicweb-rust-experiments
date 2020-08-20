@@ -4,6 +4,10 @@
     let items = [];
     let galleryResult = Promise.resolve(true);
 
+    const Loading = 0;
+    const Success = 1;
+    const Error   = 2;
+
     const galleryInfo = {
         kind : 0
       , name : ""
@@ -59,7 +63,12 @@
     function addItem() {
         if( itemIsValid(itemInfo) ) {
 
-            const requestData = { loaded : 0, total : 0 };
+            const requestData = { 
+                status: Loading
+              , loaded : 0
+              , total : 0
+              , response: ""
+            };
 
             let data = new FormData();
             let request = new XMLHttpRequest();
@@ -83,8 +92,25 @@
             });
             
             request.addEventListener("load", (e) => {
-                console.log(request.status); // FIXME: do something
+                if( request.status == 200 ||
+                    request.status == 201 ) 
+                    requestData.status = Success;
+                else
+                    requestData.status = Error;
+                
+                
+                // Ensure refresh
+                items = items;
+
             });
+            
+            request.addEventListener("readystatechange", (e) => {
+                if( request.readyState === 4 && request.response.length )
+                    requestData.response = JSON.parse(request.response); 
+                // Ensure refresh
+                items = items;
+            });
+
             request.send(data);
 
             items.push({ 
@@ -124,11 +150,17 @@
         <legend>Gallery Items</legend>
         <ul>
         {#each items as item}
-            <li>{item.name} 
+            <li>{item.name}
+                {#if item.file.status === Success}
+                <span class="success">Success</span>
+                {:else if item.file.status === Error}
+                <span class="error">Upload Failed: {item.file.response}</span>
+                {:else}
                 {#if item.file.total > 0}
                 <progress max={item.file.total} value={item.file.loaded}></progress>
                 {:else}
                 <progress></progress>
+                {/if}
                 {/if}
             </li>
         {/each}
