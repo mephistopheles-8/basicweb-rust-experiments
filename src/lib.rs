@@ -476,9 +476,9 @@ pub async fn gallery_item_multipart(
             let data = chunk.unwrap();
             f.write_all(&data).await?;
         }
-
+        f.flush().await?;
         // use web::block to offload blocking Diesel code without blocking server thread
-        let _uuid = web::block(move || { 
+        let _uuid = web::block(move || {
             let p0: &Path = Path::new(&filepath);
             let mime = tree_magic::from_filepath(p0);
             gallery_item_resource_create_uuid(&item.name, &item.description, (item.kind,0), &filepath, &mime, *path, &conn)
