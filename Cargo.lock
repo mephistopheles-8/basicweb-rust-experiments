@@ -973,15 +973,14 @@ dependencies = [
  "actix-rt",
  "actix-web",
  "async-std",
+ "bytes",
  "chrono",
  "diesel",
  "dotenv",
  "env_logger",
  "futures",
  "handlebars",
- "mime_guess",
  "r2d2",
- "sanitize-filename",
  "serde",
  "serde_json",
  "tree_magic",
@@ -1770,16 +1769,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
-]
-
-[[package]]
-name = "sanitize-filename"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23fd0fec94ec480abfd86bb8f4f6c57e0efb36dac5c852add176ea7b04c74801"
-dependencies = [
- "lazy_static",
- "regex",
 ]
 
 [[package]]
