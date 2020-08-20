@@ -28,6 +28,7 @@ pub type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 // https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
 const EMAIL_REGEXP : &str  = r"^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
 
+diesel_infix_operator!(BitOr, " | ", diesel::sql_types::Integer);
 
 #[derive(Serialize, Deserialize)]
 pub struct LoginParams {
@@ -155,10 +156,12 @@ pub fn user_verify_by_uuid(
             if code0 == code1 {
                 let user = users
                     .filter(uuid.eq(uuid0.as_bytes().as_ref()));
-                
-                // TODO: Fix race-condition
 
-                diesel::update(user).set(permissions.eq(u0.permissions | 1)).execute(conn)?;
+                // TODO: cleanup
+
+                let one  = 1.into_sql::<diesel::sql_types::Integer>();
+
+                diesel::update(user).set(permissions.eq(BitOr::new(permissions,one))).execute(conn)?;
                 Ok(true)
             }else{
                 Ok(false)
