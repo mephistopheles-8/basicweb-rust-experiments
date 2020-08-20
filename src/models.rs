@@ -99,6 +99,7 @@ pub struct Resource {
     pub id: i32,
     pub filepath: String,
     pub kind: i32,
+    pub mime: String,
     #[serde(serialize_with="uuid_serialize",deserialize_with="uuid_deserialize")]
     pub uuid: Vec<u8>,
     pub created: NaiveDateTime, 
@@ -110,6 +111,7 @@ pub struct Resource {
 pub struct NewResource<'a> {
     pub filepath: &'a str,
     pub kind: i32,
+    pub mime: &'a str,
     pub uuid: &'a [u8],
 }
 

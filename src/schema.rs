@@ -29,6 +29,7 @@ table! {
         id -> Integer,
         filepath -> Text,
         kind -> Integer,
+        mime -> Text,
         uuid -> Binary,
         created -> Timestamp,
         updated -> Timestamp,

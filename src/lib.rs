@@ -11,6 +11,7 @@ use futures::{StreamExt, TryStreamExt};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use uuid::Uuid;
+use std::path::Path;
 
 pub mod schema;
 pub mod models;
@@ -210,6 +211,7 @@ pub fn gallery_item_create(
 
 fn resource_create ( 
       filepath0: &str
+    , mime0: &str
     , kind0: i32
     , conn: &SqliteConnection 
   ) -> Result<Uuid, diesel::result::Error> {
@@ -221,6 +223,7 @@ fn resource_create (
    let new_resource = models::NewResource {
         filepath : filepath0
       , kind : kind0
+      , mime : mime0
       , uuid : uuid0.as_bytes()
    };
 
@@ -234,6 +237,7 @@ pub fn gallery_item_resource_create_id(
     , description0: &str
     , kinds: (i32,i32)
     , filepath0 : &str 
+    , mime0 : &str 
     , gallery0: i32
     , conn: &SqliteConnection 
   ) -> Result<(Uuid,Uuid), diesel::result::Error> {
@@ -241,7 +245,7 @@ pub fn gallery_item_resource_create_id(
    use crate::schema::resources::dsl::*;
 
    conn.transaction(|| {
-        let res_uuid = resource_create(filepath0,kinds.0,conn)?;
+        let res_uuid = resource_create(filepath0,mime0,kinds.0,conn)?;
     
         let res = resources
                   .filter(uuid.eq(res_uuid.as_bytes().as_ref()))
@@ -258,6 +262,7 @@ pub fn gallery_item_resource_create_uuid(
     , description0: &str
     , kinds: (i32,i32)
     , filepath0 : &str 
+    , mime0 : &str 
     , gallery0: Uuid
     , conn: &SqliteConnection 
   ) -> Result<(Uuid,Uuid), diesel::result::Error> {
@@ -265,7 +270,7 @@ pub fn gallery_item_resource_create_uuid(
    use crate::schema::resources::dsl::*;
 
    conn.transaction(|| {
-        let res_uuid = resource_create(filepath0,kinds.0,conn)?;
+        let res_uuid = resource_create(filepath0,mime0,kinds.0,conn)?;
     
         let res = resources
                   .filter(uuid.eq(res_uuid.as_bytes().as_ref()))
@@ -456,10 +461,14 @@ pub async fn gallery_item_multipart(
         let content_type = field
             .content_disposition()
             .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
-        let filename = content_type
+        let _filename = content_type
             .get_filename()
             .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
-        let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
+
+        let resid = Uuid::new_v4();
+        let mut resid_buf = [b'!'; 40];
+
+        let filepath = format!("./tmp/{}", resid.to_hyphenated().encode_lower(&mut resid_buf));
         let mut f = async_std::fs::File::create(&filepath).await?;
 
         // Field in turn is stream of *Bytes* object
@@ -469,8 +478,11 @@ pub async fn gallery_item_multipart(
         }
 
         // use web::block to offload blocking Diesel code without blocking server thread
-        let _uuid = web::block(move || 
-            gallery_item_resource_create_uuid(&item.name, &item.description, (item.kind,0), &filepath, *path, &conn))
+        let _uuid = web::block(move || { 
+            let p0: &Path = Path::new(&filepath);
+            let mime = tree_magic::from_filepath(p0);
+            gallery_item_resource_create_uuid(&item.name, &item.description, (item.kind,0), &filepath, &mime, *path, &conn)
+        })
             .await
             .map_err(|e| {
                 eprintln!("{}", e);
