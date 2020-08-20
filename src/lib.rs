@@ -12,6 +12,8 @@ use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use uuid::Uuid;
 use std::path::Path;
+use bytes::{BytesMut,BufMut};
+use serde::{Serialize,Deserialize};
 
 pub mod schema;
 pub mod models;
@@ -245,13 +247,13 @@ pub fn gallery_item_resource_create_id(
    use crate::schema::resources::dsl::*;
 
    conn.transaction(|| {
-        let res_uuid = resource_create(filepath0,mime0,kinds.0,conn)?;
+        let res_uuid = resource_create(filepath0,mime0,kinds.1,conn)?;
     
         let res = resources
                   .filter(uuid.eq(res_uuid.as_bytes().as_ref()))
                   .first::<models::Resource>(conn)?; 
         
-        let gi_uuid = gallery_item_create(name0,description0,kinds.1,gallery0, res.id, conn)?;
+        let gi_uuid = gallery_item_create(name0,description0,kinds.0,gallery0, res.id, conn)?;
 
         Ok((res_uuid, gi_uuid))
     })
@@ -270,7 +272,7 @@ pub fn gallery_item_resource_create_uuid(
    use crate::schema::resources::dsl::*;
 
    conn.transaction(|| {
-        let res_uuid = resource_create(filepath0,mime0,kinds.0,conn)?;
+        let res_uuid = resource_create(filepath0,mime0,kinds.1,conn)?;
     
         let res = resources
                   .filter(uuid.eq(res_uuid.as_bytes().as_ref()))
@@ -278,7 +280,7 @@ pub fn gallery_item_resource_create_uuid(
         
         let gallery = gallery_by_uuid(gallery0, conn)?.unwrap(); 
 
-        let gi_uuid = gallery_item_create(name0,description0,kinds.1,gallery.id, res.id, conn)?;
+        let gi_uuid = gallery_item_create(name0,description0,kinds.0,gallery.id, res.id, conn)?;
 
         Ok((res_uuid, gi_uuid))
     })
@@ -428,42 +430,38 @@ pub async fn gallery_items_json(
 // first field is GalleryItemPost json
 // next field is the resource file
 
+#[derive(Serialize,Deserialize)]
+enum GalleryUploadError {
+    InvalidMimeType
+}
+
 pub async fn gallery_item_multipart(
     mut payload: Multipart
   , path: web::Path<Uuid>
   , pool: web::Data<DbPool>
+  , permitted : &'static [(i32,&str)]
 ) -> Result<HttpResponse, actix_web::Error> {
 
    let conn = pool.get().expect("couldn't get db connection from pool");
 
-   let mut buf = vec![];
+   let mut buf = BytesMut::new();
    // NOTE: the outstanding mutable reference makes this
    // hang.  You need to process fields in individual blocks.
    // (eg, cannot call payload.try_next().await within this block)
    if let Ok(Some(mut field)) = payload.try_next().await {
-        let content_type = field
-            .content_disposition()
-            .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
-
-        println!("name: {}", content_type.get_name().unwrap());
-
         while let Some(chunk) = field.next().await {
             let data = chunk.unwrap();
-            buf.push(data);
+            buf.put(data);
         }
    }
 
    let item : models::GalleryItemPost 
-        = serde_json::from_slice(buf.concat().as_slice())
+        = serde_json::from_slice(buf.as_ref())
             .map_err(|_| actix_web::error::ParseError::Incomplete)?;
 
+   let mut err = None;
+
    if let Ok(Some(mut field)) = payload.try_next().await {
-        let content_type = field
-            .content_disposition()
-            .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
-        let _filename = content_type
-            .get_filename()
-            .ok_or_else(|| actix_web::error::ParseError::Incomplete)?;
 
         let resid = Uuid::new_v4();
         let mut resid_buf = [b'!'; 40];
@@ -477,20 +475,55 @@ pub async fn gallery_item_multipart(
             f.write_all(&data).await?;
         }
         f.flush().await?;
+        let fp0 = filepath.clone();
         // use web::block to offload blocking Diesel code without blocking server thread
-        let _uuid = web::block(move || {
+        let uuid = web::block(move || {
             let p0: &Path = Path::new(&filepath);
             let mime = tree_magic::from_filepath(p0);
-            gallery_item_resource_create_uuid(&item.name, &item.description, (item.kind,0), &filepath, &mime, *path, &conn)
-        })
-            .await
-            .map_err(|e| {
+            let rkind = permitted.iter().find_map(|&(kind,mime0)| {
+                if mime0 == mime {
+                    Some(kind)
+                }else{
+                    None
+                } 
+            });
+            if let Some(rkind)  = rkind {
+                let uuid 
+                    = gallery_item_resource_create_uuid(
+                        &item.name, &item.description, (item.kind,rkind), &filepath, &mime, *path, &conn)?;
+
+                Ok::<_,diesel::result::Error>(Some(uuid))
+            }else{
+                Ok(None) 
+            }
+        }).await
+          .map_err(|e| {
                 eprintln!("{}", e);
                 HttpResponse::InternalServerError().finish()
-            })?;
+          })?;
+
+        if uuid.is_none() {
+            err = Some(GalleryUploadError::InvalidMimeType);
+            async_std::fs::remove_file(&fp0).await?;
+        }
    }
-        
-   Ok(HttpResponse::Ok().into())
+   if err.is_none() {
+        Ok(HttpResponse::Ok().into())
+   }else {
+        Ok(HttpResponse::BadRequest().json(err))
+   }
+}
+
+pub async fn gallery_item_multipart_image(
+    payload: Multipart
+  , path: web::Path<Uuid>
+  , pool: web::Data<DbPool>
+) -> Result<HttpResponse, actix_web::Error> {
+    gallery_item_multipart( payload, path, pool, &[ 
+        (1, "image/png")
+      , (2, "image/jpeg")
+      , (3, "image/gif")
+    ]).await
 }
 
 
@@ -565,7 +598,7 @@ pub fn gallery_api_write( cfg: &mut web::ServiceConfig ) {
         .route(web::post().to(gallery_create_json))
     )
     .service(web::resource("/galleries/{id}/items")
-        .route(web::post().to(gallery_item_multipart))
+        .route(web::post().to(gallery_item_multipart_image))
     );
 }
 
@@ -585,7 +618,7 @@ pub fn gallery_api( cfg: &mut web::ServiceConfig ) {
     )
     .service(web::resource("/galleries/{id}/items")
         .route(web::get().to(gallery_items_json))
-        .route(web::post().to(gallery_item_multipart))
+        .route(web::post().to(gallery_item_multipart_image))
     )
     .service(web::resource("/galleries/{id}/item-create")
         .route(web::get().to(gallery_item_form))
