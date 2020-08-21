@@ -1,5 +1,5 @@
 [package]
-name = "basic"
+name = "app"
 version = "0.1.0"
 authors = ["M. Bellaire <22552422+mephistopheles-8@users.noreply.github.com>"]
 edition = "2018"
@@ -19,7 +19,7 @@ uuid = { version = "0.8", features = ["serde", "v4"] }
 
 handlebars = { version = "3.0.0", features = ["dir_source"] }
 
-[dev-dependencies]
+# Exe dependencies
 actix-rt = "1.0"
 actix-files = "0.2.1"
 actix-http = "1.0.1"

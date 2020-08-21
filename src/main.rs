@@ -1,5 +1,4 @@
-
-extern crate basic;
+extern crate app;
 #[macro_use]
 extern crate serde_json;
 
@@ -13,7 +12,7 @@ use diesel::r2d2::{self, ConnectionManager};
 use handlebars::Handlebars;
 use actix_web::{middleware, web, App, HttpServer};
 
-use basic::min_api;
+use app::min_api;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -30,12 +29,14 @@ async fn main() -> std::io::Result<()> {
 
     // Handlebar templates
     
+    let static_dir = std::env::var("STATIC_DIR").expect("STATIC_DIR");
     let mut handlebars = Handlebars::new();
     handlebars
-        .register_templates_directory(".html", "./static/templates")
+        .register_templates_directory(".html", format!("{}/templates", static_dir))
         .unwrap();
     let handlebars_ref = web::Data::new(handlebars);
 
+    println!("Starting server on 0.0.0.0:8080"); 
     HttpServer::new(move || {
         App::new()
             // db pool
@@ -48,9 +49,9 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             // the gallery api
             .configure(min_api)
-            .service(fs::Files::new("/", "./static/root/"))
+            .service(fs::Files::new("/", format!("{}/root/", static_dir)))
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }
