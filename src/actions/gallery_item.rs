@@ -33,20 +33,20 @@ pub fn gallery_item_create(
 }
 
 pub fn gallery_items_by_gallery_id ( gallery_id: i32, conn: &Connection0 ) 
-    -> Result<Vec<(models::GalleryItem, models::Resource)>, diesel::result::Error> {
+    -> Result<Vec<(i32, String, models::GalleryItem)>, diesel::result::Error> {
 
-    use crate::schema::gallery_items::dsl::*;
-    use crate::schema::resources::dsl::*;
+    use crate::schema::*;
 
-    let g0s = gallery_items
-              .filter(gallery.eq(gallery_id))
-              .inner_join(resources)
+    let g0s = gallery_items::table
+              .filter(gallery_items::gallery.eq(gallery_id))
+              .inner_join(resources::table)
+              .select((resources::kind,resources::mime,gallery_items::all_columns))
               .load( conn )?; 
     Ok(g0s)
 }
 
 pub fn gallery_items_by_gallery_uuid ( gallery_uuid: Uuid, conn: &Connection0 ) 
-    -> Result<Vec<(models::GalleryItem, models::Resource)>, diesel::result::Error> {
+    -> Result<Vec<(i32, String, models::GalleryItem)>, diesel::result::Error> {
 
     use crate::schema::*;
 
@@ -57,7 +57,7 @@ pub fn gallery_items_by_gallery_uuid ( gallery_uuid: Uuid, conn: &Connection0 )
               )
               .inner_join(galleries::table)
               .inner_join(resources::table)
-              .select((gallery_items::all_columns, resources::all_columns))
+              .select((resources::kind,resources::mime,gallery_items::all_columns))
               .load( conn )?; 
     Ok(g0s)
 }
