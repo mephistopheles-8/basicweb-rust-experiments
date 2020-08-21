@@ -1,6 +1,13 @@
 
 use super::schema::users;
 use chrono::NaiveDateTime;
+use serde::{Serialize,Deserialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct LoginParams {
+    pub email: String,
+    pub password: String,
+}
 
 #[derive(Queryable,Identifiable)]
 pub struct User {
