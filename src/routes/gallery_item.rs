@@ -1,6 +1,6 @@
 
-use handlebars::Handlebars;
-use actix_web::{web,HttpResponse};
+use actix_files as fs;
+use actix_web::{web,HttpRequest,HttpResponse};
 use actix_multipart::Multipart;
 use async_std::prelude::*;
 use futures::{StreamExt, TryStreamExt};
@@ -8,6 +8,7 @@ use bytes::{BytesMut,BufMut};
 use serde::{Serialize,Deserialize};
 use uuid::Uuid;
 use std::path::Path;
+use handlebars::Handlebars;
 use crate::db::DbPool;
 use crate::models;
 use crate::actions::gallery_item::*;
@@ -141,6 +142,30 @@ pub async fn gallery_item_multipart_image(
 }
 
 
+pub async fn gallery_item_serve(
+    req: HttpRequest
+  , path: web::Path<Uuid>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let item = web::block(move || gallery_item_by_uuid(*path,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+
+    if let Some((_,res)) = item {
+        let file = fs::NamedFile::open(res.filepath)?;
+        file
+            .use_last_modified(true)
+            .set_content_type(res.mime.parse().unwrap())
+            .disable_content_disposition()
+            .into_response(&req)
+    }else{
+        Ok(HttpResponse::NotFound().finish())
+    }
+}
 
 pub async fn gallery_item_json(
     path: web::Path<(Uuid,Uuid)>

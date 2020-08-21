@@ -980,6 +980,7 @@ dependencies = [
  "env_logger",
  "futures",
  "handlebars",
+ "mime",
  "r2d2",
  "serde",
  "serde_json",
