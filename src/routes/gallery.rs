@@ -119,6 +119,60 @@ pub async fn gallery_update_by_uuid_json(
     }
 }
 
+pub async fn gallery_listing_html(
+    hb: web::Data<Handlebars<'_>>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let galleries = web::block(move || {
+        galleries_all(&conn)
+    }).await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+ 
+    let data = json!({
+        "title": "Galleries"
+      , "parent" : "main"
+      , "galleries" : galleries
+    });
+    let body = hb.render("content/gallery-listing", &data).unwrap();
+
+    Ok(HttpResponse::Ok().body(body))
+}
+
+
+pub async fn gallery_html(
+    path: web::Path<Uuid>
+  , hb: web::Data<Handlebars<'_>>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let uuid = *path;
+    let gallery = web::block(move || {
+        gallery_by_uuid(*path, &conn)
+    }).await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+ 
+    if let Some(gallery) = gallery {
+        let data = json!({
+            "title": format!("Gallery - {}", gallery.name)
+          , "parent" : "main"
+          , "galleryId": uuid
+        });
+        let body = hb.render("content/gallery", &data).unwrap();
+
+        Ok(HttpResponse::Ok().body(body))
+    }else{
+        Ok(HttpResponse::NotFound().finish())
+    }
+}
+
+
 pub async fn gallery_create_form(
     hb: web::Data<Handlebars<'_>>
     ) -> HttpResponse {

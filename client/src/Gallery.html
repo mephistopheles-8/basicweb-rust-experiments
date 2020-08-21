@@ -1,0 +1,49 @@
+<script>
+    export let galleryId;
+    let galleryRequest;
+
+    $: if (galleryId) {
+        galleryRequest = Promise.all([
+             fetch(`http://localhost:8080/galleries/${galleryId}`)
+             .then(res => res.json())
+           ,  fetch(`http://localhost:8080/galleries/${galleryId}/items`)
+             .then(res => res.json())
+            ]);
+        }
+</script>
+<style>
+    figure {
+         overflow: hidden;
+         height: 200px;
+         width:300px;
+         margin:0;
+         cursor: pointer;
+    }
+    figure img {
+        max-width: 100%;
+        margin: 0 auto;
+        display: block;
+    }
+    .gallery {
+        display: flex;
+        flex-wrap: wrap;
+    }
+</style>
+{#await galleryRequest}
+<p>...</p>
+{:then [gallery,items]}
+<h3>{gallery.name}</h3>
+{#if gallery.description}
+<p>{gallery.description}</p>
+{/if}
+<div class="gallery">
+    {#each items as item}
+    <figure>
+        <figcaption>{item[2].name}</figcaption>
+        <img src="/assets/{item[2].uuid}">
+    </figure>
+    {/each}
+</div>
+{:catch err}
+<p>Error: {err.message}</p>
+{/await}
