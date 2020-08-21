@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 actix-web = "2.0"
 actix-multipart = "0.2.0"
+actix-files = "0.2.1"
 
 chrono = { version = "0.4.13", features = ["serde"] }
 diesel = { version = "^1.1.0", features = ["sqlite", "r2d2", "chrono"] }
@@ -20,6 +21,7 @@ uuid = { version = "0.8", features = ["serde", "v4"] }
 
 bytes = "0.5"
 tree_magic = "0.2"
+mime = "0.3"
 #mime_guess = "2.0"
 
 async-std = "1.4"
@@ -28,7 +30,6 @@ handlebars = { version = "3.0.0", features = ["dir_source"] }
 
 [dev-dependencies]
 actix-rt = "1.0"
-actix-files = "0.2.1"
 actix-http = "1.0.1"
 
 env_logger = "0.7"

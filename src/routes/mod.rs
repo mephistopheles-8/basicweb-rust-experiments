@@ -41,6 +41,9 @@ pub fn gallery_api_write( cfg: &mut web::ServiceConfig ) {
 
 pub fn gallery_api( cfg: &mut web::ServiceConfig ) {
     cfg
+    .service(web::resource("/assets/{id}")
+        .route(web::get().to(gallery_item_serve))
+    )
     .service(web::resource("/galleries/create")
         .route(web::get().to(gallery_create_form))
     )
