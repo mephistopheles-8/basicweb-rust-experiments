@@ -21,6 +21,19 @@ pub struct Location {
     pub updated: NaiveDateTime, 
 }
 
+#[derive(Serialize,Deserialize)]
+pub struct NewLocationPost{
+    pub name: String,
+    pub description: Option<String>,
+    pub address: Option<String>,
+    pub city: Option<String>,
+    pub region: Option<String>,
+    pub postal: Option<String>,
+    pub country: Option<String>,
+    pub lat: f64,
+    pub lng: f64,
+}
+
 #[derive(AsChangeset)]
 #[table_name = "locations"]
 pub struct LocationUpdate<'a> {
