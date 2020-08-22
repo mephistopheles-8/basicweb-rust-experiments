@@ -17,6 +17,7 @@ pub struct User {
     pub password: String,
     pub uuid: Vec<u8>,
     pub code: Option<String>,
+    pub pubkey: Option<String>,
     pub permissions: i32,
     pub created: NaiveDateTime, 
     pub updated: NaiveDateTime, 

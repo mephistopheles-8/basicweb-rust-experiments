@@ -7,6 +7,7 @@ CREATE TABLE users (
     password TEXT NOT NULL,
     uuid BLOB NOT NULL UNIQUE,
     code TEXT, /* Verification code */
+    pubkey TEXT UNIQUE, /* Verification url key */
     permissions INTEGER NOT NULL DEFAULT 0,
     created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

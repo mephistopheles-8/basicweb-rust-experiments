@@ -2,6 +2,7 @@ use diesel::prelude::*;
 use argon2::{self, Config};
 
 use rand::Rng;
+use rand::distributions::Standard;
 use uuid::Uuid;
 
 use crate::models;
@@ -28,6 +29,18 @@ pub fn user_by_uuid(
     use crate::schema::users::dsl::*;
     let user = users
         .filter(uuid.eq(uuid0.as_bytes().as_ref()))
+        .first::<models::User>(conn)
+        .optional()?;
+    Ok(user)
+}
+
+pub fn user_by_pubkey(
+    pubkey0: &str 
+  , conn: &Connection 
+) -> Result<Option<models::User>, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
+    let user = users
+        .filter(pubkey.eq(pubkey0))
         .first::<models::User>(conn)
         .optional()?;
     Ok(user)
@@ -89,13 +102,44 @@ pub fn user_update_code_by_email(
     // string with no padding
 
     let code0 = rand::thread_rng().gen::<[u8; 9]>();
+    let code1 : Vec<u8> = 
+        rand::thread_rng().sample_iter(&Standard).take(64).collect();
 
-    let b64 = base64::encode(code0);
+    let c0b64 = base64::encode_config(code0,base64::URL_SAFE);
+    let c1b64 = base64::encode_config(code1,base64::URL_SAFE);
 
     let user = users
         .filter(email.eq(email0.to_ascii_lowercase()));
 
-    let n = diesel::update(user).set(code.eq(b64)).execute(conn)?;
+    let n = diesel::update(user).set(
+            ( code.eq(c0b64), pubkey.eq(c1b64) )
+        ).execute(conn)?;
+
+    Ok(n > 0)
+}
+
+pub fn user_update_code_by_uuid(
+    uuid0 : Uuid
+  , conn: &Connection 
+) -> Result<bool, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
+
+    // A multiple of 3 bytes typically results in a base64-encoded
+    // string with no padding
+
+    let code0 = rand::thread_rng().gen::<[u8; 9]>();
+    let code1 : Vec<u8> = 
+        rand::thread_rng().sample_iter(&Standard).take(64).collect();
+
+    let c0b64 = base64::encode_config(code0,base64::URL_SAFE);
+    let c1b64 = base64::encode_config(code1,base64::URL_SAFE);
+
+    let user = users
+        .filter(uuid.eq(uuid0.as_bytes().as_ref()));
+
+    let n = diesel::update(user).set(
+            ( code.eq(c0b64), pubkey.eq(c1b64) )
+        ).execute(conn)?;
 
     Ok(n > 0)
 }
@@ -118,8 +162,12 @@ pub fn user_verify_by_uuid(
                 // TODO: cleanup
 
                 let one  = 1.into_sql::<diesel::sql_types::Integer>();
+                diesel::update(user).set((
+                    permissions.eq(BitOr::new(permissions,one))
+                 ,  code.eq::<Option<String>>(None)
+                 ,  pubkey.eq::<Option<String>>(None)
+                )).execute(conn)?;
 
-                diesel::update(user).set(permissions.eq(BitOr::new(permissions,one))).execute(conn)?;
                 Ok(true)
             }else{
                 Ok(false)
@@ -129,6 +177,42 @@ pub fn user_verify_by_uuid(
         }
     }else{
         Ok(false)
+    }
+}
+
+pub fn user_verify_by_pubkey( 
+    pubkey0: &str
+  , code0 : &str
+  , conn: &Connection 
+) -> Result<Option<Uuid>, diesel::result::Error> {
+
+    use crate::schema::users::dsl::*;
+    let user = user_by_pubkey(&pubkey0, conn)?;
+
+    if let Some(u0) = user {
+        if let Some(code1) = u0.code {
+            if code0 == code1 {
+                let user = users
+                    .filter(id.eq(u0.id));
+
+                // TODO: cleanup
+
+                let one  = 1.into_sql::<diesel::sql_types::Integer>();
+                diesel::update(user).set((
+                    permissions.eq(BitOr::new(permissions,one))
+                 ,  code.eq::<Option<String>>(None)
+                 ,  pubkey.eq::<Option<String>>(None)
+                )).execute(conn)?;
+
+                Ok(Some(Uuid::from_slice(&u0.uuid).unwrap()))
+            }else{
+                Ok(None)
+            }
+        }else {
+            Ok(None)
+        }
+    }else{
+        Ok(None)
     }
 }
 

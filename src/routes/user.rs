@@ -218,6 +218,7 @@ pub async fn register_action(
     id: Identity
   , pool: web::Data<DbPool>
   , data: web::Form<RegisterParams>
+  , hb: web::Data<Handlebars<'static>>
  ) -> Result<HttpResponse,actix_web::Error> {
 
     id.forget();
@@ -226,17 +227,31 @@ pub async fn register_action(
     
     if data.is_valid() {
 
-        let uuid = web::block(move || 
-            user_register(
-                &data.name, &data.email.to_ascii_lowercase(), &data.password, &conn
-              )
-            ).await
-            .map_err(|e| {
+        let (uuid,user) = web::block(move || {
+            let uuid = 
+                user_register(
+                    &data.name, &data.email.to_ascii_lowercase(), &data.password, &conn
+                  )?;
+            // Must set code before sending email!
+            user_update_code_by_uuid(uuid, &conn)?;
+            let user = user_by_uuid(uuid, &conn)?.unwrap();
+            Ok::<_,diesel::result::Error>((uuid,user))
+        }).await
+          .map_err(|e| {
                 eprintln!("{}", e);
                 HttpResponse::InternalServerError().finish()
-            })?;
+           })?;
 
         let sess = UserSession::Partial(uuid);
+
+        // FIXME: protect against timing attacks
+        web::block(move || {
+            send_validation_email(user,hb)
+        }).await
+          .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+           })?;
 
         id.remember(serde_json::to_string(&sess)?);
 
@@ -399,6 +414,74 @@ pub async fn verify_account_action(
     }
 }
 
+pub async fn verify_account_pubkey_form(
+    id: Identity
+  , path: web::Path<String>
+  , pool: web::Data<DbPool>
+  , hb: web::Data<Handlebars<'_>>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let p0 = path.clone();
+    let user = web::block(move ||
+        user_by_pubkey(&p0,&conn)
+    ).await
+    .map_err(|e| {
+        eprintln!("{}", e);
+        HttpResponse::InternalServerError().finish()
+    })?;
+
+    if user.is_some() {
+        let data = json!({
+            "title": "Verify Account"
+          , "parent" : "main"
+          , "logged_in" : id.identity().is_some()
+          , "pubkey" : *path
+        });
+        let body = hb.render("content/verify-account-pubkey", &data).unwrap();
+
+        Ok(HttpResponse::Ok().body(body))
+    }else{
+        let data = json!({
+            "title": "Verify Account: Expired"
+          , "parent" : "main"
+          , "logged_in" : id.identity().is_some()
+        });
+        let body = hb.render("content/verify-account-error", &data).unwrap();
+
+        Ok(HttpResponse::Ok().body(body))
+    }
+}
+
+pub async fn verify_account_pubkey_action(
+    id: Identity
+  , path: web::Path<String>
+  , pool: web::Data<DbPool>
+  , data: web::Form<VerifyAccountParams>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let p0 = path.clone(); 
+    let uuid = web::block(move || 
+        user_verify_by_pubkey(
+            &p0, &data.code, &conn
+          )
+        ).await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+
+      if let Some(uuid) = uuid {
+        let sess0 = UserSession::Authorized(uuid,vec![]);
+        id.remember(serde_json::to_string(&sess0)?);
+        Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+      }else {
+        Ok(HttpResponse::Found().header("location", format!("/verify-account/{}",path)).finish())
+      }
+}
+
+
 pub async fn verify_account_action_json(
     id: Identity
   , pool: web::Data<DbPool>
@@ -458,7 +541,7 @@ pub async fn recover_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) 
     }
 }
 
-pub fn send_validation_email( user : models::User ) 
+pub fn send_validation_email( user : models::User, hb: web::Data<Handlebars<'_>> ) 
     -> Result<lettre::transport::smtp::response::Response, lettre::transport::smtp::error::Error> {
 
     let from = std::env::var("EMAIL_NOREPLY").expect("EMAIL_NOREPLY");
@@ -467,8 +550,13 @@ pub fn send_validation_email( user : models::User )
     let smtp_username = std::env::var("SMTP_USERNAME").expect("SMTP_USERNAME");
     let smtp_password = std::env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD");
 
-    let body = 
-        format!("Hello {},\n\nYour verification code is {}.", user.name, user.code.unwrap()); 
+    let data = json!({
+        "name": user.name
+      , "code" : user.code.unwrap()
+      , "pubkey" : user.pubkey.unwrap()
+    });
+
+    let body = hb.render("email/verify-account", &data).unwrap();
 
     let email = Message::builder()
         .from(from.parse().unwrap())
@@ -498,6 +586,7 @@ pub enum RecoverPasswordError {
 pub async fn recover_password_action(
     pool: web::Data<DbPool>
   , data: web::Form<RecoverPasswordParams>
+  , hb: web::Data<Handlebars<'static>>
  ) -> Result<HttpResponse,actix_web::Error> {
 
     let conn = pool.get().expect("couldn't get db connection from pool");
@@ -523,7 +612,7 @@ pub async fn recover_password_action(
                            RecoverPasswordError::DbError
                        })?.unwrap();
 
-                send_validation_email(user)
+                send_validation_email(user,hb)
                     .map_err(|e| {
                         eprintln!("{}", e);
                         RecoverPasswordError::EmailError
@@ -546,6 +635,7 @@ pub async fn recover_password_action(
 pub async fn recover_password_action_json(
     pool: web::Data<DbPool>
   , data: web::Json<RecoverPasswordParams>
+  , hb: web::Data<Handlebars<'static>>
  ) -> Result<HttpResponse,actix_web::Error> {
 
     let conn = pool.get().expect("couldn't get db connection from pool");
@@ -574,7 +664,7 @@ pub async fn recover_password_action_json(
                            RecoverPasswordError::DbError
                        })?.unwrap();
 
-                send_validation_email(user)
+                send_validation_email(user,hb)
                     .map_err(|e| {
                         eprintln!("{}", e);
                         RecoverPasswordError::EmailError
@@ -858,6 +948,10 @@ pub fn users_api( cfg: &mut web::ServiceConfig ) {
     .service(web::resource("/verify-account")
         .route(web::get().to(verify_account_form))
         .route(web::post().to(verify_account_action))
+    )
+    .service(web::resource("/verify-account/{pubkey}")
+        .route(web::get().to(verify_account_pubkey_form))
+        .route(web::post().to(verify_account_pubkey_action))
     )
     .service(web::resource("/reset-password")
         .route(web::get().to(reset_password_form))

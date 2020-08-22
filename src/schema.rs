@@ -6,6 +6,7 @@ table! {
         password -> Text,
         uuid -> Binary,
         code -> Nullable<Text>,
+        pubkey -> Nullable<Text>,
         permissions -> Integer,
         created -> Timestamp,
         updated -> Timestamp,
