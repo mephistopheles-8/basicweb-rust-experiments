@@ -2,7 +2,7 @@
 <form method="POST" action="/register">
     <div>
         <label for="name">Name (first and last)</label>
-        <input type="text" name="name" id="name" title="Email Address" required> 
+        <input type="text" name="name" id="name" title="Name" required> 
     </div>
     <div>
         <label for="email">Email</label>
@@ -16,6 +16,56 @@
         <label for="confirm_password">Confirm Password</label>
         <input type="password" name="confirm_password" id="confirm_password" title="Confirm Password" required> 
     </div>
+    <div>
+        <label for="handle">Handle</label>
+        <input type="text" name="handle" id="handle" title="Handle" required> 
+    </div>
+    <fieldset>
+        <legend>Question 1</legend>
+        <div>
+            <label for="secret0_question">Question</label>
+            <select name="secret0_question" id="secret0_question">
+                {{#each questions}}
+                <option value="{{this.id}}">{{this.question}}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div>
+            <label for="secret0_answer">Answer</label>
+            <input type="text" name="secret0_answer" id="secret0_answer" title="Question 1 Answer" required> 
+        </div>
+
+    </fieldset>
+    <fieldset>
+        <legend>Question 2</legend>
+        <div>
+            <label for="secret1_question">Question</label>
+            <select name="secret1_question" id="secret1_question">
+                {{#each questions}}
+                <option value="{{this.id}}">{{this.question}}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div>
+            <label for="secret1_answer">Answer</label>
+            <input type="text" name="secret1_answer" id="secret1_answer" title="Question 2 Answer" required> 
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Question 3</legend>
+        <div>
+            <label for="secret2_question">Question</label>
+            <select name="secret2_question" id="secret2_question">
+                {{#each questions}}
+                <option value="{{this.id}}">{{this.question}}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div>
+            <label for="secret2_answer">Answer</label>
+            <input type="text" name="secret2_answer" id="secret2_answer" title="Question 3 Answer" required> 
+        </div>
+    </fieldset>
     <input type="submit" value="Register" title="Register">
 </form>
 {{/inline}}

@@ -13,39 +13,48 @@ use crate::models;
 use crate::db::DbPool;
 use crate::util::email::email_is_valid;
 use crate::actions::user::*;
+use crate::actions::secret_question::*;
 
 #[derive(Serialize,Deserialize)]
 pub enum UserSession {
     Authorized(Uuid,Vec<Uuid>),
     Partial(Uuid),
+    Questions(Uuid,i32),
 }
 
 impl UserSession {
-    fn is_authorized(&self) -> bool {
+    pub fn is_authorized(&self) -> bool {
         match self {
             UserSession::Authorized(_,_) => true,
             _ => false,
         }
     }
-    fn is_unconfirmed(&self) -> bool {
+    pub fn is_unconfirmed(&self) -> bool {
         match self {
             UserSession::Partial(_) => true,
             _ => false,
         }
     }
-    fn is_simulated(&self) -> bool {
+    pub fn is_questions(&self) -> bool {
+        match self {
+            UserSession::Questions(_,_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_simulated(&self) -> bool {
         match self {
             UserSession::Authorized(_,users) => !users.is_empty(),
             _ => false,
         }
     }
-    fn uuid(&self) -> &Uuid {
+    pub fn uuid(&self) -> &Uuid {
         match self {
             UserSession::Authorized(uuid,_) => uuid,
             UserSession::Partial(uuid) => uuid,
+            UserSession::Questions(uuid,_) => uuid,
         }
     }
-    fn simulate_push(&mut self,u0:Uuid) -> bool {
+    pub fn simulate_push(&mut self,u0:Uuid) -> bool {
         match self {
             UserSession::Authorized(u1,users) => {
                 users.push(*u1);
@@ -55,7 +64,7 @@ impl UserSession {
             _ => false
         }
     }
-    fn simulate_pop(&mut self) -> bool {
+    pub fn simulate_pop(&mut self) -> bool {
         match self {
             UserSession::Authorized(u1,users) => {
                 let u0 = users.pop();
@@ -182,42 +191,39 @@ pub async fn simulate_user(
     }
 }
 
+pub async fn register_form(
+    id: Identity
+  , hb: web::Data<Handlebars<'_>>
+  , pool: web::Data<DbPool>
+ ) -> Result<HttpResponse,actix_web::Error> {
 
+    let conn = pool.get().expect("couldn't get db connection from pool");
 
-#[derive(Serialize, Deserialize)]
-pub struct RegisterParams {
-    pub name: String,
-    pub email: String,
-    pub password: String,
-    pub confirm_password: String,
-}
+    let questions = 
+        web::block(move ||
+            secret_questions_all(&conn)
+        ).await
+          .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+           })?;
 
-
-impl RegisterParams {
-    fn is_valid(&self) -> bool {
-        self.name.len() > 0 &&
-           email_is_valid(&self.email) &&
-           self.password.len() > 8 &&
-           self.password == self.confirm_password
-    }
-}
-
-pub async fn register_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
         "title": "Register"
       , "parent" : "main"
       , "logged_in" : id.identity().is_some()
+      , "questions" : questions
     });
     let body = hb.render("content/register", &data).unwrap();
 
-    HttpResponse::Ok().body(body)
+    Ok(HttpResponse::Ok().body(body))
 }
 
 
 pub async fn register_action(
     id: Identity
   , pool: web::Data<DbPool>
-  , data: web::Form<RegisterParams>
+  , data: web::Form<models::RegisterParams>
   , hb: web::Data<Handlebars<'static>>
  ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -230,7 +236,7 @@ pub async fn register_action(
         let (uuid,user) = web::block(move || {
             let uuid = 
                 user_register(
-                    &data.name, &data.email.to_ascii_lowercase(), &data.password, &conn
+                    &data, &conn
                   )?;
             // Must set code before sending email!
             user_update_code_by_uuid(uuid, &conn)?;
@@ -264,7 +270,7 @@ pub async fn register_action(
 
 pub async fn register_action_json(
     pool: web::Data<DbPool>
-  , data: web::Json<RegisterParams>
+  , data: web::Json<models::RegisterParams>
  ) -> Result<HttpResponse,actix_web::Error> {
     
     let conn = pool.get().expect("couldn't get db connection from pool");
@@ -273,7 +279,7 @@ pub async fn register_action_json(
 
         let _uuid = web::block(move || 
             user_register(
-                &data.name, &data.email.to_ascii_lowercase(), &data.password, &conn
+                &data, &conn
               )
             ).await
             .map_err(|e| {
@@ -473,13 +479,157 @@ pub async fn verify_account_pubkey_action(
         })?;
 
       if let Some(uuid) = uuid {
-        let sess0 = UserSession::Authorized(uuid,vec![]);
+        let sess0 = UserSession::Questions(uuid,0);
         id.remember(serde_json::to_string(&sess0)?);
-        Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+        Ok(HttpResponse::Found().header("location", "/questions").finish())
       }else {
         Ok(HttpResponse::Found().header("location", format!("/verify-account/{}",path)).finish())
       }
 }
+
+pub async fn questions_form(
+    id: Identity
+  , pool: web::Data<DbPool>
+  , hb: web::Data<Handlebars<'_>>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if let UserSession::Questions(uuid,qid) = sess {
+            let (_,question) = web::block(move || {
+                let user = 
+                    user_by_uuid(
+                        uuid, &conn
+                      )?;
+                if let Some(user) = user {
+                    let question 
+                        = match qid {
+                            0 => user.secret0_question, 
+                            1 => user.secret1_question, 
+                            _ => user.secret2_question, 
+                        };
+                    let question = secret_question_by_id(
+                        question, &conn
+                      )?;
+                    if let Some(question) = question {
+                        Ok::<_,diesel::result::Error>(Some((user,question)))
+                    }else{
+                        Ok(None)
+                    }
+                }else{
+                    Ok(None)
+                }
+            }).await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?.ok_or_else(|| 
+                HttpResponse::InternalServerError().finish() 
+            )?; // or else?
+            
+            let data = json!({
+                "title": "Security Questions"
+              , "parent" : "main"
+              , "logged_in" : true
+              , "question" : question.question
+              , "has_next" : qid < 2
+              , "has_prev" : qid > 0
+            });
+
+            let body = hb.render("content/questions", &data).unwrap();
+            Ok(HttpResponse::Ok().body(body))
+        }else{
+            if sess.is_authorized() {
+                Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+            }else {
+                Ok(HttpResponse::Found().header("location", "/verify-account").finish())
+            }
+        }
+    }else {
+        Ok(HttpResponse::Found().header("location", "/login").finish())
+    }
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct QuestionAnswer {
+    pub answer : String,
+    pub action : Option<String>,
+}
+
+pub async fn questions_action(
+    id: Identity
+  , data: web::Form<QuestionAnswer>
+  , pool: web::Data<DbPool>
+ ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if let UserSession::Questions(uuid,qid) = sess {
+            if let Some(action) = &data.action {
+                match action.as_str() {
+                    "next" => {
+                        let sess0 = UserSession::Questions(uuid,(qid + 1) % 3);
+                        id.remember(serde_json::to_string(&sess0)?);
+                    },
+                    _ => {
+                        let sess0 = UserSession::Questions(uuid,(qid - 1).max(0));
+                        id.remember(serde_json::to_string(&sess0)?);
+                    },
+                }
+                Ok(HttpResponse::Found().header("location", "/questions").finish())
+            }else {
+                let is_valid = web::block(move || {
+                    let user = 
+                        user_by_uuid(
+                            uuid, &conn
+                          )?;
+                    if let Some(user) = user {
+                        let answer 
+                            = match qid {
+                                0 => user.secret0_answer, 
+                                1 => user.secret1_answer, 
+                                _ => user.secret2_answer,
+                            };
+
+                        let matches = argon2::verify_encoded(&answer, data.answer.as_bytes()).unwrap();
+
+                        Ok::<_,diesel::result::Error>(matches)
+                    }else{
+                        Ok(false)
+                    }
+                }).await
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+           
+                if is_valid {
+                    let sess0 = UserSession::Authorized(*sess.uuid(),vec![]);
+                    id.remember(serde_json::to_string(&sess0)?);
+                    Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+
+                }else {
+                    Ok(HttpResponse::Found().header("location", "/questions").finish())
+
+                }
+            }
+        }else{
+            if sess.is_authorized() {
+                Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+            }else {
+                Ok(HttpResponse::Found().header("location", "/verify-account").finish())
+            }
+        }
+    }else {
+        Ok(HttpResponse::Found().header("location", "/login").finish())
+    }
+}
+
+
 
 
 pub async fn verify_account_action_json(
@@ -952,6 +1102,10 @@ pub fn users_api( cfg: &mut web::ServiceConfig ) {
     .service(web::resource("/verify-account/{pubkey}")
         .route(web::get().to(verify_account_pubkey_form))
         .route(web::post().to(verify_account_pubkey_action))
+    )
+    .service(web::resource("/questions")
+        .route(web::get().to(questions_form))
+        .route(web::post().to(questions_action))
     )
     .service(web::resource("/reset-password")
         .route(web::get().to(reset_password_form))

@@ -238,23 +238,36 @@ pub fn user_by_login(
 }
 
 pub fn user_register(
-    name0 : &str
-  , email0 : &str
-  , pw0 : &str
+    data : &models::RegisterParams
   , conn: &Connection 
 ) -> Result<Uuid, diesel::result::Error> {
 
     use crate::schema::users::dsl::*;
 
-    let salt = rand::thread_rng().gen::<[u8; 32]>();
+    let salt0 = rand::thread_rng().gen::<[u8; 32]>();
+    let salt1 = rand::thread_rng().gen::<[u8; 32]>();
+    let salt2 = rand::thread_rng().gen::<[u8; 32]>();
+    let salt3 = rand::thread_rng().gen::<[u8; 32]>();
+
     let config = Config::default();
-    let hash = argon2::hash_encoded(pw0.as_bytes(), &salt, &config).unwrap();
+
+    let hash = argon2::hash_encoded(data.password.as_bytes(), &salt0, &config).unwrap();
+    let a0hash = argon2::hash_encoded(data.secret0_answer.as_bytes(), &salt1, &config).unwrap();
+    let a1hash = argon2::hash_encoded(data.secret1_answer.as_bytes(), &salt2, &config).unwrap();
+    let a2hash = argon2::hash_encoded(data.secret2_answer.as_bytes(), &salt3, &config).unwrap();
 
     let uuid0 = Uuid::new_v4();
 
     let new_user = models::NewUser {
-        name: name0
-     ,  email: email0
+        name: &data.name
+     ,  email: &data.email
+     ,  handle: data.handle.as_deref()
+     ,  secret0_question: data.secret0_question
+     ,  secret0_answer: a0hash.as_str()
+     ,  secret1_question: data.secret1_question
+     ,  secret1_answer: a1hash.as_str()
+     ,  secret2_question: data.secret2_question
+     ,  secret2_answer: a2hash.as_str()
      ,  password: hash.as_str()
      ,  uuid : uuid0.as_bytes()
      ,  permissions : 0
