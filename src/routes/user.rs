@@ -14,6 +14,64 @@ use crate::db::DbPool;
 use crate::util::email::email_is_valid;
 use crate::actions::user::*;
 
+#[derive(Serialize,Deserialize)]
+pub enum UserSession {
+    Authorized(Uuid,Vec<Uuid>),
+    Partial(Uuid),
+}
+
+impl UserSession {
+    fn is_authorized(&self) -> bool {
+        match self {
+            UserSession::Authorized(_,_) => true,
+            _ => false,
+        }
+    }
+    fn is_unconfirmed(&self) -> bool {
+        match self {
+            UserSession::Partial(_) => true,
+            _ => false,
+        }
+    }
+    fn is_simulated(&self) -> bool {
+        match self {
+            UserSession::Authorized(_,users) => !users.is_empty(),
+            _ => false,
+        }
+    }
+    fn uuid(&self) -> &Uuid {
+        match self {
+            UserSession::Authorized(uuid,_) => uuid,
+            UserSession::Partial(uuid) => uuid,
+        }
+    }
+    fn simulate_push(&mut self,u0:Uuid) -> bool {
+        match self {
+            UserSession::Authorized(u1,users) => {
+                users.push(*u1);
+                *u1 = u0;
+                true
+            },
+            _ => false
+        }
+    }
+    fn simulate_pop(&mut self) -> bool {
+        match self {
+            UserSession::Authorized(u1,users) => {
+                let u0 = users.pop();
+                if u0.is_some() {
+                    *u1 = u0.unwrap();
+                    true
+                }else{
+                    false
+                }
+            },
+            _ => false
+        }
+    }
+}
+
+
 pub async fn login_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     if id.identity().is_none() {
         let data = json!({
@@ -52,9 +110,12 @@ pub async fn login_action_json(
              .map_err(|e| {
                     eprintln!("{}", e);
                     HttpResponse::InternalServerError().finish()
-             })?.build().to_hyphenated().to_string();
+             })?.build();
 
-        id.remember(uuid);
+        let sess = UserSession::Authorized(uuid,vec![]);
+
+        id.remember(serde_json::to_string(&sess).unwrap());
+
         Ok(HttpResponse::NoContent().finish())
 
     } else {
@@ -84,9 +145,12 @@ pub async fn login_action(
              .map_err(|e| {
                     eprintln!("{}", e);
                     HttpResponse::InternalServerError().finish()
-             })?.build().to_hyphenated().to_string();
+             })?.build();
 
-        id.remember(uuid);
+        let sess = UserSession::Authorized(uuid,vec![]);
+
+        id.remember(serde_json::to_string(&sess).unwrap());
+
         if user.permissions == 0 {
             Ok(HttpResponse::Found().header("location", "/verify-account").finish())
         }else{
@@ -97,6 +161,28 @@ pub async fn login_action(
         Ok(HttpResponse::Found().header("location", "/login").finish())
     }
 }
+
+/// This needs to be exposed very, very carefully.
+/// There is enough variety that I will not implement it now.
+
+pub async fn simulate_user(
+    id: Identity
+  , user: Uuid
+ ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+       let mut sess : UserSession = serde_json::from_str(&sess)?;
+       if sess.is_authorized() {
+            sess.simulate_push(user);
+            Ok(HttpResponse::NoContent().finish())
+       }else{
+            Ok(HttpResponse::Forbidden().finish())
+       }
+    }else{
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
+
 
 #[derive(Serialize, Deserialize)]
 pub struct RegisterParams {
@@ -149,7 +235,11 @@ pub async fn register_action(
                 eprintln!("{}", e);
                 HttpResponse::InternalServerError().finish()
             })?;
-        id.remember(uuid.to_hyphenated().to_string());
+
+        let sess = UserSession::Partial(uuid);
+
+        id.remember(serde_json::to_string(&sess)?);
+
         Ok(HttpResponse::Found().header("location", "/verify-account").finish())
 
     }else{
@@ -214,29 +304,30 @@ pub async fn reset_password_action(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
-    if let Some(uuid) = id.identity() {
-        
-       if data.password.len() > 8 &&
-          data.password == data.confirm_password {
-              let uuid0 = Uuid::parse_str(&uuid)
+    if let Some(sess) = id.identity() {
+       
+       let sess : UserSession = serde_json::from_str(&sess)?;
+
+       if sess.is_authorized() {
+           if data.password.len() > 8 &&
+              data.password == data.confirm_password {
+
+                  web::block(move || 
+                    user_update_password_by_uuid(
+                        *sess.uuid(), &data.password, &conn
+                      )
+                    ).await
                     .map_err(|e| {
                         eprintln!("{}", e);
                         HttpResponse::InternalServerError().finish()
                     })?;
 
-              web::block(move || 
-                user_update_password_by_uuid(
-                    uuid0, &data.password, &conn
-                  )
-                ).await
-                .map_err(|e| {
-                    eprintln!("{}", e);
-                    HttpResponse::InternalServerError().finish()
-                })?;
-
-            Ok(HttpResponse::Found().header("location", "/reset-password").finish())
+                Ok(HttpResponse::Found().header("location", "/reset-password").finish())
+           }else {
+                Ok(HttpResponse::Found().header("location", "/reset-password").finish())
+           }
        }else {
-            Ok(HttpResponse::Found().header("location", "/reset-password").finish())
+            Ok(HttpResponse::Found().header("location", "/login").finish())
        }
     }else{
         Ok(HttpResponse::Found().header("location", "/login").finish())
@@ -249,18 +340,25 @@ pub struct VerifyAccountParams {
     pub code: String,
 }
 
-pub async fn verify_account_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
-    if id.identity().is_some() {
-        let data = json!({
-            "title": "Verify Account"
-          , "parent" : "main"
-          , "logged_in" : true
-        });
-        let body = hb.render("content/verify-account", &data).unwrap();
+pub async fn verify_account_form(
+    id: Identity, hb: web::Data<Handlebars<'_>>
+ ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_unconfirmed() {
+            let data = json!({
+                "title": "Verify Account"
+              , "parent" : "main"
+              , "logged_in" : true
+            });
+            let body = hb.render("content/verify-account", &data).unwrap();
 
-        HttpResponse::Ok().body(body)
+            Ok(HttpResponse::Ok().body(body))
+        }else {
+            Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+        }
     }else{
-        HttpResponse::Found().header("location", "/login").finish()
+        Ok(HttpResponse::Found().header("location", "/login").finish())
     }
 }
 
@@ -272,27 +370,30 @@ pub async fn verify_account_action(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
     
-    if let Some(uuid) = id.identity() {
-          let uuid0 = Uuid::parse_str(&uuid)
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_unconfirmed() {
+            let uuid = *sess.uuid();
+            let verified = web::block(move || 
+                user_verify_by_uuid(
+                    uuid, &data.code, &conn
+                  )
+                ).await
                 .map_err(|e| {
                     eprintln!("{}", e);
                     HttpResponse::InternalServerError().finish()
                 })?;
-          let verified = web::block(move || 
-            user_verify_by_uuid(
-                uuid0, &data.code, &conn
-              )
-            ).await
-            .map_err(|e| {
-                eprintln!("{}", e);
-                HttpResponse::InternalServerError().finish()
-            })?;
 
-          if verified {
+              if verified {
+                let sess0 = UserSession::Authorized(*sess.uuid(),vec![]);
+                id.remember(serde_json::to_string(&sess0)?);
+                Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+              }else {
+                Ok(HttpResponse::Found().header("location", "/verify-account").finish())
+              }
+        }else{
             Ok(HttpResponse::Found().header("location", "/manage-account").finish())
-          }else {
-            Ok(HttpResponse::Found().header("location", "/verify-account").finish())
-          }
+        }
     }else{
         Ok(HttpResponse::Found().header("location", "/login").finish())
     }
@@ -306,12 +407,10 @@ pub async fn verify_account_action_json(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
     
-    if let Some(uuid) = id.identity() {
-          let uuid0 = Uuid::parse_str(&uuid)
-                .map_err(|e| {
-                    eprintln!("{}", e);
-                    HttpResponse::InternalServerError().finish()
-                })?;
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_unconfirmed() {
+          let uuid0 = *sess.uuid(); 
           let verified = web::block(move || 
             user_verify_by_uuid(
                 uuid0, &data.code, &conn
@@ -323,10 +422,15 @@ pub async fn verify_account_action_json(
             })?;
 
           if verified {
+            let sess0 = UserSession::Authorized(*sess.uuid(),vec![]);
+            id.remember(serde_json::to_string(&sess0)?);
             Ok(HttpResponse::NoContent().finish())
           }else {
             Ok(HttpResponse::BadRequest().finish())
           }
+        }else{
+            Ok(HttpResponse::NoContent().finish())
+        }
     }else{
         Ok(HttpResponse::Unauthorized().finish())
     }
@@ -501,27 +605,27 @@ pub async fn user_update_password_json(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
-    if let Some(uuid) = id.identity() {
-       if data.len() > 8 {
-              let uuid0 = Uuid::parse_str(&uuid)
+    if let Some(sess) = id.identity() {
+       let sess : UserSession = serde_json::from_str(&sess)?;
+       if sess.is_authorized() {
+           if data.len() > 8 {
+                  let uuid0 = *sess.uuid(); 
+                  web::block(move || 
+                    user_update_password_by_uuid(
+                        uuid0, &data, &conn
+                      )
+                    ).await
                     .map_err(|e| {
                         eprintln!("{}", e);
                         HttpResponse::InternalServerError().finish()
                     })?;
 
-              web::block(move || 
-                user_update_password_by_uuid(
-                    uuid0, &data, &conn
-                  )
-                ).await
-                .map_err(|e| {
-                    eprintln!("{}", e);
-                    HttpResponse::InternalServerError().finish()
-                })?;
-
-            Ok(HttpResponse::NoContent().finish())
-       }else {
-            Ok(HttpResponse::BadRequest().finish())
+                Ok(HttpResponse::NoContent().finish())
+           }else {
+                Ok(HttpResponse::BadRequest().finish())
+           }
+       }else{
+            Ok(HttpResponse::Forbidden().finish())
        }
     }else{
         Ok(HttpResponse::Unauthorized().finish())
@@ -545,31 +649,32 @@ pub async fn user_by_login_json(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
-    if let Some(uuid) = id.identity() {
-        let uuid0 = Uuid::parse_str(&uuid)
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let uuid0 = *sess.uuid();
+            let user =
+              web::block(move || 
+                user_by_uuid(
+                    uuid0, &conn
+                  )
+                ).await
                 .map_err(|e| {
                     eprintln!("{}", e);
                     HttpResponse::InternalServerError().finish()
-                })?;
-        let user =
-          web::block(move || 
-            user_by_uuid(
-                uuid0, &conn
-              )
-            ).await
-            .map_err(|e| {
-                eprintln!("{}", e);
-                HttpResponse::InternalServerError().finish()
-            })?.unwrap();
+                })?.unwrap();
 
-        Ok(HttpResponse::Ok().json(UserPublic {
-            name : user.name
-          , email : user.email
-          , uuid : uuid0
-          , permissions : user.permissions
-          , created: user.created
-          , updated : user.updated
-        }))
+            Ok(HttpResponse::Ok().json(UserPublic {
+                name : user.name
+              , email : user.email
+              , uuid : uuid0
+              , permissions : user.permissions
+              , created: user.created
+              , updated : user.updated
+            }))
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
     }else{
         Ok(HttpResponse::Unauthorized().finish())
     }
@@ -582,24 +687,25 @@ pub async fn user_name_by_login_json(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
-    if let Some(uuid) = id.identity() {
-        let uuid0 = Uuid::parse_str(&uuid)
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let uuid0 = *sess.uuid();
+            let user =
+              web::block(move || 
+                user_by_uuid(
+                    uuid0, &conn
+                  )
+                ).await
                 .map_err(|e| {
                     eprintln!("{}", e);
                     HttpResponse::InternalServerError().finish()
-                })?;
-        let user =
-          web::block(move || 
-            user_by_uuid(
-                uuid0, &conn
-              )
-            ).await
-            .map_err(|e| {
-                eprintln!("{}", e);
-                HttpResponse::InternalServerError().finish()
-            })?.unwrap();
+                })?.unwrap();
 
-        Ok(HttpResponse::Ok().json(user.name))
+            Ok(HttpResponse::Ok().json(user.name))
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
     }else{
         Ok(HttpResponse::Unauthorized().finish())
     }
@@ -613,28 +719,28 @@ pub async fn user_update_name_by_login_json(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
-    if let Some(uuid) = id.identity() {
-        if name.len() > 0 {
-            let uuid0 = Uuid::parse_str(&uuid)
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            if name.len() > 0 {
+                let uuid0 = *sess.uuid();
+                let _user =
+                  web::block(move || 
+                    user_update_name_by_uuid(
+                        uuid0, &name, &conn
+                      )
+                    ).await
                     .map_err(|e| {
                         eprintln!("{}", e);
                         HttpResponse::InternalServerError().finish()
                     })?;
 
-            let _user =
-              web::block(move || 
-                user_update_name_by_uuid(
-                    uuid0, &name, &conn
-                  )
-                ).await
-                .map_err(|e| {
-                    eprintln!("{}", e);
-                    HttpResponse::InternalServerError().finish()
-                })?;
-
-            user_name_by_login_json(id,pool).await
+                user_name_by_login_json(id,pool).await
+            }else{
+                Ok(HttpResponse::BadRequest().finish())
+            }
         }else{
-            Ok(HttpResponse::BadRequest().finish())
+            Ok(HttpResponse::Forbidden().finish())
         }
     }else{
         Ok(HttpResponse::Unauthorized().finish())
@@ -648,24 +754,25 @@ pub async fn user_email_by_login_json(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
-    if let Some(uuid) = id.identity() {
-        let uuid0 = Uuid::parse_str(&uuid)
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let uuid0 = *sess.uuid(); 
+            let user =
+              web::block(move || 
+                user_by_uuid(
+                    uuid0, &conn
+                  )
+                ).await
                 .map_err(|e| {
                     eprintln!("{}", e);
                     HttpResponse::InternalServerError().finish()
-                })?;
-        let user =
-          web::block(move || 
-            user_by_uuid(
-                uuid0, &conn
-              )
-            ).await
-            .map_err(|e| {
-                eprintln!("{}", e);
-                HttpResponse::InternalServerError().finish()
-            })?.unwrap();
+                })?.unwrap();
 
-        Ok(HttpResponse::Ok().json(user.email))
+            Ok(HttpResponse::Ok().json(user.email))
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
     }else{
         Ok(HttpResponse::Unauthorized().finish())
     }
@@ -678,17 +785,40 @@ pub async fn manage_account(id: Identity) -> String {
     )
 }
 
-pub async fn logout(id: Identity) -> HttpResponse {
-    id.forget();
-    HttpResponse::Found().header("location", "/").finish()
+/// Allow logout to support system simulation
+pub async fn logout(
+    id: Identity
+ ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let mut sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_simulated() {
+            sess.simulate_pop();
+            id.remember(serde_json::to_string(&sess)?);
+            Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+        }else{
+            id.forget();
+            Ok(HttpResponse::Found().header("location", "/").finish())
+        }
+    }else {
+        Ok(HttpResponse::Found().header("location", "/").finish())
+    }
 }
 
-pub async fn logout_json(id: Identity) -> HttpResponse {
-    if id.identity().is_some() {
-        id.forget();
-        HttpResponse::NoContent().finish()
+/// Allow logout to support system simulation
+pub async fn logout_json(
+    id: Identity
+ ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let mut sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_simulated() {
+            sess.simulate_pop();
+            id.remember(serde_json::to_string(&sess)?);
+        }else{
+            id.forget();
+        }
+        Ok(HttpResponse::NoContent().finish())
     }else {
-        HttpResponse::Unauthorized().finish()
+        Ok(HttpResponse::Unauthorized().finish())
     }
 }
 
