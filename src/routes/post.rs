@@ -409,6 +409,18 @@ pub async fn post_update_body_by_id_json(
     post_body_by_id_json(path,pool).await
 }
 
+pub async fn posts_dynamic_html(
+    hb: web::Data<Handlebars<'_>>
+  ) -> HttpResponse {
+    let data = json!({
+        "title": "Welcome"
+      , "parent" : "main"
+    });
+    let body = hb.render("content/board-dynamic", &data).unwrap();
+
+    HttpResponse::Ok().body(body)
+}
+
 pub async fn index(
     hb: web::Data<Handlebars<'_>>
   , pool: web::Data<DbPool>
@@ -469,7 +481,7 @@ pub async fn post_thread_html(
 
 pub fn api_html( cfg: &mut web::ServiceConfig ) {
     cfg
-      .service(web::resource("/").route(web::get().to(index)))
+      .service(web::resource("/").route(web::get().to(posts_dynamic_html)))
       .service(web::resource("/posts/{id}")
           .route(web::get().to(post_thread_html))
       )
@@ -478,7 +490,6 @@ pub fn api_html( cfg: &mut web::ServiceConfig ) {
 
 pub fn api_v1_json( cfg: &mut web::ServiceConfig ) {
     cfg
-      .service(web::resource("/").route(web::get().to(index)))
       .service(web::resource("/posts")
           .route(web::get().to(posts_root_default_json))
           .route(web::post().to(post_create_json))
