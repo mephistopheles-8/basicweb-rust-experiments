@@ -1,0 +1,11 @@
+{{#*inline "content"}}
+<div id="gallery"></div>
+<script type="text/javascript" src="/js/basicweb_galleries_client.min.js"></script>
+<script type="text/javascript">
+    basicweb_galleries_client
+    .gallery( document.getElementById("gallery"), {
+        galleryId : "{{{galleryId}}}"
+    });
+</script>
+{{/inline}}
+{{~> (parent)~}}
