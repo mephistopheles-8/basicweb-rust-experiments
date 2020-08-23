@@ -1,3 +1,8 @@
-# svelte-stripe
+# basicweb-catalog-client
 
-Utilities for Stripe in svelte
+Client for basicweb-catalog
+
+Scripts:
+- `build` - do a debug build
+- `build:min` - do a minified build
+- `build:install` - build minified and copy to static directory.

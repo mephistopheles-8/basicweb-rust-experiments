@@ -1,18 +1,23 @@
 /**
-  * svelte_stripe
+  * basicweb_catalog_client
   * (C) 2020 M. Bellaire
   * All rights Reserved
  */
 
-var svelte_stripe = (function () {
+var basicweb_catalog_client = (function () {
   'use strict';
 
+  var global =
+    (typeof globalThis !== 'undefined' && globalThis) ||
+    (typeof self !== 'undefined' && self) ||
+    (typeof global !== 'undefined' && global);
+
   var support = {
-    searchParams: 'URLSearchParams' in self,
-    iterable: 'Symbol' in self && 'iterator' in Symbol,
+    searchParams: 'URLSearchParams' in global,
+    iterable: 'Symbol' in global && 'iterator' in Symbol,
     blob:
-      'FileReader' in self &&
-      'Blob' in self &&
+      'FileReader' in global &&
+      'Blob' in global &&
       (function() {
         try {
           new Blob();
@@ -21,8 +26,8 @@ var svelte_stripe = (function () {
           return false
         }
       })(),
-    formData: 'FormData' in self,
-    arrayBuffer: 'ArrayBuffer' in self
+    formData: 'FormData' in global,
+    arrayBuffer: 'ArrayBuffer' in global
   };
 
   function isDataView(obj) {
@@ -53,7 +58,7 @@ var svelte_stripe = (function () {
     if (typeof name !== 'string') {
       name = String(name);
     }
-    if (/[^a-z0-9\-#$%&'*+.^_`|~]/i.test(name)) {
+    if (/[^a-z0-9\-#$%&'*+.^_`|~!]/i.test(name) || name === '') {
       throw new TypeError('Invalid character in header field name')
     }
     return name.toLowerCase()
@@ -218,6 +223,17 @@ var svelte_stripe = (function () {
     this.bodyUsed = false;
 
     this._initBody = function(body) {
+      /*
+        fetch-mock wraps the Response object in an ES6 Proxy to
+        provide useful test harness features such as flush. However, on
+        ES5 browsers without fetch or Proxy support pollyfills must be used;
+        the proxy-pollyfill is unable to proxy an attribute unless it exists
+        on the object before the Proxy is created. This change ensures
+        Response.bodyUsed exists on the instance, while maintaining the
+        semantic of setting Request.bodyUsed in the constructor before
+        _initBody is called.
+      */
+      this.bodyUsed = this.bodyUsed;
       this._bodyInit = body;
       if (!body) {
         this._bodyText = '';
@@ -270,7 +286,20 @@ var svelte_stripe = (function () {
 
       this.arrayBuffer = function() {
         if (this._bodyArrayBuffer) {
-          return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
+          var isConsumed = consumed(this);
+          if (isConsumed) {
+            return isConsumed
+          }
+          if (ArrayBuffer.isView(this._bodyArrayBuffer)) {
+            return Promise.resolve(
+              this._bodyArrayBuffer.buffer.slice(
+                this._bodyArrayBuffer.byteOffset,
+                this._bodyArrayBuffer.byteOffset + this._bodyArrayBuffer.byteLength
+              )
+            )
+          } else {
+            return Promise.resolve(this._bodyArrayBuffer)
+          }
         } else {
           return this.blob().then(readBlobAsArrayBuffer)
         }
@@ -316,6 +345,10 @@ var svelte_stripe = (function () {
   }
 
   function Request(input, options) {
+    if (!(this instanceof Request)) {
+      throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.')
+    }
+
     options = options || {};
     var body = options.body;
 
@@ -352,6 +385,21 @@ var svelte_stripe = (function () {
       throw new TypeError('Body not allowed for GET or HEAD requests')
     }
     this._initBody(body);
+
+    if (this.method === 'GET' || this.method === 'HEAD') {
+      if (options.cache === 'no-store' || options.cache === 'no-cache') {
+        // Search for a '_' parameter in the query string
+        var reParamSearch = /([?&])_=[^&]*/;
+        if (reParamSearch.test(this.url)) {
+          // If it already exists then set the value with the current time
+          this.url = this.url.replace(reParamSearch, '$1_=' + new Date().getTime());
+        } else {
+          // Otherwise add a new '_' parameter to the end with the current time
+          var reQueryString = /\?/;
+          this.url += (reQueryString.test(this.url) ? '&' : '?') + '_=' + new Date().getTime();
+        }
+      }
+    }
   }
 
   Request.prototype.clone = function() {
@@ -393,6 +441,9 @@ var svelte_stripe = (function () {
   Body.call(Request.prototype);
 
   function Response(bodyInit, options) {
+    if (!(this instanceof Response)) {
+      throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.')
+    }
     if (!options) {
       options = {};
     }
@@ -400,7 +451,7 @@ var svelte_stripe = (function () {
     this.type = 'default';
     this.status = options.status === undefined ? 200 : options.status;
     this.ok = this.status >= 200 && this.status < 300;
-    this.statusText = 'statusText' in options ? options.statusText : 'OK';
+    this.statusText = 'statusText' in options ? options.statusText : '';
     this.headers = new Headers(options.headers);
     this.url = options.url || '';
     this._initBody(bodyInit);
@@ -433,7 +484,7 @@ var svelte_stripe = (function () {
     return new Response(null, {status: status, headers: {location: url}})
   };
 
-  var DOMException = self.DOMException;
+  var DOMException = global.DOMException;
   try {
     new DOMException();
   } catch (err) {
@@ -469,22 +520,38 @@ var svelte_stripe = (function () {
         };
         options.url = 'responseURL' in xhr ? xhr.responseURL : options.headers.get('X-Request-URL');
         var body = 'response' in xhr ? xhr.response : xhr.responseText;
-        resolve(new Response(body, options));
+        setTimeout(function() {
+          resolve(new Response(body, options));
+        }, 0);
       };
 
       xhr.onerror = function() {
-        reject(new TypeError('Network request failed'));
+        setTimeout(function() {
+          reject(new TypeError('Network request failed'));
+        }, 0);
       };
 
       xhr.ontimeout = function() {
-        reject(new TypeError('Network request failed'));
+        setTimeout(function() {
+          reject(new TypeError('Network request failed'));
+        }, 0);
       };
 
       xhr.onabort = function() {
-        reject(new DOMException('Aborted', 'AbortError'));
+        setTimeout(function() {
+          reject(new DOMException('Aborted', 'AbortError'));
+        }, 0);
       };
 
-      xhr.open(request.method, request.url, true);
+      function fixUrl(url) {
+        try {
+          return url === '' && global.location.href ? global.location.href : url
+        } catch (e) {
+          return url
+        }
+      }
+
+      xhr.open(request.method, fixUrl(request.url), true);
 
       if (request.credentials === 'include') {
         xhr.withCredentials = true;
@@ -492,13 +559,27 @@ var svelte_stripe = (function () {
         xhr.withCredentials = false;
       }
 
-      if ('responseType' in xhr && support.blob) {
-        xhr.responseType = 'blob';
+      if ('responseType' in xhr) {
+        if (support.blob) {
+          xhr.responseType = 'blob';
+        } else if (
+          support.arrayBuffer &&
+          request.headers.get('Content-Type') &&
+          request.headers.get('Content-Type').indexOf('application/octet-stream') !== -1
+        ) {
+          xhr.responseType = 'arraybuffer';
+        }
       }
 
-      request.headers.forEach(function(value, name) {
-        xhr.setRequestHeader(name, value);
-      });
+      if (init && typeof init.headers === 'object' && !(init.headers instanceof Headers)) {
+        Object.getOwnPropertyNames(init.headers).forEach(function(name) {
+          xhr.setRequestHeader(name, normalizeValue(init.headers[name]));
+        });
+      } else {
+        request.headers.forEach(function(value, name) {
+          xhr.setRequestHeader(name, value);
+        });
+      }
 
       if (request.signal) {
         request.signal.addEventListener('abort', abortXhr);
@@ -517,11 +598,11 @@ var svelte_stripe = (function () {
 
   fetch.polyfill = true;
 
-  if (!self.fetch) {
-    self.fetch = fetch;
-    self.Headers = Headers;
-    self.Request = Request;
-    self.Response = Response;
+  if (!global.fetch) {
+    global.fetch = fetch;
+    global.Headers = Headers;
+    global.Request = Request;
+    global.Response = Response;
   }
 
   /**
@@ -811,6 +892,9 @@ var svelte_stripe = (function () {
   function safe_not_equal(a, b) {
       return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
   }
+  function is_empty(obj) {
+      return Object.keys(obj).length === 0;
+  }
 
   function append(target, node) {
       target.appendChild(node);
@@ -848,7 +932,7 @@ var svelte_stripe = (function () {
   }
   function set_data(text, data) {
       data = '' + data;
-      if (text.data !== data)
+      if (text.wholeText !== data)
           { text.data = data; }
   }
   function custom_event(type, detail) {
@@ -1069,7 +1153,8 @@ var svelte_stripe = (function () {
           context: new Map(parent_component ? parent_component.$$.context : []),
           // everything else
           callbacks: blank_object(),
-          dirty: dirty
+          dirty: dirty,
+          skip_bound: false
       };
       var ready = false;
       $$.ctx = instance
@@ -1079,7 +1164,7 @@ var svelte_stripe = (function () {
 
               var value = rest.length ? rest[0] : ret;
               if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
-                  if ($$.bound[i])
+                  if (!$$.skip_bound && $$.bound[i])
                       { $$.bound[i](value); }
                   if (ready)
                       { make_dirty(component, i); }
@@ -1125,15 +1210,20 @@ var svelte_stripe = (function () {
               { callbacks.splice(index, 1); }
       };
   };
-  SvelteComponent.prototype.$set = function $set () {
-      // overridden by instance, if it has props
+  SvelteComponent.prototype.$set = function $set ($$props) {
+      if (this.$$set && !is_empty($$props)) {
+          this.$$.skip_bound = true;
+          this.$$set($$props);
+          this.$$.skip_bound = false;
+      }
   };
 
-  /* src/Stripe.html generated by Svelte v3.20.1 */
+  /* src/Stripe.html generated by Svelte v3.24.1 */
 
   function create_fragment(ctx) {
   	var script;
   	var script_src_value;
+  	var mounted;
   	var dispose;
 
   	return {
@@ -1141,16 +1231,20 @@ var svelte_stripe = (function () {
   			script = element("script");
   			if (script.src !== (script_src_value = "https://js.stripe.com/v3/")) { attr(script, "src", script_src_value); }
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			append(document.head, script);
-  			if (remount) { dispose(); }
-  			dispose = listen(script, "load", /*stripeLoaded*/ ctx[0]);
+
+  			if (!mounted) {
+  				dispose = listen(script, "load", /*stripeLoaded*/ ctx[0]);
+  				mounted = true;
+  			}
   		},
   		p: noop$1,
   		i: noop$1,
   		o: noop$1,
   		d: function d(detaching) {
   			detach(script);
+  			mounted = false;
   			dispose();
   		}
   	};
@@ -1184,7 +1278,7 @@ var svelte_stripe = (function () {
   		$$invalidate(2, elements = stripe.elements());
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("clientKey" in $$props) { $$invalidate(3, clientKey = $$props.clientKey); }
   		if ("stripe" in $$props) { $$invalidate(1, stripe = $$props.stripe); }
   		if ("elements" in $$props) { $$invalidate(2, elements = $$props.elements); }
@@ -1206,7 +1300,7 @@ var svelte_stripe = (function () {
   	return Stripe_1;
   }(SvelteComponent));
 
-  /* src/elements/Generic.html generated by Svelte v3.20.1 */
+  /* src/elements/Generic.html generated by Svelte v3.24.1 */
 
   function create_else_block(ctx) {
   	var div;
@@ -1217,12 +1311,12 @@ var svelte_stripe = (function () {
   		},
   		m: function m(target, anchor) {
   			insert(target, div, anchor);
-  			/*div_binding_1*/ ctx[9](div);
+  			/*div_binding_1*/ ctx[8](div);
   		},
   		p: noop$1,
   		d: function d(detaching) {
   			if (detaching) { detach(div); }
-  			/*div_binding_1*/ ctx[9](null);
+  			/*div_binding_1*/ ctx[8](null);
   		}
   	};
   }
@@ -1246,14 +1340,14 @@ var svelte_stripe = (function () {
   			append(label_1, t0);
   			append(label_1, t1);
   			append(label_1, div);
-  			/*div_binding*/ ctx[8](div);
+  			/*div_binding*/ ctx[7](div);
   		},
   		p: function p(ctx, dirty) {
   			if (dirty & /*label*/ 4) { set_data(t0, /*label*/ ctx[2]); }
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(label_1); }
-  			/*div_binding*/ ctx[8](null);
+  			/*div_binding*/ ctx[7](null);
   		}
   	};
   }
@@ -1326,17 +1420,19 @@ var svelte_stripe = (function () {
 
   	function div_binding($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
-  			$$invalidate(0, domNode = $$value);
+  			domNode = $$value;
+  			$$invalidate(0, domNode);
   		});
   	}
 
   	function div_binding_1($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
-  			$$invalidate(0, domNode = $$value);
+  			domNode = $$value;
+  			$$invalidate(0, domNode);
   		});
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("elements" in $$props) { $$invalidate(4, elements = $$props.elements); }
   		if ("kind" in $$props) { $$invalidate(5, kind = $$props.kind); }
   		if ("showLabel" in $$props) { $$invalidate(1, showLabel = $$props.showLabel); }
@@ -1354,7 +1450,6 @@ var svelte_stripe = (function () {
   		elements,
   		kind,
   		options,
-  		dispatch,
   		div_binding,
   		div_binding_1
   	];
@@ -1382,9 +1477,10 @@ var svelte_stripe = (function () {
   	return Generic;
   }(SvelteComponent));
 
-  /* src/elements/Card.html generated by Svelte v3.20.1 */
+  /* src/elements/Card.html generated by Svelte v3.24.1 */
 
   function create_fragment$2(ctx) {
+  	var generic;
   	var updating_element;
   	var updating_domNode;
   	var current;
@@ -1412,7 +1508,7 @@ var svelte_stripe = (function () {
   		generic_props.domNode = /*domNode*/ ctx[4];
   	}
 
-  	var generic = new Generic({ props: generic_props });
+  	generic = new Generic({ props: generic_props });
   	binding_callbacks.push(function () { return bind$1(generic, "element", generic_element_binding); });
   	binding_callbacks.push(function () { return bind$1(generic, "domNode", generic_domNode_binding); });
   	generic.$on("change", /*change_handler*/ ctx[7]);
@@ -1510,7 +1606,7 @@ var svelte_stripe = (function () {
   		bubble($$self, event);
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("elements" in $$props) { $$invalidate(0, elements = $$props.elements); }
   		if ("label" in $$props) { $$invalidate(1, label = $$props.label); }
   		if ("options" in $$props) { $$invalidate(2, options = $$props.options); }
@@ -1546,12 +1642,13 @@ var svelte_stripe = (function () {
   	return Card;
   }(SvelteComponent));
 
-  /* src/CreditCardForm.html generated by Svelte v3.20.1 */
+  /* src/CreditCardForm.html generated by Svelte v3.24.1 */
 
   function create_if_block$1(ctx) {
   	var form;
+  	var card;
   	var current;
-  	var card = new Card({ props: { elements: /*elements*/ ctx[1] } });
+  	card = new Card({ props: { elements: /*elements*/ ctx[1] } });
 
   	return {
   		c: function c() {
@@ -1585,6 +1682,7 @@ var svelte_stripe = (function () {
   }
 
   function create_fragment$3(ctx) {
+  	var stripe_1;
   	var updating_stripe;
   	var updating_elements;
   	var t;
@@ -1609,7 +1707,7 @@ var svelte_stripe = (function () {
   		stripe_1_props.elements = /*elements*/ ctx[1];
   	}
 
-  	var stripe_1 = new Stripe_1({ props: stripe_1_props });
+  	stripe_1 = new Stripe_1({ props: stripe_1_props });
   	binding_callbacks.push(function () { return bind$1(stripe_1, "stripe", stripe_1_stripe_binding); });
   	binding_callbacks.push(function () { return bind$1(stripe_1, "elements", stripe_1_elements_binding); });
   	var if_block = /*elements*/ ctx[1] && create_if_block$1(ctx);
@@ -1651,7 +1749,10 @@ var svelte_stripe = (function () {
   			if (/*elements*/ ctx[1]) {
   				if (if_block) {
   					if_block.p(ctx, dirty);
-  					transition_in(if_block, 1);
+
+  					if (dirty & /*elements*/ 2) {
+  						transition_in(if_block, 1);
+  					}
   				} else {
   					if_block = create_if_block$1(ctx);
   					if_block.c();
@@ -1703,7 +1804,7 @@ var svelte_stripe = (function () {
   		$$invalidate(1, elements);
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("clientKey" in $$props) { $$invalidate(0, clientKey = $$props.clientKey); }
   	};
 

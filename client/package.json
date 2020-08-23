@@ -1,14 +1,14 @@
 {
-  "name": "svelte-v3-buble-template",
-  "version": "1.0.0",
-  "description": "A Svelte setup with Rollup and Buble",
+  "name": "basicweb-catalog-client",
+  "version": "0.0.1",
+  "description": "Client for basicweb-catalog",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
-    "build:prod": "TARGET=min rollup -c"
+    "build:min": "TARGET=min rollup -c",
+    "build:install": "TARGET=install rollup -c"
   },
   "author": "M. Bellaire",
-  "license": "ISC",
   "devDependencies": {
     "promise-polyfill": "^8.1.0",
     "rollup": "^2.1.0",

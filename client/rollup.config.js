@@ -7,8 +7,26 @@ import buble from '@rollup/plugin-buble'
 import polyfill from 'rollup-plugin-polyfill'
 import { terser } from 'rollup-plugin-terser';
 
-const prod = process.env.TARGET === "min";
-const project = "svelte_stripe";
+const install = process.env.TARGET === "install";
+const min = install || process.env.TARGET === "min";
+
+const install_js_path = "../static/root/js";
+const debug_js_path = "dist/js";
+const install_css_path = "../static/root/css";
+const debug_css_path = "dist/css";
+
+
+const js_dest_path 
+      = install 
+      ? install_js_path
+      : debug_js_path;
+
+const css_dest_path 
+      = install 
+      ? install_css_path
+      : debug_css_path;
+
+const project = "basicweb_catalog_client";
 const author  = "M. Bellaire";
 const year    = "2020";
 const banner=
@@ -17,8 +35,7 @@ const banner=
   * (C) ${year} ${author}
   * All rights Reserved
  */
-`
-
+`;
 const terser_comments = function terser_comments(node, comment) {
       var text = comment.value;
       var type = comment.type;
@@ -32,7 +49,9 @@ const terser_comments = function terser_comments(node, comment) {
 export default {
   input: 'src/main.js',
   output: {
-    file: (prod) ? `dist/js/${project}.min.js` : `dist/js/${project}.js`,
+    file: (min) 
+      ? `${js_dest_path}/${project}.min.js` 
+      : `${js_dest_path}/${project}.js`,
     format: 'iife',
     name:  project,
     banner
@@ -52,11 +71,11 @@ export default {
 
         // creates `main.css` and `main.css.map` — pass `false`
         // as the second argument if you don't want the sourcemap
-        css.write(`dist/css/${project}.css`);
+        css.write(`${css_dest_path}/${project}.css`);
       }
     }),
     buble({transforms : {dangerousForOf: true}}),
-    prod && terser({
+    min && terser({
         output : {
             comments : terser_comments 
         }
