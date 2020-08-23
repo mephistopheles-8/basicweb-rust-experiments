@@ -13,6 +13,7 @@ pub mod util;
 pub mod actions;
 pub mod routes;
 
+
 pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
         "title": "Welcome"

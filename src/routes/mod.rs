@@ -12,6 +12,9 @@ pub mod resource;
 pub mod post;
 pub mod tag;
 pub mod tag_binding;
+pub mod catalog;
+pub mod product;
+pub mod transaction;
 
 
 pub fn gallery_api_read( cfg: &mut web::ServiceConfig ) {
