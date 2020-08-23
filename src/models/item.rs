@@ -1,4 +1,4 @@
-use super::schema::*;
+use crate::schema::*;
 use chrono::NaiveDateTime;
 use crate::util::uuid_json;
 use serde::{Serialize,Deserialize};

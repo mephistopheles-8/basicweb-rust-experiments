@@ -2,7 +2,7 @@
 with pkgs;
 
 rustPlatform.buildRustPackage rec {
-  name = "basicweb-app-${version}";
+  name = "basicweb-app-gallery-${version}";
   version = "0.0.1";
   src = ./.;
   nativeBuildInputs = [ diesel-cli ]; 
@@ -19,7 +19,7 @@ rustPlatform.buildRustPackage rec {
   
   postInstall = ''
     cp -rf $src/static $out/static
-    echo "[basicweb-app] Running database migrations"
+    echo "[basicweb-app-gallery] Running database migrations"
     mkdir $out/data
     ${diesel-cli}/bin/diesel migration \
       --database-url $out/data/database.sqlite \
