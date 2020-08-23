@@ -24,25 +24,8 @@ pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
 }
 
 pub fn min_api( cfg: &mut web::ServiceConfig ) {
+    routes::user::users_api(cfg);
     cfg
-      .service(web::resource("/").route(web::get().to(index)))
-      /*
-      .service(web::resource("/items")
-          .route(web::get().to(items_all_json))
-          .route(web::post().to(item_create_json))
-        )
-      .service(web::resource("/items/{id}")
-          .route(web::get().to(item_by_id_json))
-          .route(web::post().to(item_update_by_id_json))
-        )
-      .service(web::resource("/items/{id}/name")
-          .route(web::get().to(item_name_by_id_json))
-          .route(web::post().to(item_update_name_by_id_json))
-        )
-      .service(web::resource("/items/{id}/description")
-          .route(web::get().to(item_description_by_id_json))
-          .route(web::post().to(item_update_description_by_id_json))
-          .route(web::delete().to(item_clear_description_by_id_json))
-        )*/;
+      .service(web::resource("/").route(web::get().to(index)));
 }
 
