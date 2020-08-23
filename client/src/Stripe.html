@@ -1,0 +1,34 @@
+<script>
+    import { onMount } from 'svelte';
+
+    export let clientKey;
+
+    let stripeReady = false;
+    let mounted = false;
+
+    export let stripe;
+    export let elements;
+
+    onMount(() => {
+        mounted = true;
+        if(stripeReady) {
+            stripeInit();
+        }
+    });
+
+    function stripeLoaded() {
+        stripeReady = true;
+        if (mounted) {
+            stripeInit();
+        }
+    }
+
+    function stripeInit() {
+        stripe = Stripe(clientKey);
+        elements = stripe.elements();
+    }
+
+</script>
+<svelte:head>
+    <script src="https://js.stripe.com/v3/" on:load={stripeLoaded}></script>
+</svelte:head>

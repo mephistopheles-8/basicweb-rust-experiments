@@ -5,6 +5,7 @@ import MapSearch from "./MapSearch.html"
 import MapListing from "./MapListing.html"
 import LocationCreate from "./LocationCreate.html"
 import Leaflet from "leaflet";
+import CreditCardForm from "./CreditCardForm.html"
 
 const L = Leaflet;
 
@@ -33,5 +34,8 @@ export default {
     },
     board( target, props ){ 
         return  new Board({target,props});
+    },
+    creditCardForm( target, props ){ 
+        return  new CreditCardForm({target,props}); 
     }
 }

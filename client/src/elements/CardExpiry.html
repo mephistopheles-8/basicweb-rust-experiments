@@ -1,0 +1,21 @@
+<script>
+    import Generic from "./Generic.html";
+
+    const kind = "cardExpiry";
+
+    export let elements;
+    export let label = "Expiry";
+    export let options;
+
+    let element;
+    let domNode;
+
+</script>
+<Generic
+    elements={elements} 
+    label={label}
+    kind={kind}
+    options={options}
+    bind:element={element}    
+    bind:domNode={domNode} 
+    on:change on:ready on:focus on:blur on:escape on:click />
