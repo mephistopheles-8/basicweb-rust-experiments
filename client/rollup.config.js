@@ -26,7 +26,7 @@ const css_dest_path
       ? install_css_path
       : debug_css_path;
 
-const project = "basicweb_gallery_app_client";
+const project = "basicweb_restaurant_app_client";
 const author  = "M. Bellaire";
 const year    = "2020";
 const banner=

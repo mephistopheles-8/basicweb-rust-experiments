@@ -1,10 +1,10 @@
 /**
-  * basicweb_gallery_app_client
+  * basicweb_restaurant_app_client
   * (C) 2020 M. Bellaire
   * All rights Reserved
  */
 
-var basicweb_gallery_app_client = (function () {
+var basicweb_restaurant_app_client = (function () {
   'use strict';
 
   var support = {

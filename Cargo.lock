@@ -339,7 +339,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "app-gallery"
+name = "app-restaurant"
 version = "0.1.0"
 dependencies = [
  "actix-files",

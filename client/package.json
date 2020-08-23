@@ -1,7 +1,7 @@
 {
-  "name": "basicweb-gallery-app-client",
+  "name": "basicweb-restaurant-app-client",
   "version": "0.0.1",
-  "description": "Client for basicweb-gallery-app",
+  "description": "Client for basicweb-restaurant-app",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
