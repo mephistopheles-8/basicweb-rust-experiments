@@ -1,0 +1,11 @@
+{{#*inline "content"}}
+<form method="POST" action="/verify-account">
+    <p>Please enter the verification code that was sent to the email address you have entered.</p>
+    <div>
+        <label for="code">Code</label>
+        <input type="text" name="code" id="code" title="Verification Code" required> 
+    </div>
+    <input type="submit" value="Verify" title="Verify">
+</form>
+{{/inline}}
+{{~> (parent)~}}

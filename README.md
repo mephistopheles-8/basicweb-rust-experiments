@@ -1,5 +1,9 @@
-# Basic
+# App-Gallery
 
-This is a starter project with a basic
-named record.  Should be a useful starting
-point for most subsystems.
+Starter app for gallery sites
+Uses:
+- app
+- users
+- galleries
+- board
+
