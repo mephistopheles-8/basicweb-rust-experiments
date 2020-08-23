@@ -36,6 +36,22 @@ table! {
 }
 
 table! {
+    posts (id) {
+        id -> Integer,
+        parent -> Nullable<Integer>,
+        depth -> Integer,
+        title -> Nullable<Text>,
+        description -> Nullable<Text>,
+        body -> Text,
+        status -> Integer,
+        flagged -> Bool,
+        uuid -> Binary,
+        created -> Timestamp,
+        updated -> Timestamp,
+    }
+}
+
+table! {
     resources (id) {
         id -> Integer,
         filepath -> Text,
@@ -84,6 +100,7 @@ allow_tables_to_appear_in_same_query!(
     galleries,
     gallery_items,
     items,
+    posts,
     resources,
     secret_questions,
     users,

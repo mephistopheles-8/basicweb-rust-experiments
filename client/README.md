@@ -1,6 +1,6 @@
-# basicweb-galleries-client
+# basicweb-gallery-app-client
 
-A client for the basicweb-galleries app.
+A client for basicweb-gallery-app.
 
 Scripts:
 - `build` - do a debug build
