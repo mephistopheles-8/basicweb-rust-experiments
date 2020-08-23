@@ -1,0 +1,18 @@
+{{#*inline "content"}}
+    <div id="location-show"></div>
+    <script type="text/javascript" src="/js/basicweb_restaurant_app_client.min.js"></script>
+    <script type="text/javascript">
+        basicweb_restaurant_app_client
+            .iconDefaultImagePath("/images/");
+        fetch("{{{json_url}}}")
+            .then( res => res.json() ) 
+            .then( loc => {
+                let locations = loc instanceof Array ? loc : [loc];
+                basicweb_restaurant_app_client
+                    .mapListing( document.getElementById("location-show"), {
+                            locations
+                      });
+             });
+    </script>
+{{/inline}}
+{{~> (parent)~}}

@@ -10,3 +10,4 @@ pub mod tag_binding;
 pub mod catalog;
 pub mod product;
 pub mod transaction;
+pub mod location;

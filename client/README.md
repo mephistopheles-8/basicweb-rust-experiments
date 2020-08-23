@@ -1,6 +1,6 @@
-# basicweb-gallery-app-client
+# basicweb-restaurant-app-client
 
-A client for basicweb-gallery-app.
+A client for basicweb-restaurant-app.
 
 Scripts:
 - `build` - do a debug build

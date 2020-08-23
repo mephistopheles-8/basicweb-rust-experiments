@@ -1,6 +1,6 @@
-# App-Gallery
+# App-Restaurant
 
-Starter app for gallery sites
+Starter app for restaurant sites
 Uses:
 - app
 - users

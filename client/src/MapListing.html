@@ -1,0 +1,44 @@
+<script>
+    import Leaflet         from "./Leaflet.html"
+
+    /**
+     * Locations are of type {
+     *     lat: number
+     *   , lng: number
+     *   , marker : Leaflet.Marker options
+     *  } 
+     */
+    export let locations = [];
+    export let mapType = "OpenStreetMap";
+
+    let leaflet;
+
+    $: {
+        if (leaflet) {
+            leaflet.clearMarkers();
+            let bounds = locations.map( loc => {
+                let latlng = [loc.lat, loc.lng];
+                leaflet.addMarker( latlng, loc.marker );
+                return latlng;
+            });
+            if (bounds.length)
+                leaflet.fitBounds( bounds, {
+                    padding : [50,50]
+                });
+        }
+    };
+
+    export function setLocations( locs ) {
+        locations = locs;
+    }
+
+    export function addLocation( loc ) {
+        let bounds = leaflet.getBounds();
+        let latlng = [loc.lat, loc.lng];
+        bounds.extend( latlng );
+        leaflet.addMarker( latlng );
+        leaflet.fitBounds( bounds );
+    }
+</script>
+
+<Leaflet mapType={mapType} bind:this={leaflet} />

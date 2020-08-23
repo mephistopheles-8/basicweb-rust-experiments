@@ -49,6 +49,24 @@ table! {
 }
 
 table! {
+    locations (id) {
+        id -> Integer,
+        name -> Text,
+        description -> Nullable<Text>,
+        address -> Nullable<Text>,
+        city -> Nullable<Text>,
+        region -> Nullable<Text>,
+        postal -> Nullable<Text>,
+        country -> Nullable<Text>,
+        lat -> Double,
+        lng -> Double,
+        uuid -> Binary,
+        created -> Timestamp,
+        updated -> Timestamp,
+    }
+}
+
+table! {
     posts (id) {
         id -> Integer,
         parent -> Nullable<Integer>,
@@ -175,6 +193,7 @@ allow_tables_to_appear_in_same_query!(
     galleries,
     gallery_items,
     items,
+    locations,
     posts,
     products,
     resources,
