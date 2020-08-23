@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="css/svelte_stripe.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Svelte Stripe</title>
+</head>
+<body>
+    <header>
+        <h1>Svelte Stripe</h1>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </nav>
+    <main id="main"></main>
+    <footer></footer>
+    <script src="js/svelte_stripe.js"></script>
+    <script>
+    svelte_stripe.creditCardForm(document.getElementById("main"), {
+        clientKey : "pk_test_wrongkey"
+    });
+    </script>
+</body>
+</html>
