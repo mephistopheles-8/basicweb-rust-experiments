@@ -28,6 +28,39 @@ pub async fn index(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse 
 pub fn min_api( cfg: &mut web::ServiceConfig ) {
     routes::user::users_api(cfg);
     cfg
-      .service(web::resource("/").route(web::get().to(index)));
+      .service( 
+          web::scope("/api/v1/")
+            .service(web::resource("/galleries")
+                .route(web::get().to(routes::user_gallery::user_galleries_by_login_json))
+                .route(web::post().to(routes::user_gallery::user_gallery_create_json))
+            )
+            .service(web::resource("/galleries/{uuid}")
+                .route(web::get().to(routes::user_gallery::user_gallery_by_uuid_json))
+            )
+            .service(web::resource("/galleries/items/{uuid}")
+                .route(web::get().to(routes::user_gallery_item::user_gallery_item_by_uuid_json))
+            )
+            .service(web::resource("/galleries/{uuid}/items")
+                .route(web::get().to(routes::user_gallery_item::user_gallery_items_by_gallery_uuid_json))
+                .route(web::post().to(routes::user_gallery_item::user_gallery_item_multipart_image))
+            )
+          .service(web::resource("/{handle}/galleries/{url}")
+              .route(web::get().to(routes::user_gallery::user_gallery_by_url_json))
+          )
+          .service(web::resource("/{handle}/galleries/{url}/items")
+              .route(web::get().to(routes::user_gallery_item::user_gallery_items_by_url_json))
+          )
+          .service(web::resource("/{handle}/galleries/{galleryUrl}/items/{itemUrl}")
+              .route(web::get().to(routes::user_gallery_item::user_gallery_item_by_url_json))
+          )
+      )
+      .service(web::resource("/galleries/create")
+          .route(web::get().to(routes::user_gallery::user_gallery_create_form))
+      )
+      .service(web::resource("/{handle}/galleries/{galleryUrl}/items/{itemUrl}")
+          .route(web::get().to(routes::user_gallery_item::user_gallery_item_serve_by_url))
+      )
+      .service(web::resource("/").route(web::get().to(index)))
+      ;
 }
 

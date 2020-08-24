@@ -220,7 +220,7 @@ pub async fn user_gallery_item_serve_by_url(
 }
 
 
-pub async fn gallery_item_by_url_json(
+pub async fn user_gallery_item_by_url_json(
     path: web::Path<(String,String,String)>
   , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
@@ -241,7 +241,7 @@ pub async fn gallery_item_by_url_json(
     }
 }
 
-pub async fn gallery_item_by_uuid_json(
+pub async fn user_gallery_item_by_uuid_json(
     path: web::Path<Uuid>
   , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {

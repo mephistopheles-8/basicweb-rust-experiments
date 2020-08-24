@@ -3,3 +3,4 @@
 *.sqlite
 *.tar.gz
 *.orig
+/tmp
