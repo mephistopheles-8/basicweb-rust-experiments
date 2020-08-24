@@ -90,6 +90,32 @@ table! {
 }
 
 table! {
+    user_galleries (id) {
+        id -> Integer,
+        user -> Integer,
+        gallery -> Integer,
+        permissions -> Integer,
+        ord -> Integer,
+        url -> Nullable<Text>,
+        created -> Timestamp,
+        updated -> Timestamp,
+    }
+}
+
+table! {
+    user_gallery_items (id) {
+        id -> Integer,
+        user -> Integer,
+        gallery_item -> Integer,
+        permissions -> Integer,
+        ord -> Integer,
+        url -> Nullable<Text>,
+        created -> Timestamp,
+        updated -> Timestamp,
+    }
+}
+
+table! {
     users (id) {
         id -> Integer,
         name -> Text,
@@ -114,6 +140,10 @@ table! {
 joinable!(gallery_items -> galleries (gallery));
 joinable!(gallery_items -> resources (resource));
 joinable!(tag_bindings -> tags (tag));
+joinable!(user_galleries -> galleries (gallery));
+joinable!(user_galleries -> users (user));
+joinable!(user_gallery_items -> gallery_items (gallery_item));
+joinable!(user_gallery_items -> users (user));
 
 allow_tables_to_appear_in_same_query!(
     galleries,
@@ -124,5 +154,7 @@ allow_tables_to_appear_in_same_query!(
     secret_questions,
     tag_bindings,
     tags,
+    user_galleries,
+    user_gallery_items,
     users,
 );

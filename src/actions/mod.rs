@@ -7,3 +7,5 @@ pub mod resource;
 pub mod post;
 pub mod tag;
 pub mod tag_binding;
+pub mod user_gallery;
+pub mod user_gallery_item;

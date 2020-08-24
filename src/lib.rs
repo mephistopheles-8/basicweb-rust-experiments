@@ -5,6 +5,7 @@ extern crate serde_json;
 
 use handlebars::Handlebars;
 use actix_web::{web,HttpResponse};
+use actix_identity::Identity;
 
 pub mod db;
 pub mod schema;
@@ -13,10 +14,11 @@ pub mod util;
 pub mod actions;
 pub mod routes;
 
-pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+pub async fn index(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
         "title": "Welcome"
       , "parent" : "main"
+      , "logged_in": id.identity().is_some()
     });
     let body = hb.render("content/index", &data).unwrap();
 

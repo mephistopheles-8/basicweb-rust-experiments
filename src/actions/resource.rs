@@ -6,7 +6,7 @@ use crate::db::Connection as Connection0;
 use crate::actions::gallery::*;
 use crate::actions::gallery_item::*;
 
-fn resource_create ( 
+pub fn resource_create ( 
       filepath0: &str
     , mime0: &str
     , kind0: i32
