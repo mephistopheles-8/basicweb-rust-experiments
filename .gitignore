@@ -3,3 +3,4 @@ database.sqlite
 *.swp
 /tmp
 .env
+*.tar.gz
