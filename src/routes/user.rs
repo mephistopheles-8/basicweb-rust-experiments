@@ -20,6 +20,7 @@ pub enum UserSession {
     Authorized(Uuid,Vec<Uuid>),
     Partial(Uuid),
     Questions(Uuid,i32),
+    MustResetPassword(Uuid),
 }
 
 impl UserSession {
@@ -47,11 +48,18 @@ impl UserSession {
             _ => false,
         }
     }
+    pub fn must_reset_password(&self) -> bool {
+        match self {
+            UserSession::MustResetPassword(_) => true,
+            _ => false,
+        }
+    }
     pub fn uuid(&self) -> &Uuid {
         match self {
             UserSession::Authorized(uuid,_) => uuid,
             UserSession::Partial(uuid) => uuid,
             UserSession::Questions(uuid,_) => uuid,
+            UserSession::MustResetPassword(uuid) => uuid,
         }
     }
     pub fn simulate_push(&mut self,u0:Uuid) -> bool {
@@ -121,7 +129,11 @@ pub async fn login_action_json(
                     HttpResponse::InternalServerError().finish()
              })?.build();
 
-        let sess = UserSession::Authorized(uuid,vec![]);
+        let sess = if (user.permissions & 1) > 0 {
+            UserSession::Authorized(uuid,vec![])
+        }else{
+            UserSession::Partial(uuid)
+        };
 
         id.remember(serde_json::to_string(&sess).unwrap());
 
@@ -156,14 +168,18 @@ pub async fn login_action(
                     HttpResponse::InternalServerError().finish()
              })?.build();
 
-        let sess = UserSession::Authorized(uuid,vec![]);
+        let sess = if (user.permissions & 1) > 0 {
+            UserSession::Authorized(uuid,vec![])
+        }else{
+            UserSession::Partial(uuid)
+        };
 
         id.remember(serde_json::to_string(&sess).unwrap());
 
-        if user.permissions == 0 {
-            Ok(HttpResponse::Found().header("location", "/verify-account").finish())
-        }else{
+        if sess.is_authorized() {
             Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+        }else{
+            Ok(HttpResponse::Found().header("location", "/verify-account").finish())
         }
 
     } else {
@@ -252,7 +268,7 @@ pub async fn register_action(
 
         // FIXME: protect against timing attacks
         web::block(move || {
-            send_validation_email(user,hb)
+            send_validation_email(user,hb,VerificationEmailType::VerifyAccount)
         }).await
           .map_err(|e| {
                 eprintln!("{}", e);
@@ -329,13 +345,13 @@ pub async fn reset_password_action(
        
        let sess : UserSession = serde_json::from_str(&sess)?;
 
-       if sess.is_authorized() {
+       if sess.is_authorized() || sess.must_reset_password() {
            if data.password.len() > 8 &&
               data.password == data.confirm_password {
-
+                  let uuid = *sess.uuid();
                   web::block(move || 
                     user_update_password_by_uuid(
-                        *sess.uuid(), &data.password, &conn
+                        uuid, &data.password, &conn
                       )
                     ).await
                     .map_err(|e| {
@@ -343,7 +359,11 @@ pub async fn reset_password_action(
                         HttpResponse::InternalServerError().finish()
                     })?;
 
-                Ok(HttpResponse::Found().header("location", "/reset-password").finish())
+                if sess.must_reset_password() {
+                    let sess0 = UserSession::Authorized(uuid,vec![]);
+                    id.remember(serde_json::to_string(&sess0)?);
+                }
+                Ok(HttpResponse::Found().header("location", "/manage-account").finish())
            }else {
                 Ok(HttpResponse::Found().header("location", "/reset-password").finish())
            }
@@ -608,9 +628,9 @@ pub async fn questions_action(
                 })?;
            
                 if is_valid {
-                    let sess0 = UserSession::Authorized(*sess.uuid(),vec![]);
+                    let sess0 = UserSession::MustResetPassword(*sess.uuid());
                     id.remember(serde_json::to_string(&sess0)?);
-                    Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+                    Ok(HttpResponse::Found().header("location", "/reset-password").finish())
 
                 }else {
                     Ok(HttpResponse::Found().header("location", "/questions").finish())
@@ -691,7 +711,12 @@ pub async fn recover_password_form(id: Identity, hb: web::Data<Handlebars<'_>>) 
     }
 }
 
-pub fn send_validation_email( user : models::User, hb: web::Data<Handlebars<'_>> ) 
+pub enum VerificationEmailType {
+    VerifyAccount,
+    ForgotPassword
+}
+
+pub fn send_validation_email( user : models::User, hb: web::Data<Handlebars<'_>>, kind: VerificationEmailType ) 
     -> Result<lettre::transport::smtp::response::Response, lettre::transport::smtp::error::Error> {
 
     let from = std::env::var("EMAIL_NOREPLY").expect("EMAIL_NOREPLY");
@@ -706,7 +731,10 @@ pub fn send_validation_email( user : models::User, hb: web::Data<Handlebars<'_>>
       , "pubkey" : user.pubkey.unwrap()
     });
 
-    let body = hb.render("email/verify-account", &data).unwrap();
+    let body = hb.render(match kind {
+        VerificationEmailType::VerifyAccount => "email/verify-account",
+        VerificationEmailType::ForgotPassword => "email/forgot-password",
+    }, &data).unwrap();
 
     let email = Message::builder()
         .from(from.parse().unwrap())
@@ -762,7 +790,7 @@ pub async fn recover_password_action(
                            RecoverPasswordError::DbError
                        })?.unwrap();
 
-                send_validation_email(user,hb)
+                send_validation_email(user,hb,VerificationEmailType::ForgotPassword)
                     .map_err(|e| {
                         eprintln!("{}", e);
                         RecoverPasswordError::EmailError
@@ -814,7 +842,7 @@ pub async fn recover_password_action_json(
                            RecoverPasswordError::DbError
                        })?.unwrap();
 
-                send_validation_email(user,hb)
+                send_validation_email(user,hb,VerificationEmailType::ForgotPassword)
                     .map_err(|e| {
                         eprintln!("{}", e);
                         RecoverPasswordError::EmailError
