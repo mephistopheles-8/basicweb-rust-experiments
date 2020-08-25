@@ -24,6 +24,7 @@ pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
 }
 
 pub fn min_api( cfg: &mut web::ServiceConfig ) {
+    routes::tag::tags_api(cfg);
     cfg
       .service(web::resource("/").route(web::get().to(index)))
       /*
