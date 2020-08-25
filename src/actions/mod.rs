@@ -12,3 +12,4 @@ pub mod user_gallery_item;
 pub mod gallery_tag;
 pub mod gallery_item_tag;
 pub mod post_tag;
+pub mod user_post;
