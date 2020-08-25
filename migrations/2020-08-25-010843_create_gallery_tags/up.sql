@@ -48,6 +48,6 @@ AFTER DELETE On gallery_item_tags
 BEGIN
    DELETE FROM tag_bindings 
        WHERE tag_bindings.kind = 4 
-         AND tag_bindings.item_id = OLD.gallery 
+         AND tag_bindings.item_id = OLD.gallery_item 
          AND tag_bindings.tag = OLD.tag; 
 END;

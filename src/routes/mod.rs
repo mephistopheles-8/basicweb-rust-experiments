@@ -14,7 +14,9 @@ pub mod tag;
 pub mod tag_binding;
 pub mod user_gallery;
 pub mod user_gallery_item;
-
+pub mod gallery_tag;
+pub mod gallery_item_tag;
+pub mod post_tag;
 
 pub fn gallery_api_read( cfg: &mut web::ServiceConfig ) {
     cfg

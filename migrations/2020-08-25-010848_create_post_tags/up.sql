@@ -14,7 +14,7 @@ CREATE TRIGGER trigger_post_tags_insert
 AFTER INSERT On post_tags
 BEGIN
    INSERT INTO tag_bindings (kind, item_id, tag) 
-        VALUES (2,NEW.gallery,NEW.tag);
+        VALUES (2,NEW.post,NEW.tag);
 END;
 
 CREATE TRIGGER trigger_post_tags_delete
@@ -22,6 +22,6 @@ AFTER DELETE On post_tags
 BEGIN
    DELETE FROM tag_bindings 
        WHERE kind = 2
-         AND item_id = OLD.gallery 
+         AND item_id = OLD.post
          AND tag = OLD.tag; 
 END;
