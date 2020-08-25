@@ -618,6 +618,16 @@ pub async fn location_show_all_html(hb: web::Data<Handlebars<'_>>) -> HttpRespon
     HttpResponse::Ok().body(body)
 }
 
+pub async fn locations_by_distance_html(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
+    let data = json!({
+        "title": "Locations By Distance"
+      , "parent" : "main"
+    });
+    let body = hb.render("content/location-by-distance", &data).unwrap();
+
+    HttpResponse::Ok().body(body)
+}
+
 pub async fn location_show_html(
      path: web::Path<i32>
    , hb: web::Data<Handlebars<'_>>
@@ -754,6 +764,10 @@ pub fn locations_api_all( cfg: &mut web::ServiceConfig ) {
       .service(
           web::resource("/locations")
             .route(web::get().to(locations_listing_json))
+        )
+      .service(
+          web::resource("/locations/by_distance")
+            .route(web::get().to(locations_by_distance_html))
         )
       .service(
           web::resource("/locations/show")

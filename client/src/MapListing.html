@@ -10,7 +10,9 @@
      */
     export let locations = [];
     export let mapType = "OpenStreetMap";
-
+    export let fitBounds = true;
+    // Read only
+    export let map;
     let leaflet;
 
     $: {
@@ -21,12 +23,16 @@
                 leaflet.addMarker( latlng, loc.marker );
                 return latlng;
             });
-            if (bounds.length)
+            if (bounds.length && fitBounds)
                 leaflet.fitBounds( bounds, {
                     padding : [50,50]
                 });
         }
     };
+
+    export function getMap( ) {
+        return leaflet.getMap();
+    }
 
     export function setLocations( locs ) {
         locations = locs;
@@ -37,8 +43,9 @@
         let latlng = [loc.lat, loc.lng];
         bounds.extend( latlng );
         leaflet.addMarker( latlng );
-        leaflet.fitBounds( bounds );
+        if( fitBounds ) 
+            leaflet.fitBounds( bounds );
     }
 </script>
 
-<Leaflet mapType={mapType} bind:this={leaflet} />
+<Leaflet bind:map={map} mapType={mapType} bind:this={leaflet} />

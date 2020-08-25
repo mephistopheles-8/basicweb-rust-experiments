@@ -1,19 +1,42 @@
 <script>
+    // Notes about behaviour: 
+    // the old location list will be purged
+    // when there is a new location being searched for.
+    // it is up to the user to set new locations on:selected.
+    // caching, etc, would be higher-level
+
     import NominatimSearch from "./NominatimSearch.html"
-    import Leaflet         from "./Leaflet.html"
+    import MapListing from "./MapListing.html"
 
     export let mapType = "OpenStreetMap";
 
-    let leaflet;
+    export let selectedLocation;
+    export let locations = [];
+    export let marker;
+    export let fitBounds = true;
+    // read only
+    export let map;
+    let mapListing;
 
     function mapSelected( evt ) {
         let {lat,lon} = evt.detail;
-        let latlng = [lat,lon];
-        leaflet.clearMarkers();
-        leaflet.addMarker( latlng );
-        leaflet.zoomToLocation( latlng );
+        selectedLocation = {lat,lng:lon,marker};
+    }
+    
+    export function getMap( ) {
+        return mapListing.getMap();
+    }
+
+    export function setLocations( locs ) {
+        locations = locs;
     }
 </script>
 
 <NominatimSearch on:selected={mapSelected} on:selected on:change />
-<Leaflet mapType={mapType} bind:this={leaflet} />
+{#if selectedLocation}
+<MapListing bind:this={mapListing}
+            bind:map={map}
+            fitBounds={fitBounds} 
+            mapType={mapType} 
+            locations={[selectedLocation,...locations]} />
+{/if}

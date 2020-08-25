@@ -4,6 +4,7 @@ import Board from "./Board.html"
 import MapSearch from "./MapSearch.html"
 import MapListing from "./MapListing.html"
 import LocationCreate from "./LocationCreate.html"
+import LocationByDistance from "./LocationByDistance.html"
 import Leaflet from "leaflet";
 import CreditCardForm from "./CreditCardForm.html"
 
@@ -25,6 +26,9 @@ export default {
     },
     locationCreate( target, props ){ 
         return  new LocationCreate({target,props}); 
+    },
+    locationByDistance( target, props ){ 
+        return  new LocationByDistance({target,props}); 
     },
     gallery( target, props ){ 
         return  new Gallery({target,props}); 

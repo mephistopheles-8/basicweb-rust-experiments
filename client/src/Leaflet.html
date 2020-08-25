@@ -9,9 +9,10 @@
     const L = Leaflet;
 
     export let mapType = OpenStreetMap;
+    // read only
+    export let map;
 
     let mapElement;
-    let map;
     let markers = [];
 
     function openStreetMapSetup( map ) {
