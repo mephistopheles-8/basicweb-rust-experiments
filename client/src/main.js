@@ -1,6 +1,7 @@
 import MapSearch from "./MapSearch.html"
 import MapListing from "./MapListing.html"
 import LocationCreate from "./LocationCreate.html"
+import LocationByDistance from "./LocationByDistance.html"
 import Leaflet from "leaflet";
 
 const L = Leaflet;
@@ -21,5 +22,8 @@ export default {
     },
     locationCreate( target, props ){ 
         return  new LocationCreate({target,props}); 
+    },
+    locationByDistance( target, props ){ 
+        return  new LocationByDistance({target,props}); 
     }
 }
