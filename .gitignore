@@ -2,3 +2,4 @@
 database.sqlite
 .env
 *.swp
+*.tar.gz
