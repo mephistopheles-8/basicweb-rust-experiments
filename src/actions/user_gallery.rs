@@ -8,12 +8,12 @@ use uuid::Uuid;
 pub fn user_gallery_create(
       user0 : i32
     , gallery0: i32 
-    , data : &models::UserGalleryPost
+    , data : &models::UserGalleryUpd
     , conn: &Connection0 
   ) -> Result<usize, diesel::result::Error> {
     use crate::schema::user_galleries::dsl::*;
 
-    let new_user_gallery = models::NewUserGallery {
+    let new_user_gallery = models::UserGalleryNew {
         user : user0
      ,  gallery: gallery0
      ,  permissions: data.permissions
@@ -26,8 +26,8 @@ pub fn user_gallery_create(
 
 pub fn user_gallery_create0(
       user0 : i32
-    , data0 : &models::GalleryPost
-    , data1 : &models::UserGalleryPost
+    , data0 : &models::GalleryUpd
+    , data1 : &models::UserGalleryUpd
     , conn: &Connection0
   ) -> Result<Uuid, diesel::result::Error> {
     
@@ -50,8 +50,8 @@ pub fn user_gallery_create0(
 
 pub fn user_gallery_create0_uuid(
       user0 : Uuid
-    , data0 : &models::GalleryPost
-    , data1 : &models::UserGalleryPost
+    , data0 : &models::GalleryUpd
+    , data1 : &models::UserGalleryUpd
     , conn: &Connection0
   ) -> Result<Uuid, diesel::result::Error> {
     

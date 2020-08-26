@@ -18,7 +18,7 @@ pub struct Gallery {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "galleries"]
-pub struct GalleryPost {
+pub struct GalleryUpd {
     pub kind: i32,
     pub name: String,
     pub description: String,
@@ -26,7 +26,7 @@ pub struct GalleryPost {
 
 #[derive(Insertable)]
 #[table_name = "galleries"]
-pub struct NewGallery<'a> {
+pub struct GalleryNew<'a> {
     pub kind: i32,
     pub name: &'a str,
     pub description: &'a str,
@@ -50,7 +50,7 @@ pub struct GalleryItem {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "gallery_items"]
-pub struct GalleryItemPost {
+pub struct GalleryItemUpd {
     pub name : String,
     pub description : String,
     pub kind : i32,
@@ -58,7 +58,7 @@ pub struct GalleryItemPost {
 
 #[derive(Insertable)]
 #[table_name = "gallery_items"]
-pub struct NewGalleryItem<'a> {
+pub struct GalleryItemNew<'a> {
     pub gallery: i32,
     pub resource: i32,
     pub kind: i32,
@@ -82,7 +82,7 @@ pub struct Resource {
 
 #[derive(Insertable)]
 #[table_name = "resources"]
-pub struct NewResource<'a> {
+pub struct ResourceNew<'a> {
     pub filepath: &'a str,
     pub kind: i32,
     pub mime: &'a str,

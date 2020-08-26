@@ -11,7 +11,7 @@ use handlebars::Handlebars;
 
 pub async fn user_gallery_create_json(
    id: Identity
- , data: web::Json<(models::GalleryPost,models::UserGalleryPost)>
+ , data: web::Json<(models::GalleryUpd,models::UserGalleryUpd)>
  , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
     let conn = pool.get().expect("couldn't get db connection from pool");

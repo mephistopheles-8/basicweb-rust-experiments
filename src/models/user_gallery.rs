@@ -19,7 +19,7 @@ pub struct UserGallery {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "user_galleries"]
-pub struct UserGalleryPost {
+pub struct UserGalleryUpd {
     pub permissions: i32,
     pub ord: i32,
     pub url: Option<String>,
@@ -27,7 +27,7 @@ pub struct UserGalleryPost {
 
 #[derive(Insertable)]
 #[table_name = "user_galleries"]
-pub struct NewUserGallery<'a> {
+pub struct UserGalleryNew<'a> {
     pub user: i32,
     pub gallery: i32,
     pub permissions: i32,
@@ -50,7 +50,7 @@ pub struct UserGalleryItem {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "user_gallery_items"]
-pub struct UserGalleryItemPost {
+pub struct UserGalleryItemUpd {
     pub permissions: i32,
     pub ord: i32,
     pub url: Option<String>,
@@ -58,7 +58,7 @@ pub struct UserGalleryItemPost {
 
 #[derive(Insertable)]
 #[table_name = "user_gallery_items"]
-pub struct NewUserGalleryItem<'a> {
+pub struct UserGalleryItemNew<'a> {
     pub user: i32,
     pub gallery_item: i32,
     pub permissions: i32,

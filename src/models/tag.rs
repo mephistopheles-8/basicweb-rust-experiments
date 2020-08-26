@@ -11,13 +11,13 @@ pub struct Tag {
 }
 
 #[derive(Serialize,Deserialize)]
-pub struct TagPost {
+pub struct TagUpd {
     pub name: String,
 }
 
 #[derive(Insertable)]
 #[table_name = "tags"]
-pub struct NewTag<'a> {
+pub struct TagNew<'a> {
     pub name: &'a str,
 }
 
@@ -32,7 +32,7 @@ pub struct TagBinding {
 
 #[derive(Insertable,Serialize,Deserialize)]
 #[table_name = "tag_bindings"]
-pub struct NewTagBinding {
+pub struct TagBindingNew {
     pub kind: i32,
     pub item_id: i32,
     pub tag: i32,

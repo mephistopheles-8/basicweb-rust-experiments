@@ -11,7 +11,7 @@ use handlebars::Handlebars;
 
 pub async fn user_post_create_json(
    id: Identity
- , data: web::Json<(models::PostPost,models::UserPostPost)>
+ , data: web::Json<(models::PostUpd,models::UserPostUpd)>
  , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
     let conn = pool.get().expect("couldn't get db connection from pool");

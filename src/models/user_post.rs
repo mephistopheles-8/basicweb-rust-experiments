@@ -19,7 +19,7 @@ pub struct UserPost {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "user_posts"]
-pub struct UserPostPost {
+pub struct UserPostUpd {
     pub permissions: i32,
     pub ord: i32,
     pub url: Option<String>,
@@ -27,7 +27,7 @@ pub struct UserPostPost {
 
 #[derive(Insertable)]
 #[table_name = "user_posts"]
-pub struct NewUserPost<'a> {
+pub struct UserPostNew<'a> {
     pub user: i32,
     pub post: i32,
     pub permissions: i32,

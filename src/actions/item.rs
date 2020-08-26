@@ -6,14 +6,14 @@ use uuid::Uuid;
 
 
 pub fn item_create( 
-        item0: &models::ItemPost, conn: &Connection 
+        item0: &models::ItemUpd, conn: &Connection 
     ) -> Result<Uuid, diesel::result::Error> {
 
     use crate::schema::items::dsl::*;
 
     let uuid0 = Uuid::new_v4();
 
-    let new_item = models::NewItem {
+    let new_item = models::ItemNew {
         name: &item0.name,
         description: item0.description.as_deref(),
         uuid: uuid0.as_bytes(),
@@ -68,7 +68,7 @@ pub fn item_delete_by_uuid ( uuid0: Uuid, conn: &Connection )
 }
 
 pub fn item_update_by_id( 
-        data: &models::ItemPost, id0: i32, conn: &Connection 
+        data: &models::ItemUpd, id0: i32, conn: &Connection 
     ) -> Result<usize, diesel::result::Error> {
 
     use crate::schema::items::dsl::*;
@@ -77,7 +77,7 @@ pub fn item_update_by_id(
 }
 
 pub fn item_update_by_uuid( 
-        data: &models::ItemPost, uuid0: Uuid, conn: &Connection 
+        data: &models::ItemUpd, uuid0: Uuid, conn: &Connection 
     ) -> Result<usize, diesel::result::Error> {
 
     use crate::schema::items::dsl::*;

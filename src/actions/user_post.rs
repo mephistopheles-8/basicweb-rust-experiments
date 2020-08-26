@@ -7,12 +7,12 @@ use uuid::Uuid;
 pub fn user_post_create(
       user0 : i32
     , post0: i32 
-    , data : &models::UserPostPost
+    , data : &models::UserPostUpd
     , conn: &Conn 
   ) -> Result<usize, diesel::result::Error> {
     use crate::schema::user_posts::dsl::*;
 
-    let new_user_post = models::NewUserPost {
+    let new_user_post = models::UserPostNew {
         user : user0
      ,  post: post0
      ,  permissions: data.permissions
@@ -25,8 +25,8 @@ pub fn user_post_create(
 
 pub fn user_post_create0(
       user0 : i32
-    , data0 : &models::PostPost
-    , data1 : &models::UserPostPost
+    , data0 : &models::PostUpd
+    , data1 : &models::UserPostUpd
     , conn: &Conn
   ) -> Result<Uuid, diesel::result::Error> {
     
@@ -50,8 +50,8 @@ pub fn user_post_create0(
 
 pub fn user_post_create0_uuid(
       user0 : Uuid
-    , data0 : &models::PostPost
-    , data1 : &models::UserPostPost
+    , data0 : &models::PostUpd
+    , data1 : &models::UserPostUpd
     , conn: &Conn
   ) -> Result<Uuid, diesel::result::Error> {
     

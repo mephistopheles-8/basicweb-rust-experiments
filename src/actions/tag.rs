@@ -5,12 +5,12 @@ use crate::models;
 
 
 pub fn tag_create( 
-        tag0: &models::TagPost, conn: &Conn 
+        tag0: &models::TagUpd, conn: &Conn 
     ) -> Result<models::Tag, diesel::result::Error> {
 
     use crate::schema::tags::dsl::*;
 
-    let new_tag = models::NewTag {
+    let new_tag = models::TagNew {
         name: &tag0.name,
     };
 

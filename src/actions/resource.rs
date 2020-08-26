@@ -17,7 +17,7 @@ pub fn resource_create (
 
    let uuid0 = Uuid::new_v4();
 
-   let new_resource = models::NewResource {
+   let new_resource = models::ResourceNew {
         filepath : filepath0
       , kind : kind0
       , mime : mime0

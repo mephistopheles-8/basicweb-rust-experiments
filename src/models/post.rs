@@ -59,7 +59,7 @@ impl PostTree {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "posts"]
-pub struct PostPost {
+pub struct PostUpd {
     pub title: Option<String>,
     pub description: Option<String>,
     pub body: String,
@@ -67,7 +67,7 @@ pub struct PostPost {
 
 #[derive(Insertable)]
 #[table_name = "posts"]
-pub struct NewPost<'a> {
+pub struct PostNew<'a> {
     pub parent: Option<i32>,
     pub depth: i32,
     pub title: Option<&'a str>,

@@ -5,7 +5,7 @@ use crate::actions::post::*;
 use crate::db::DbPool;
 
 pub async fn post_create_json(
-     data : web::Json<models::PostPost>
+     data : web::Json<models::PostUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -24,7 +24,7 @@ pub async fn post_create_json(
 
 pub async fn post_reply_create_json(
      path : web::Path<i32>
-   , data : web::Json<models::PostPost>
+   , data : web::Json<models::PostUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -331,7 +331,7 @@ pub async fn post_delete_by_id_json(
 
 pub async fn post_update_by_id_json(
      path: web::Path<i32>
-   , data : web::Json<models::PostPost>
+   , data : web::Json<models::PostUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 

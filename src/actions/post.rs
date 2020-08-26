@@ -4,14 +4,14 @@ use crate::models;
 use crate::db::Connection;
 
 pub fn post_create( 
-        post0: &models::PostPost, conn: &Connection 
+        post0: &models::PostUpd, conn: &Connection 
     ) -> Result<Uuid, diesel::result::Error> {
 
     use crate::schema::posts::dsl::*;
 
     let uuid0 = Uuid::new_v4();
 
-    let new_post = models::NewPost {
+    let new_post = models::PostNew {
         parent: None,
         depth: 0,
         title: post0.title.as_deref(),
@@ -27,7 +27,7 @@ pub fn post_create(
 
 pub fn post_reply_create(
       parent0: &models::Post
-    , post0: &models::PostPost
+    , post0: &models::PostUpd
     , conn: &Connection 
     ) -> Result<Uuid, diesel::result::Error> {
 
@@ -35,7 +35,7 @@ pub fn post_reply_create(
 
     let uuid0 = Uuid::new_v4();
 
-    let new_post = models::NewPost {
+    let new_post = models::PostNew {
         parent: Some(parent0.id),
         depth: parent0.depth + 1,
         title: post0.title.as_deref(),
@@ -235,7 +235,7 @@ pub fn post_delete_by_uuid ( uuid0: Uuid, conn: &Connection )
 }
 
 pub fn post_update_by_id( 
-        data: &models::PostPost, id0: i32, conn: &Connection 
+        data: &models::PostUpd, id0: i32, conn: &Connection 
     ) -> Result<usize, diesel::result::Error> {
 
     use crate::schema::posts::dsl::*;
@@ -244,7 +244,7 @@ pub fn post_update_by_id(
 }
 
 pub fn post_update_by_uuid( 
-        data: &models::PostPost, uuid0: Uuid, conn: &Connection 
+        data: &models::PostUpd, uuid0: Uuid, conn: &Connection 
     ) -> Result<usize, diesel::result::Error> {
 
     use crate::schema::posts::dsl::*;

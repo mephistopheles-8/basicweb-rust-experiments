@@ -86,7 +86,7 @@ impl RegisterParams {
 
 #[derive(Insertable)]
 #[table_name = "users"]
-pub struct NewUser<'a> {
+pub struct UserNew<'a> {
     pub name: &'a str,
     pub email: &'a str,
     pub handle: Option<&'a str>,
