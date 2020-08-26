@@ -1,3 +1,11 @@
 .post > .post {
     padding-left: 1em;
 }
+label {
+    min-width: 11rem;
+    display: inline-block;
+}
+
+main {
+    min-height: 80vh;
+}

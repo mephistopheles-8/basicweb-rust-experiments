@@ -1,25 +1,28 @@
 {{#*inline "content"}}
 <form method="POST" action="/register">
-    <div>
-        <label for="name">Name (first and last)</label>
-        <input type="text" name="name" id="name" title="Name" required> 
-    </div>
-    <div>
-        <label for="email">Email</label>
-        <input type="email" name="email" id="email" title="Email Address" required> 
-    </div>
-    <div>
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" title="Password" required> 
-    </div>
-    <div>
-        <label for="confirm_password">Confirm Password</label>
-        <input type="password" name="confirm_password" id="confirm_password" title="Confirm Password" required> 
-    </div>
-    <div>
-        <label for="handle">Handle</label>
-        <input type="text" name="handle" id="handle" title="Handle" required> 
-    </div>
+    <fieldset>
+        <legend>Your Information</legend>
+        <div>
+            <label for="name">Name (first and last)</label>
+            <input type="text" name="name" id="name" title="Name" required> 
+        </div>
+        <div>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" title="Email Address" required> 
+        </div>
+        <div>
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" title="Password" required> 
+        </div>
+        <div>
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" name="confirm_password" id="confirm_password" title="Confirm Password" required> 
+        </div>
+        <div>
+            <label for="handle">Handle</label>
+            <input type="text" name="handle" id="handle" title="Handle" required> 
+        </div>
+        </fieldset>
     <fieldset>
         <legend>Question 1</legend>
         <div>
