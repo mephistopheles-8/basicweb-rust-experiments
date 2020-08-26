@@ -17,6 +17,7 @@ pub fn post_create(
         title: post0.title.as_deref(),
         description: post0.description.as_deref(),
         body: &post0.body,
+        format: post0.format.unwrap_or(0),
         status: 0,
         uuid: uuid0.as_bytes(),
     };
@@ -41,6 +42,7 @@ pub fn post_reply_create(
         title: post0.title.as_deref(),
         description: post0.description.as_deref(),
         body: &post0.body,
+        format: 0,
         status: 0,
         uuid: uuid0.as_bytes(),
     };
