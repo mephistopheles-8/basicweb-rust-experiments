@@ -170,4 +170,23 @@ pub fn user_posts_by_user_handle(
         .load(conn)
 }
 
+pub fn user_owns_post(
+      user0 : Uuid
+    , post0 : Uuid
+    , conn: &Conn
+  ) -> Result<bool, diesel::result::Error> {
+    use diesel::dsl::*; 
+    use crate::schema::*;
+
+    select(exists(user_posts::table
+        .inner_join(posts::table)
+        .inner_join(users::table)
+        .filter(
+            users::uuid.eq(user0.as_bytes().as_ref())
+            .and(posts::uuid.eq(post0.as_bytes().as_ref()))
+        ))
+    ).get_result(conn)
+}
+
+
 

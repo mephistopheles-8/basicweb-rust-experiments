@@ -171,3 +171,22 @@ pub fn user_galleries_by_user_handle(
 }
 
 
+pub fn user_owns_gallery(
+      user0 : Uuid
+    , gallery0 : Uuid
+    , conn: &Connection0
+  ) -> Result<bool, diesel::result::Error> {
+    use diesel::dsl::*; 
+    use crate::schema::*;
+
+    select(exists(user_galleries::table
+        .inner_join(galleries::table)
+        .inner_join(users::table)
+        .filter(
+            users::uuid.eq(user0.as_bytes().as_ref())
+            .and(galleries::uuid.eq(gallery0.as_bytes().as_ref()))
+        ))
+    ).get_result(conn)
+}
+
+
