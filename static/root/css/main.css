@@ -4,8 +4,15 @@
 label {
     min-width: 11rem;
     display: inline-block;
+    /*display: block;*/
 }
-
+nav {
+    overflow-x:auto;
+    overflow-y:hidden;
+}
+nav a {
+    white-space:nowrap;
+}
 main {
     min-height: 80vh;
 }
