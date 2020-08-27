@@ -1,4 +1,4 @@
-extern crate app_restaurant;
+extern crate app_biz;
 #[macro_use]
 extern crate serde_json;
 
@@ -12,7 +12,7 @@ use diesel::r2d2::{self, ConnectionManager};
 use handlebars::Handlebars;
 use actix_web::{middleware, web, App, HttpServer};
 
-use app_restaurant::min_api;
+use app_biz::min_api;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -47,7 +47,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(error_handlers())
             // logger (must be last)
             .wrap(middleware::Logger::default())
-            // the restaurant api
+            // the biz api
             .configure(min_api)
             .service(fs::Files::new("/", format!("{}/root/", static_dir)))
     })

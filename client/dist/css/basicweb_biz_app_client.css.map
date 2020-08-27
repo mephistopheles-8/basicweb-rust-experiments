@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "file": "basicweb_restaurant_app_client.css",
+  "file": "basicweb_biz_app_client.css",
   "sources": [
     "../../Gallery.html",
     "../../Leaflet.html"

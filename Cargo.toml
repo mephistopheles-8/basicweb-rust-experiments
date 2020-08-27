@@ -1,5 +1,5 @@
 [package]
-name = "app-restaurant"
+name = "app-biz"
 version = "0.1.0"
 authors = ["M. Bellaire <22552422+mephistopheles-8@users.noreply.github.com>"]
 edition = "2018"

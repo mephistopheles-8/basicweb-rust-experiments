@@ -1,14 +1,14 @@
 { pkgs ? import <nixpkgs> {} }:
 with pkgs;
 let
-  app-restaurant = callPackage ./default.nix {};
+  app-biz = callPackage ./default.nix {};
 in pkgs.dockerTools.buildImage {
-  name = "basicweb-app-restaurant";
+  name = "basicweb-app-biz";
   tag = "latest";
   created = "now";
-  contents = [ app-restaurant ];
+  contents = [ app-biz ];
   config = {
-    Cmd = [ "/bin/app-restaurant" ];
+    Cmd = [ "/bin/app-biz" ];
     WorkingDir = "/";
     Env = [
       "DATABASE_URL=/data/database.sqlite"

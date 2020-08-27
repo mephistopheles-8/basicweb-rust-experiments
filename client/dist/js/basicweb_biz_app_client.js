@@ -1,18 +1,23 @@
 /**
-  * basicweb_restaurant_app_client
+  * basicweb_biz_app_client
   * (C) 2020 M. Bellaire
   * All rights Reserved
  */
 
-var basicweb_restaurant_app_client = (function () {
+var basicweb_biz_app_client = (function () {
   'use strict';
 
+  var global$1 =
+    (typeof globalThis !== 'undefined' && globalThis) ||
+    (typeof self !== 'undefined' && self) ||
+    (typeof global$1 !== 'undefined' && global$1);
+
   var support = {
-    searchParams: 'URLSearchParams' in self,
-    iterable: 'Symbol' in self && 'iterator' in Symbol,
+    searchParams: 'URLSearchParams' in global$1,
+    iterable: 'Symbol' in global$1 && 'iterator' in Symbol,
     blob:
-      'FileReader' in self &&
-      'Blob' in self &&
+      'FileReader' in global$1 &&
+      'Blob' in global$1 &&
       (function() {
         try {
           new Blob();
@@ -21,8 +26,8 @@ var basicweb_restaurant_app_client = (function () {
           return false
         }
       })(),
-    formData: 'FormData' in self,
-    arrayBuffer: 'ArrayBuffer' in self
+    formData: 'FormData' in global$1,
+    arrayBuffer: 'ArrayBuffer' in global$1
   };
 
   function isDataView(obj) {
@@ -53,7 +58,7 @@ var basicweb_restaurant_app_client = (function () {
     if (typeof name !== 'string') {
       name = String(name);
     }
-    if (/[^a-z0-9\-#$%&'*+.^_`|~]/i.test(name)) {
+    if (/[^a-z0-9\-#$%&'*+.^_`|~!]/i.test(name) || name === '') {
       throw new TypeError('Invalid character in header field name')
     }
     return name.toLowerCase()
@@ -218,6 +223,17 @@ var basicweb_restaurant_app_client = (function () {
     this.bodyUsed = false;
 
     this._initBody = function(body) {
+      /*
+        fetch-mock wraps the Response object in an ES6 Proxy to
+        provide useful test harness features such as flush. However, on
+        ES5 browsers without fetch or Proxy support pollyfills must be used;
+        the proxy-pollyfill is unable to proxy an attribute unless it exists
+        on the object before the Proxy is created. This change ensures
+        Response.bodyUsed exists on the instance, while maintaining the
+        semantic of setting Request.bodyUsed in the constructor before
+        _initBody is called.
+      */
+      this.bodyUsed = this.bodyUsed;
       this._bodyInit = body;
       if (!body) {
         this._bodyText = '';
@@ -270,7 +286,20 @@ var basicweb_restaurant_app_client = (function () {
 
       this.arrayBuffer = function() {
         if (this._bodyArrayBuffer) {
-          return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
+          var isConsumed = consumed(this);
+          if (isConsumed) {
+            return isConsumed
+          }
+          if (ArrayBuffer.isView(this._bodyArrayBuffer)) {
+            return Promise.resolve(
+              this._bodyArrayBuffer.buffer.slice(
+                this._bodyArrayBuffer.byteOffset,
+                this._bodyArrayBuffer.byteOffset + this._bodyArrayBuffer.byteLength
+              )
+            )
+          } else {
+            return Promise.resolve(this._bodyArrayBuffer)
+          }
         } else {
           return this.blob().then(readBlobAsArrayBuffer)
         }
@@ -316,6 +345,10 @@ var basicweb_restaurant_app_client = (function () {
   }
 
   function Request(input, options) {
+    if (!(this instanceof Request)) {
+      throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.')
+    }
+
     options = options || {};
     var body = options.body;
 
@@ -352,6 +385,21 @@ var basicweb_restaurant_app_client = (function () {
       throw new TypeError('Body not allowed for GET or HEAD requests')
     }
     this._initBody(body);
+
+    if (this.method === 'GET' || this.method === 'HEAD') {
+      if (options.cache === 'no-store' || options.cache === 'no-cache') {
+        // Search for a '_' parameter in the query string
+        var reParamSearch = /([?&])_=[^&]*/;
+        if (reParamSearch.test(this.url)) {
+          // If it already exists then set the value with the current time
+          this.url = this.url.replace(reParamSearch, '$1_=' + new Date().getTime());
+        } else {
+          // Otherwise add a new '_' parameter to the end with the current time
+          var reQueryString = /\?/;
+          this.url += (reQueryString.test(this.url) ? '&' : '?') + '_=' + new Date().getTime();
+        }
+      }
+    }
   }
 
   Request.prototype.clone = function() {
@@ -393,6 +441,9 @@ var basicweb_restaurant_app_client = (function () {
   Body.call(Request.prototype);
 
   function Response(bodyInit, options) {
+    if (!(this instanceof Response)) {
+      throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.')
+    }
     if (!options) {
       options = {};
     }
@@ -400,7 +451,7 @@ var basicweb_restaurant_app_client = (function () {
     this.type = 'default';
     this.status = options.status === undefined ? 200 : options.status;
     this.ok = this.status >= 200 && this.status < 300;
-    this.statusText = 'statusText' in options ? options.statusText : 'OK';
+    this.statusText = 'statusText' in options ? options.statusText : '';
     this.headers = new Headers(options.headers);
     this.url = options.url || '';
     this._initBody(bodyInit);
@@ -433,7 +484,7 @@ var basicweb_restaurant_app_client = (function () {
     return new Response(null, {status: status, headers: {location: url}})
   };
 
-  var DOMException = self.DOMException;
+  var DOMException = global$1.DOMException;
   try {
     new DOMException();
   } catch (err) {
@@ -469,22 +520,38 @@ var basicweb_restaurant_app_client = (function () {
         };
         options.url = 'responseURL' in xhr ? xhr.responseURL : options.headers.get('X-Request-URL');
         var body = 'response' in xhr ? xhr.response : xhr.responseText;
-        resolve(new Response(body, options));
+        setTimeout(function() {
+          resolve(new Response(body, options));
+        }, 0);
       };
 
       xhr.onerror = function() {
-        reject(new TypeError('Network request failed'));
+        setTimeout(function() {
+          reject(new TypeError('Network request failed'));
+        }, 0);
       };
 
       xhr.ontimeout = function() {
-        reject(new TypeError('Network request failed'));
+        setTimeout(function() {
+          reject(new TypeError('Network request failed'));
+        }, 0);
       };
 
       xhr.onabort = function() {
-        reject(new DOMException('Aborted', 'AbortError'));
+        setTimeout(function() {
+          reject(new DOMException('Aborted', 'AbortError'));
+        }, 0);
       };
 
-      xhr.open(request.method, request.url, true);
+      function fixUrl(url) {
+        try {
+          return url === '' && global$1.location.href ? global$1.location.href : url
+        } catch (e) {
+          return url
+        }
+      }
+
+      xhr.open(request.method, fixUrl(request.url), true);
 
       if (request.credentials === 'include') {
         xhr.withCredentials = true;
@@ -492,13 +559,27 @@ var basicweb_restaurant_app_client = (function () {
         xhr.withCredentials = false;
       }
 
-      if ('responseType' in xhr && support.blob) {
-        xhr.responseType = 'blob';
+      if ('responseType' in xhr) {
+        if (support.blob) {
+          xhr.responseType = 'blob';
+        } else if (
+          support.arrayBuffer &&
+          request.headers.get('Content-Type') &&
+          request.headers.get('Content-Type').indexOf('application/octet-stream') !== -1
+        ) {
+          xhr.responseType = 'arraybuffer';
+        }
       }
 
-      request.headers.forEach(function(value, name) {
-        xhr.setRequestHeader(name, value);
-      });
+      if (init && typeof init.headers === 'object' && !(init.headers instanceof Headers)) {
+        Object.getOwnPropertyNames(init.headers).forEach(function(name) {
+          xhr.setRequestHeader(name, normalizeValue(init.headers[name]));
+        });
+      } else {
+        request.headers.forEach(function(value, name) {
+          xhr.setRequestHeader(name, value);
+        });
+      }
 
       if (request.signal) {
         request.signal.addEventListener('abort', abortXhr);
@@ -517,11 +598,11 @@ var basicweb_restaurant_app_client = (function () {
 
   fetch$1.polyfill = true;
 
-  if (!self.fetch) {
-    self.fetch = fetch$1;
-    self.Headers = Headers;
-    self.Request = Request;
-    self.Response = Response;
+  if (!global$1.fetch) {
+    global$1.fetch = fetch$1;
+    global$1.Headers = Headers;
+    global$1.Request = Request;
+    global$1.Response = Response;
   }
 
   /**
@@ -814,6 +895,9 @@ var basicweb_restaurant_app_client = (function () {
   function safe_not_equal(a, b) {
       return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
   }
+  function is_empty(obj) {
+      return Object.keys(obj).length === 0;
+  }
 
   function append(target, node) {
       target.appendChild(node);
@@ -860,13 +944,11 @@ var basicweb_restaurant_app_client = (function () {
   }
   function set_data(text, data) {
       data = '' + data;
-      if (text.data !== data)
+      if (text.wholeText !== data)
           { text.data = data; }
   }
   function set_input_value(input, value) {
-      if (value != null || input.value) {
-          input.value = value;
-      }
+      input.value = value == null ? '' : value;
   }
   function custom_event(type, detail) {
       var e = document.createEvent('CustomEvent');
@@ -1152,7 +1234,8 @@ var basicweb_restaurant_app_client = (function () {
           context: new Map(parent_component ? parent_component.$$.context : []),
           // everything else
           callbacks: blank_object(),
-          dirty: dirty
+          dirty: dirty,
+          skip_bound: false
       };
       var ready = false;
       $$.ctx = instance
@@ -1162,7 +1245,7 @@ var basicweb_restaurant_app_client = (function () {
 
               var value = rest.length ? rest[0] : ret;
               if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
-                  if ($$.bound[i])
+                  if (!$$.skip_bound && $$.bound[i])
                       { $$.bound[i](value); }
                   if (ready)
                       { make_dirty(component, i); }
@@ -1208,11 +1291,15 @@ var basicweb_restaurant_app_client = (function () {
               { callbacks.splice(index, 1); }
       };
   };
-  SvelteComponent.prototype.$set = function $set () {
-      // overridden by instance, if it has props
+  SvelteComponent.prototype.$set = function $set ($$props) {
+      if (this.$$set && !is_empty($$props)) {
+          this.$$.skip_bound = true;
+          this.$$set($$props);
+          this.$$.skip_bound = false;
+      }
   };
 
-  /* src/GalleryCreate.html generated by Svelte v3.20.1 */
+  /* src/GalleryCreate.html generated by Svelte v3.24.1 */
 
   function get_each_context(ctx, list, i) {
   	var child_ctx = ctx.slice();
@@ -1255,6 +1342,7 @@ var basicweb_restaurant_app_client = (function () {
   	var input1;
   	var t3;
   	var if_block_anchor;
+  	var mounted;
   	var dispose;
 
   	function select_block_type(ctx, dirty) {
@@ -1280,7 +1368,7 @@ var basicweb_restaurant_app_client = (function () {
   			attr(input0, "type", "text");
   			attr(input1, "type", "text");
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, label0, anchor);
   			append(label0, t0);
   			append(label0, input0);
@@ -1293,12 +1381,15 @@ var basicweb_restaurant_app_client = (function () {
   			insert(target, t3, anchor);
   			if_block.m(target, anchor);
   			insert(target, if_block_anchor, anchor);
-  			if (remount) { run_all(dispose); }
 
-  			dispose = [
-  				listen(input0, "input", /*input0_input_handler*/ ctx[9]),
-  				listen(input1, "input", /*input1_input_handler*/ ctx[10])
-  			];
+  			if (!mounted) {
+  				dispose = [
+  					listen(input0, "input", /*input0_input_handler*/ ctx[9]),
+  					listen(input1, "input", /*input1_input_handler*/ ctx[10])
+  				];
+
+  				mounted = true;
+  			}
   		},
   		p: function p(ctx, dirty) {
   			if (dirty & /*galleryInfo*/ 8 && input0.value !== /*galleryInfo*/ ctx[3].name) {
@@ -1328,6 +1419,7 @@ var basicweb_restaurant_app_client = (function () {
   			if (detaching) { detach(t3); }
   			if_block.d(detaching);
   			if (detaching) { detach(if_block_anchor); }
+  			mounted = false;
   			run_all(dispose);
   		}
   	};
@@ -1338,6 +1430,7 @@ var basicweb_restaurant_app_client = (function () {
   	var button;
   	var t;
   	var button_disabled_value;
+  	var mounted;
   	var dispose;
 
   	return {
@@ -1347,11 +1440,14 @@ var basicweb_restaurant_app_client = (function () {
   			attr(button, "type", "button");
   			button.disabled = button_disabled_value = !galleryIsValid(/*galleryInfo*/ ctx[3]);
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, button, anchor);
   			append(button, t);
-  			if (remount) { dispose(); }
-  			dispose = listen(button, "click", /*addGallery*/ ctx[5]);
+
+  			if (!mounted) {
+  				dispose = listen(button, "click", /*addGallery*/ ctx[5]);
+  				mounted = true;
+  			}
   		},
   		p: function p(ctx, dirty) {
   			if (dirty & /*galleryInfo*/ 8 && button_disabled_value !== (button_disabled_value = !galleryIsValid(/*galleryInfo*/ ctx[3]))) {
@@ -1360,6 +1456,7 @@ var basicweb_restaurant_app_client = (function () {
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(button); }
+  			mounted = false;
   			dispose();
   		}
   	};
@@ -1370,6 +1467,7 @@ var basicweb_restaurant_app_client = (function () {
   	var button;
   	var t;
   	var button_disabled_value;
+  	var mounted;
   	var dispose;
 
   	return {
@@ -1379,11 +1477,14 @@ var basicweb_restaurant_app_client = (function () {
   			attr(button, "type", "button");
   			button.disabled = button_disabled_value = !galleryIsValid(/*galleryInfo*/ ctx[3]);
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, button, anchor);
   			append(button, t);
-  			if (remount) { dispose(); }
-  			dispose = listen(button, "click", /*updateGallery*/ ctx[6]);
+
+  			if (!mounted) {
+  				dispose = listen(button, "click", /*updateGallery*/ ctx[6]);
+  				mounted = true;
+  			}
   		},
   		p: function p(ctx, dirty) {
   			if (dirty & /*galleryInfo*/ 8 && button_disabled_value !== (button_disabled_value = !galleryIsValid(/*galleryInfo*/ ctx[3]))) {
@@ -1392,6 +1493,7 @@ var basicweb_restaurant_app_client = (function () {
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(button); }
+  			mounted = false;
   			dispose();
   		}
   	};
@@ -1441,6 +1543,7 @@ var basicweb_restaurant_app_client = (function () {
   	var button;
   	var t11;
   	var button_disabled_value;
+  	var mounted;
   	var dispose;
   	var each_value = /*items*/ ctx[1];
   	var each_blocks = [];
@@ -1486,7 +1589,7 @@ var basicweb_restaurant_app_client = (function () {
   			attr(button, "type", "button");
   			button.disabled = button_disabled_value = !/*itemIsValid*/ ctx[7](/*itemInfo*/ ctx[4]);
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, fieldset1, anchor);
   			append(fieldset1, legend0);
   			append(fieldset1, t1);
@@ -1516,14 +1619,17 @@ var basicweb_restaurant_app_client = (function () {
   			append(fieldset0, t10);
   			append(fieldset0, button);
   			append(button, t11);
-  			if (remount) { run_all(dispose); }
 
-  			dispose = [
-  				listen(input0, "input", /*input0_input_handler_1*/ ctx[11]),
-  				listen(input1, "input", /*input1_input_handler_1*/ ctx[12]),
-  				listen(input2, "change", /*input2_change_handler*/ ctx[13]),
-  				listen(button, "click", /*addItem*/ ctx[8])
-  			];
+  			if (!mounted) {
+  				dispose = [
+  					listen(input0, "input", /*input0_input_handler_1*/ ctx[11]),
+  					listen(input1, "input", /*input1_input_handler_1*/ ctx[12]),
+  					listen(input2, "change", /*input2_change_handler*/ ctx[13]),
+  					listen(button, "click", /*addItem*/ ctx[8])
+  				];
+
+  				mounted = true;
+  			}
   		},
   		p: function p(ctx, dirty) {
   			if (dirty & /*items, Success, Error*/ 2) {
@@ -1564,6 +1670,7 @@ var basicweb_restaurant_app_client = (function () {
   		d: function d(detaching) {
   			if (detaching) { detach(fieldset1); }
   			destroy_each(each_blocks, detaching);
+  			mounted = false;
   			run_all(dispose);
   		}
   	};
@@ -1932,7 +2039,7 @@ var basicweb_restaurant_app_client = (function () {
   		$$invalidate(4, itemInfo);
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("galleryId" in $$props) { $$invalidate(0, galleryId = $$props.galleryId); }
   	};
 
@@ -1967,11 +2074,16 @@ var basicweb_restaurant_app_client = (function () {
   	return GalleryCreate;
   }(SvelteComponent));
 
-  /* src/Gallery.html generated by Svelte v3.20.1 */
+  /* src/Gallery.html generated by Svelte v3.24.1 */
+
+  function get_then_context(ctx) {
+  	ctx[2] = ctx[4][0];
+  	ctx[3] = ctx[4][1];
+  }
 
   function get_each_context$1(ctx, list, i) {
   	var child_ctx = ctx.slice();
-  	child_ctx[6] = list[i];
+  	child_ctx[5] = list[i];
   	return child_ctx;
   }
 
@@ -1979,7 +2091,7 @@ var basicweb_restaurant_app_client = (function () {
   function create_catch_block$1(ctx) {
   	var p;
   	var t0;
-  	var t1_value = /*err*/ ctx[5].message + "";
+  	var t1_value = /*err*/ ctx[8].message + "";
   	var t1;
 
   	return {
@@ -1994,7 +2106,7 @@ var basicweb_restaurant_app_client = (function () {
   			append(p, t1);
   		},
   		p: function p(ctx, dirty) {
-  			if (dirty & /*galleryRequest*/ 1 && t1_value !== (t1_value = /*err*/ ctx[5].message + "")) { set_data(t1, t1_value); }
+  			if (dirty & /*galleryRequest*/ 1 && t1_value !== (t1_value = /*err*/ ctx[8].message + "")) { set_data(t1, t1_value); }
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(p); }
@@ -2004,9 +2116,7 @@ var basicweb_restaurant_app_client = (function () {
 
   // (34:0) {:then [gallery,items]}
   function create_then_block$1(ctx) {
-  	var assign;
-
-  	(assign = ctx[4], ctx[2] = assign[0], ctx[3] = assign[1]);
+  	get_then_context(ctx);
   	var h3;
   	var t0_value = /*gallery*/ ctx[2].name + "";
   	var t0;
@@ -2049,8 +2159,6 @@ var basicweb_restaurant_app_client = (function () {
   			}
   		},
   		p: function p(ctx, dirty) {
-  			var assign;
-
   			if (dirty & /*galleryRequest*/ 1 && t0_value !== (t0_value = /*gallery*/ ctx[2].name + "")) { set_data(t0, t0_value); }
 
   			if (/*gallery*/ ctx[2].description) {
@@ -2089,7 +2197,7 @@ var basicweb_restaurant_app_client = (function () {
   				each_blocks.length = each_value.length;
   			}
 
-  			(assign = ctx[4], ctx[2] = assign[0], ctx[3] = assign[1]);
+  			get_then_context(ctx);
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(h3); }
@@ -2130,7 +2238,7 @@ var basicweb_restaurant_app_client = (function () {
   function create_each_block$1(ctx) {
   	var figure;
   	var figcaption;
-  	var t0_value = /*item*/ ctx[6][2].name + "";
+  	var t0_value = /*item*/ ctx[5][2].name + "";
   	var t0;
   	var t1;
   	var img;
@@ -2145,7 +2253,7 @@ var basicweb_restaurant_app_client = (function () {
   			t1 = space();
   			img = element("img");
   			t2 = space();
-  			if (img.src !== (img_src_value = "/assets/" + /*item*/ ctx[6][2].uuid)) { attr(img, "src", img_src_value); }
+  			if (img.src !== (img_src_value = "/assets/" + /*item*/ ctx[5][2].uuid)) { attr(img, "src", img_src_value); }
   			attr(img, "class", "svelte-bdzgnj");
   			attr(figure, "class", "svelte-bdzgnj");
   		},
@@ -2158,9 +2266,9 @@ var basicweb_restaurant_app_client = (function () {
   			append(figure, t2);
   		},
   		p: function p(ctx, dirty) {
-  			if (dirty & /*galleryRequest*/ 1 && t0_value !== (t0_value = /*item*/ ctx[6][2].name + "")) { set_data(t0, t0_value); }
+  			if (dirty & /*galleryRequest*/ 1 && t0_value !== (t0_value = /*item*/ ctx[5][2].name + "")) { set_data(t0, t0_value); }
 
-  			if (dirty & /*galleryRequest*/ 1 && img.src !== (img_src_value = "/assets/" + /*item*/ ctx[6][2].uuid)) {
+  			if (dirty & /*galleryRequest*/ 1 && img.src !== (img_src_value = "/assets/" + /*item*/ ctx[5][2].uuid)) {
   				attr(img, "src", img_src_value);
   			}
   		},
@@ -2201,7 +2309,7 @@ var basicweb_restaurant_app_client = (function () {
   		then: create_then_block$1,
   		catch: create_catch_block$1,
   		value: 4,
-  		error: 5
+  		error: 8
   	};
 
   	handle_promise(promise = /*galleryRequest*/ ctx[0], info);
@@ -2244,7 +2352,7 @@ var basicweb_restaurant_app_client = (function () {
   	var galleryId = $$props.galleryId;
   	var galleryRequest;
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("galleryId" in $$props) { $$invalidate(1, galleryId = $$props.galleryId); }
   	};
 
@@ -2275,7 +2383,7 @@ var basicweb_restaurant_app_client = (function () {
   	return Gallery;
   }(SvelteComponent));
 
-  /* src/PostThread.html generated by Svelte v3.20.1 */
+  /* src/PostThread.html generated by Svelte v3.24.1 */
 
   function get_each_context$2(ctx, list, i) {
   	var child_ctx = ctx.slice();
@@ -2406,6 +2514,7 @@ var basicweb_restaurant_app_client = (function () {
   // (60:4) {:else}
   function create_else_block$1(ctx) {
   	var button;
+  	var mounted;
   	var dispose;
 
   	return {
@@ -2413,14 +2522,18 @@ var basicweb_restaurant_app_client = (function () {
   			button = element("button");
   			button.textContent = "Reply";
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, button, anchor);
-  			if (remount) { dispose(); }
-  			dispose = listen(button, "click", /*replyBegin*/ ctx[4]);
+
+  			if (!mounted) {
+  				dispose = listen(button, "click", /*replyBegin*/ ctx[4]);
+  				mounted = true;
+  			}
   		},
   		p: noop$1,
   		d: function d(detaching) {
   			if (detaching) { detach(button); }
+  			mounted = false;
   			dispose();
   		}
   	};
@@ -2429,21 +2542,25 @@ var basicweb_restaurant_app_client = (function () {
   // (58:4) {#if replyId === post.id}
   function create_if_block$2(ctx) {
   	var textarea;
+  	var mounted;
   	var dispose;
 
   	return {
   		c: function c() {
   			textarea = element("textarea");
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, textarea, anchor);
   			set_input_value(textarea, /*replyValue*/ ctx[2]);
-  			if (remount) { run_all(dispose); }
 
-  			dispose = [
-  				listen(textarea, "input", /*textarea_input_handler*/ ctx[8]),
-  				listen(textarea, "keydown", /*keyHandler*/ ctx[5])
-  			];
+  			if (!mounted) {
+  				dispose = [
+  					listen(textarea, "input", /*textarea_input_handler*/ ctx[6]),
+  					listen(textarea, "keydown", /*keyHandler*/ ctx[5])
+  				];
+
+  				mounted = true;
+  			}
   		},
   		p: function p(ctx, dirty) {
   			if (dirty & /*replyValue*/ 4) {
@@ -2452,6 +2569,7 @@ var basicweb_restaurant_app_client = (function () {
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(textarea); }
+  			mounted = false;
   			run_all(dispose);
   		}
   	};
@@ -2478,11 +2596,12 @@ var basicweb_restaurant_app_client = (function () {
 
   // (66:4) {#each post.replies as reply}
   function create_each_block$2(ctx) {
+  	var postthread;
   	var updating_replyId;
   	var current;
 
   	function postthread_replyId_binding(value) {
-  		/*postthread_replyId_binding*/ ctx[9].call(null, value);
+  		/*postthread_replyId_binding*/ ctx[7].call(null, value);
   	}
 
   	var postthread_props = { post: /*reply*/ ctx[11] };
@@ -2491,9 +2610,9 @@ var basicweb_restaurant_app_client = (function () {
   		postthread_props.replyId = /*replyId*/ ctx[0];
   	}
 
-  	var postthread = new PostThread({ props: postthread_props });
+  	postthread = new PostThread({ props: postthread_props });
   	binding_callbacks.push(function () { return bind$1(postthread, "replyId", postthread_replyId_binding); });
-  	postthread.$on("reply", /*reply_handler*/ ctx[10]);
+  	postthread.$on("reply", /*reply_handler*/ ctx[8]);
 
   	return {
   		c: function c() {
@@ -2752,7 +2871,7 @@ var basicweb_restaurant_app_client = (function () {
   		bubble($$self, event);
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("post" in $$props) { $$invalidate(1, post = $$props.post); }
   		if ("replyId" in $$props) { $$invalidate(0, replyId = $$props.replyId); }
   	};
@@ -2764,8 +2883,6 @@ var basicweb_restaurant_app_client = (function () {
   		replyResponse,
   		replyBegin,
   		keyHandler,
-  		dispatch,
-  		replySubmit,
   		textarea_input_handler,
   		postthread_replyId_binding,
   		reply_handler
@@ -2785,11 +2902,11 @@ var basicweb_restaurant_app_client = (function () {
   	return PostThread;
   }(SvelteComponent));
 
-  /* src/Board.html generated by Svelte v3.20.1 */
+  /* src/Board.html generated by Svelte v3.24.1 */
 
   function get_each_context$3(ctx, list, i) {
   	var child_ctx = ctx.slice();
-  	child_ctx[9] = list[i];
+  	child_ctx[8] = list[i];
   	return child_ctx;
   }
 
@@ -2797,7 +2914,7 @@ var basicweb_restaurant_app_client = (function () {
   function create_catch_block$3(ctx) {
   	var p;
   	var t0;
-  	var t1_value = /*err*/ ctx[8].message + "";
+  	var t1_value = /*err*/ ctx[11].message + "";
   	var t1;
 
   	return {
@@ -2812,7 +2929,7 @@ var basicweb_restaurant_app_client = (function () {
   			append(p, t1);
   		},
   		p: function p(ctx, dirty) {
-  			if (dirty & /*postsRequest*/ 2 && t1_value !== (t1_value = /*err*/ ctx[8].message + "")) { set_data(t1, t1_value); }
+  			if (dirty & /*postsRequest*/ 2 && t1_value !== (t1_value = /*err*/ ctx[11].message + "")) { set_data(t1, t1_value); }
   		},
   		i: noop$1,
   		o: noop$1,
@@ -2950,6 +3067,7 @@ var basicweb_restaurant_app_client = (function () {
 
   // (32:0) {#if postId}
   function create_if_block$3(ctx) {
+  	var postthread;
   	var updating_replyId;
   	var current;
 
@@ -2963,7 +3081,7 @@ var basicweb_restaurant_app_client = (function () {
   		postthread_props.replyId = /*replyId*/ ctx[2];
   	}
 
-  	var postthread = new PostThread({ props: postthread_props });
+  	postthread = new PostThread({ props: postthread_props });
   	binding_callbacks.push(function () { return bind$1(postthread, "replyId", postthread_replyId_binding); });
   	postthread.$on("reply", /*refreshThread*/ ctx[4]);
 
@@ -3005,18 +3123,19 @@ var basicweb_restaurant_app_client = (function () {
   // (36:4) {#each posts as post}
   function create_each_block$3(ctx) {
   	var li;
-  	var t0_value = /*post*/ ctx[9].title + "";
+  	var t0_value = /*post*/ ctx[8].title + "";
   	var t0;
   	var t1;
-  	var t2_value = /*post*/ ctx[9].created + "";
+  	var t2_value = /*post*/ ctx[8].created + "";
   	var t2;
+  	var mounted;
   	var dispose;
 
   	function click_handler() {
   		var args = [], len = arguments.length;
   		while ( len-- ) args[ len ] = arguments[ len ];
 
-  		return /*click_handler*/ ctx[6].apply(/*post*/ ctx, [ ctx[9] ].concat( args ));
+  		return /*click_handler*/ ctx[6].apply(/*post*/ ctx, [ ctx[8] ].concat( args ));
   	}
 
   	return {
@@ -3026,21 +3145,25 @@ var basicweb_restaurant_app_client = (function () {
   			t1 = space();
   			t2 = text(t2_value);
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, li, anchor);
   			append(li, t0);
   			append(li, t1);
   			append(li, t2);
-  			if (remount) { dispose(); }
-  			dispose = listen(li, "click", click_handler);
+
+  			if (!mounted) {
+  				dispose = listen(li, "click", click_handler);
+  				mounted = true;
+  			}
   		},
   		p: function p(new_ctx, dirty) {
   			ctx = new_ctx;
-  			if (dirty & /*postsRequest*/ 2 && t0_value !== (t0_value = /*post*/ ctx[9].title + "")) { set_data(t0, t0_value); }
-  			if (dirty & /*postsRequest*/ 2 && t2_value !== (t2_value = /*post*/ ctx[9].created + "")) { set_data(t2, t2_value); }
+  			if (dirty & /*postsRequest*/ 2 && t0_value !== (t0_value = /*post*/ ctx[8].title + "")) { set_data(t0, t0_value); }
+  			if (dirty & /*postsRequest*/ 2 && t2_value !== (t2_value = /*post*/ ctx[8].created + "")) { set_data(t2, t2_value); }
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(li); }
+  			mounted = false;
   			dispose();
   		}
   	};
@@ -3080,7 +3203,7 @@ var basicweb_restaurant_app_client = (function () {
   		then: create_then_block$3,
   		catch: create_catch_block$3,
   		value: 7,
-  		error: 8,
+  		error: 11,
   		blocks: [,,,]
   	};
 
@@ -3159,7 +3282,7 @@ var basicweb_restaurant_app_client = (function () {
 
   	var click_handler = function (post) { return selectPost(post.id); };
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("postId" in $$props) { $$invalidate(0, postId = $$props.postId); }
   	};
 
@@ -3213,11 +3336,11 @@ var basicweb_restaurant_app_client = (function () {
       return fetch( (host + "/search?" + paramUri) );
   } // end [search]
 
-  /* src/NominatimSearch.html generated by Svelte v3.20.1 */
+  /* src/NominatimSearch.html generated by Svelte v3.24.1 */
 
   function get_each_context$4(ctx, list, i) {
   	var child_ctx = ctx.slice();
-  	child_ctx[12] = list[i];
+  	child_ctx[11] = list[i];
   	return child_ctx;
   }
 
@@ -3234,7 +3357,7 @@ var basicweb_restaurant_app_client = (function () {
   		then: create_then_block$4,
   		catch: create_catch_block$4,
   		value: 10,
-  		error: 11
+  		error: 14
   	};
 
   	handle_promise(promise = /*queryResult*/ ctx[1], info);
@@ -3273,7 +3396,7 @@ var basicweb_restaurant_app_client = (function () {
   function create_catch_block$4(ctx) {
   	var p;
   	var t0;
-  	var t1_value = /*err*/ ctx[11].message + "";
+  	var t1_value = /*err*/ ctx[14].message + "";
   	var t1;
 
   	return {
@@ -3288,7 +3411,7 @@ var basicweb_restaurant_app_client = (function () {
   			append(p, t1);
   		},
   		p: function p(ctx, dirty) {
-  			if (dirty & /*queryResult*/ 2 && t1_value !== (t1_value = /*err*/ ctx[11].message + "")) { set_data(t1, t1_value); }
+  			if (dirty & /*queryResult*/ 2 && t1_value !== (t1_value = /*err*/ ctx[14].message + "")) { set_data(t1, t1_value); }
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(p); }
@@ -3355,16 +3478,17 @@ var basicweb_restaurant_app_client = (function () {
   // (41:4) {#each results as res}
   function create_each_block$4(ctx) {
   	var li;
-  	var t0_value = /*res*/ ctx[12].display_name + "";
+  	var t0_value = /*res*/ ctx[11].display_name + "";
   	var t0;
   	var t1;
+  	var mounted;
   	var dispose;
 
   	function click_handler() {
   		var args = [], len = arguments.length;
   		while ( len-- ) args[ len ] = arguments[ len ];
 
-  		return /*click_handler*/ ctx[9].apply(/*res*/ ctx, [ ctx[12] ].concat( args ));
+  		return /*click_handler*/ ctx[8].apply(/*res*/ ctx, [ ctx[11] ].concat( args ));
   	}
 
   	return {
@@ -3373,19 +3497,23 @@ var basicweb_restaurant_app_client = (function () {
   			t0 = text(t0_value);
   			t1 = space();
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, li, anchor);
   			append(li, t0);
   			append(li, t1);
-  			if (remount) { dispose(); }
-  			dispose = listen(li, "click", click_handler);
+
+  			if (!mounted) {
+  				dispose = listen(li, "click", click_handler);
+  				mounted = true;
+  			}
   		},
   		p: function p(new_ctx, dirty) {
   			ctx = new_ctx;
-  			if (dirty & /*queryResult*/ 2 && t0_value !== (t0_value = /*res*/ ctx[12].display_name + "")) { set_data(t0, t0_value); }
+  			if (dirty & /*queryResult*/ 2 && t0_value !== (t0_value = /*res*/ ctx[11].display_name + "")) { set_data(t0, t0_value); }
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(li); }
+  			mounted = false;
   			dispose();
   		}
   	};
@@ -3415,6 +3543,7 @@ var basicweb_restaurant_app_client = (function () {
   	var button;
   	var t1;
   	var if_block_anchor;
+  	var mounted;
   	var dispose;
   	var if_block = /*queryResult*/ ctx[1] && create_if_block$4(ctx);
 
@@ -3428,20 +3557,23 @@ var basicweb_restaurant_app_client = (function () {
   			if_block_anchor = empty();
   			attr(input, "type", "text");
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, input, anchor);
-  			/*input_binding*/ ctx[8](input);
+  			/*input_binding*/ ctx[7](input);
   			insert(target, button, anchor);
   			insert(target, t1, anchor);
   			if (if_block) { if_block.m(target, anchor); }
   			insert(target, if_block_anchor, anchor);
-  			if (remount) { run_all(dispose); }
 
-  			dispose = [
-  				listen(input, "change", /*clearResult*/ ctx[3]),
-  				listen(input, "change", /*change_handler*/ ctx[7]),
-  				listen(button, "click", /*handleQuery*/ ctx[2])
-  			];
+  			if (!mounted) {
+  				dispose = [
+  					listen(input, "change", /*clearResult*/ ctx[3]),
+  					listen(input, "change", /*change_handler*/ ctx[6]),
+  					listen(button, "click", /*handleQuery*/ ctx[2])
+  				];
+
+  				mounted = true;
+  			}
   		},
   		p: function p(ctx, ref) {
   			var dirty = ref[0];
@@ -3463,11 +3595,12 @@ var basicweb_restaurant_app_client = (function () {
   		o: noop$1,
   		d: function d(detaching) {
   			if (detaching) { detach(input); }
-  			/*input_binding*/ ctx[8](null);
+  			/*input_binding*/ ctx[7](null);
   			if (detaching) { detach(button); }
   			if (detaching) { detach(t1); }
   			if (if_block) { if_block.d(detaching); }
   			if (detaching) { detach(if_block_anchor); }
+  			mounted = false;
   			run_all(dispose);
   		}
   	};
@@ -3507,13 +3640,14 @@ var basicweb_restaurant_app_client = (function () {
 
   	function input_binding($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
-  			$$invalidate(0, textElm = $$value);
+  			textElm = $$value;
+  			$$invalidate(0, textElm);
   		});
   	}
 
   	var click_handler = function (res) { return selectItem(res); };
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("selected" in $$props) { $$invalidate(5, selected = $$props.selected); }
   	};
 
@@ -3524,7 +3658,6 @@ var basicweb_restaurant_app_client = (function () {
   		clearResult,
   		selectItem,
   		selected,
-  		dispatch,
   		change_handler,
   		input_binding,
   		click_handler
@@ -17632,7 +17765,7 @@ var basicweb_restaurant_app_client = (function () {
 
   });
 
-  /* src/Leaflet.html generated by Svelte v3.20.1 */
+  /* src/Leaflet.html generated by Svelte v3.24.1 */
 
   function create_fragment$5(ctx) {
   	var div;
@@ -17644,14 +17777,14 @@ var basicweb_restaurant_app_client = (function () {
   		},
   		m: function m(target, anchor) {
   			insert(target, div, anchor);
-  			/*div_binding*/ ctx[20](div);
+  			/*div_binding*/ ctx[15](div);
   		},
   		p: noop$1,
   		i: noop$1,
   		o: noop$1,
   		d: function d(detaching) {
   			if (detaching) { detach(div); }
-  			/*div_binding*/ ctx[20](null);
+  			/*div_binding*/ ctx[15](null);
   		}
   	};
   }
@@ -17767,11 +17900,12 @@ var basicweb_restaurant_app_client = (function () {
 
   	function div_binding($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
-  			$$invalidate(0, mapElement = $$value);
+  			mapElement = $$value;
+  			$$invalidate(0, mapElement);
   		});
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("mapType" in $$props) { $$invalidate(5, mapType = $$props.mapType); }
   		if ("map" in $$props) { $$invalidate(1, map = $$props.map); }
   	};
@@ -17792,11 +17926,6 @@ var basicweb_restaurant_app_client = (function () {
   		zoomToLocation,
   		addMarker,
   		clearMarkers,
-  		L,
-  		markers,
-  		openStreetMapSetup,
-  		stamenTonerSetup,
-  		nationalMapSetup,
   		div_binding
   	];
   }
@@ -17882,9 +18011,10 @@ var basicweb_restaurant_app_client = (function () {
   	return Leaflet_1;
   }(SvelteComponent));
 
-  /* src/MapListing.html generated by Svelte v3.20.1 */
+  /* src/MapListing.html generated by Svelte v3.24.1 */
 
   function create_fragment$6(ctx) {
+  	var leaflet_1;
   	var updating_map;
   	var current;
 
@@ -17898,7 +18028,7 @@ var basicweb_restaurant_app_client = (function () {
   		leaflet_1_props.map = /*map*/ ctx[0];
   	}
 
-  	var leaflet_1 = new Leaflet_1({ props: leaflet_1_props });
+  	leaflet_1 = new Leaflet_1({ props: leaflet_1_props });
   	binding_callbacks.push(function () { return bind$1(leaflet_1, "map", leaflet_1_map_binding); });
   	/*leaflet_1_binding*/ ctx[9](leaflet_1);
 
@@ -17971,11 +18101,12 @@ var basicweb_restaurant_app_client = (function () {
 
   	function leaflet_1_binding($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
-  			$$invalidate(2, leaflet = $$value);
+  			leaflet = $$value;
+  			$$invalidate(2, leaflet);
   		});
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("locations" in $$props) { $$invalidate(3, locations = $$props.locations); }
   		if ("mapType" in $$props) { $$invalidate(1, mapType = $$props.mapType); }
   		if ("fitBounds" in $$props) { $$invalidate(4, fitBounds = $$props.fitBounds); }
@@ -18052,9 +18183,10 @@ var basicweb_restaurant_app_client = (function () {
   	return MapListing;
   }(SvelteComponent));
 
-  /* src/MapSearch.html generated by Svelte v3.20.1 */
+  /* src/MapSearch.html generated by Svelte v3.24.1 */
 
   function create_if_block$5(ctx) {
+  	var maplisting;
   	var updating_map;
   	var current;
 
@@ -18072,7 +18204,7 @@ var basicweb_restaurant_app_client = (function () {
   		maplisting_props.map = /*map*/ ctx[2];
   	}
 
-  	var maplisting = new MapListing({ props: maplisting_props });
+  	maplisting = new MapListing({ props: maplisting_props });
   	/*maplisting_binding*/ ctx[12](maplisting);
   	binding_callbacks.push(function () { return bind$1(maplisting, "map", maplisting_map_binding); });
 
@@ -18115,10 +18247,11 @@ var basicweb_restaurant_app_client = (function () {
   }
 
   function create_fragment$7(ctx) {
+  	var nominatimsearch;
   	var t;
   	var if_block_anchor;
   	var current;
-  	var nominatimsearch = new NominatimSearch({});
+  	nominatimsearch = new NominatimSearch({});
   	nominatimsearch.$on("selected", /*mapSelected*/ ctx[6]);
   	nominatimsearch.$on("selected", /*selected_handler*/ ctx[10]);
   	nominatimsearch.$on("change", /*change_handler*/ ctx[11]);
@@ -18144,7 +18277,10 @@ var basicweb_restaurant_app_client = (function () {
   			if (/*selectedLocation*/ ctx[0]) {
   				if (if_block) {
   					if_block.p(ctx, dirty);
-  					transition_in(if_block, 1);
+
+  					if (dirty & /*selectedLocation*/ 1) {
+  						transition_in(if_block, 1);
+  					}
   				} else {
   					if_block = create_if_block$5(ctx);
   					if_block.c();
@@ -18215,7 +18351,8 @@ var basicweb_restaurant_app_client = (function () {
 
   	function maplisting_binding($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
-  			$$invalidate(5, mapListing = $$value);
+  			mapListing = $$value;
+  			$$invalidate(5, mapListing);
   		});
   	}
 
@@ -18224,7 +18361,7 @@ var basicweb_restaurant_app_client = (function () {
   		$$invalidate(2, map);
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("mapType" in $$props) { $$invalidate(3, mapType = $$props.mapType); }
   		if ("selectedLocation" in $$props) { $$invalidate(0, selectedLocation = $$props.selectedLocation); }
   		if ("locations" in $$props) { $$invalidate(1, locations = $$props.locations); }
@@ -18286,7 +18423,7 @@ var basicweb_restaurant_app_client = (function () {
   	return MapSearch;
   }(SvelteComponent));
 
-  /* src/LocationCreate.html generated by Svelte v3.20.1 */
+  /* src/LocationCreate.html generated by Svelte v3.24.1 */
 
   function create_else_block$3(ctx) {
   	var await_block_anchor;
@@ -18339,13 +18476,15 @@ var basicweb_restaurant_app_client = (function () {
 
   // (76:0) {#if !submitted}
   function create_if_block$6(ctx) {
+  	var mapsearch;
   	var t0;
   	var button;
   	var t1;
   	var button_disabled_value;
   	var current;
+  	var mounted;
   	var dispose;
-  	var mapsearch = new MapSearch({});
+  	mapsearch = new MapSearch({});
   	mapsearch.$on("selected", /*mapSelected*/ ctx[3]);
   	mapsearch.$on("change", /*reset*/ ctx[5]);
 
@@ -18357,14 +18496,17 @@ var basicweb_restaurant_app_client = (function () {
   			t1 = text("Add Location");
   			button.disabled = button_disabled_value = !/*selectedLocation*/ ctx[1];
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			mount_component(mapsearch, target, anchor);
   			insert(target, t0, anchor);
   			insert(target, button, anchor);
   			append(button, t1);
   			current = true;
-  			if (remount) { dispose(); }
-  			dispose = listen(button, "click", /*submitLocation*/ ctx[4]);
+
+  			if (!mounted) {
+  				dispose = listen(button, "click", /*submitLocation*/ ctx[4]);
+  				mounted = true;
+  			}
   		},
   		p: function p(ctx, dirty) {
   			if (!current || dirty & /*selectedLocation*/ 2 && button_disabled_value !== (button_disabled_value = !/*selectedLocation*/ ctx[1])) {
@@ -18384,6 +18526,7 @@ var basicweb_restaurant_app_client = (function () {
   			destroy_component(mapsearch, detaching);
   			if (detaching) { detach(t0); }
   			if (detaching) { detach(button); }
+  			mounted = false;
   			dispose();
   		}
   	};
@@ -18421,6 +18564,7 @@ var basicweb_restaurant_app_client = (function () {
   	var p;
   	var t1;
   	var button;
+  	var mounted;
   	var dispose;
 
   	return {
@@ -18431,18 +18575,22 @@ var basicweb_restaurant_app_client = (function () {
   			button = element("button");
   			button.textContent = "Add Another Location";
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, p, anchor);
   			insert(target, t1, anchor);
   			insert(target, button, anchor);
-  			if (remount) { dispose(); }
-  			dispose = listen(button, "click", /*reset*/ ctx[5]);
+
+  			if (!mounted) {
+  				dispose = listen(button, "click", /*reset*/ ctx[5]);
+  				mounted = true;
+  			}
   		},
   		p: noop$1,
   		d: function d(detaching) {
   			if (detaching) { detach(p); }
   			if (detaching) { detach(t1); }
   			if (detaching) { detach(button); }
+  			mounted = false;
   			dispose();
   		}
   	};
@@ -18615,7 +18763,7 @@ var basicweb_restaurant_app_client = (function () {
   	return LocationCreate;
   }(SvelteComponent));
 
-  /* src/LocationByDistance.html generated by Svelte v3.20.1 */
+  /* src/LocationByDistance.html generated by Svelte v3.24.1 */
 
   function create_if_block_1$2(ctx) {
   	var label;
@@ -18623,6 +18771,7 @@ var basicweb_restaurant_app_client = (function () {
   	var input;
   	var t1;
   	var if_block_anchor;
+  	var mounted;
   	var dispose;
   	var if_block = /*sliderDistance*/ ctx[3] && create_if_block_2$2(ctx);
 
@@ -18639,7 +18788,7 @@ var basicweb_restaurant_app_client = (function () {
   			attr(input, "max", "10");
   			attr(input, "step", "0.001");
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			insert(target, label, anchor);
   			append(label, t0);
   			append(label, input);
@@ -18647,13 +18796,16 @@ var basicweb_restaurant_app_client = (function () {
   			insert(target, t1, anchor);
   			if (if_block) { if_block.m(target, anchor); }
   			insert(target, if_block_anchor, anchor);
-  			if (remount) { run_all(dispose); }
 
-  			dispose = [
-  				listen(input, "change", /*input_change_input_handler*/ ctx[14]),
-  				listen(input, "input", /*input_change_input_handler*/ ctx[14]),
-  				listen(input, "change", /*setDistance*/ ctx[9])
-  			];
+  			if (!mounted) {
+  				dispose = [
+  					listen(input, "change", /*input_change_input_handler*/ ctx[12]),
+  					listen(input, "input", /*input_change_input_handler*/ ctx[12]),
+  					listen(input, "change", /*setDistance*/ ctx[9])
+  				];
+
+  				mounted = true;
+  			}
   		},
   		p: function p(ctx, dirty) {
   			if (dirty & /*sliderDistance*/ 8) {
@@ -18678,6 +18830,7 @@ var basicweb_restaurant_app_client = (function () {
   			if (detaching) { detach(t1); }
   			if (if_block) { if_block.d(detaching); }
   			if (detaching) { detach(if_block_anchor); }
+  			mounted = false;
   			run_all(dispose);
   		}
   	};
@@ -18834,6 +18987,7 @@ var basicweb_restaurant_app_client = (function () {
   }
 
   function create_fragment$9(ctx) {
+  	var mapsearch;
   	var updating_map;
   	var t0;
   	var t1;
@@ -18842,7 +18996,7 @@ var basicweb_restaurant_app_client = (function () {
   	var current;
 
   	function mapsearch_map_binding(value) {
-  		/*mapsearch_map_binding*/ ctx[13].call(null, value);
+  		/*mapsearch_map_binding*/ ctx[11].call(null, value);
   	}
 
   	var mapsearch_props = {
@@ -18855,8 +19009,8 @@ var basicweb_restaurant_app_client = (function () {
   		mapsearch_props.map = /*map*/ ctx[7];
   	}
 
-  	var mapsearch = new MapSearch({ props: mapsearch_props });
-  	/*mapsearch_binding*/ ctx[12](mapsearch);
+  	mapsearch = new MapSearch({ props: mapsearch_props });
+  	/*mapsearch_binding*/ ctx[10](mapsearch);
   	binding_callbacks.push(function () { return bind$1(mapsearch, "map", mapsearch_map_binding); });
   	mapsearch.$on("selected", /*mapSelected*/ ctx[8]);
   	var if_block = /*selectedLocation*/ ctx[5] && create_if_block_1$2(ctx);
@@ -18941,7 +19095,7 @@ var basicweb_restaurant_app_client = (function () {
   			current = false;
   		},
   		d: function d(detaching) {
-  			/*mapsearch_binding*/ ctx[12](null);
+  			/*mapsearch_binding*/ ctx[10](null);
   			destroy_component(mapsearch, detaching);
   			if (detaching) { detach(t0); }
   			if (if_block) { if_block.d(detaching); }
@@ -18964,7 +19118,6 @@ var basicweb_restaurant_app_client = (function () {
   	var locationSearch = Promise.resolve([]);
   	var selectedLocation;
   	var mapSearch;
-  	var timer;
   	var map;
   	var circle;
 
@@ -18984,7 +19137,8 @@ var basicweb_restaurant_app_client = (function () {
 
   	function mapsearch_binding($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
-  			$$invalidate(6, mapSearch = $$value);
+  			mapSearch = $$value;
+  			$$invalidate(6, mapSearch);
   		});
   	}
 
@@ -18998,7 +19152,7 @@ var basicweb_restaurant_app_client = (function () {
   		$$invalidate(3, sliderDistance);
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("mapType" in $$props) { $$invalidate(0, mapType = $$props.mapType); }
   		if ("marker" in $$props) { $$invalidate(1, marker = $$props.marker); }
   	};
@@ -19018,7 +19172,7 @@ var basicweb_restaurant_app_client = (function () {
   			}
   		}
 
-  		if ($$self.$$.dirty & /*selectedLocation, distance, mapSearch, map, circle*/ 1252) {
+  		if ($$self.$$.dirty & /*selectedLocation, distance, mapSearch, map, circle*/ 8420) {
   			 if (selectedLocation) {
   				$$invalidate(4, locationSearch = fetch((api + "/locations/by_distance/" + (selectedLocation.lat) + "/" + (selectedLocation.lon) + "/" + distance)).then(function (res) { return res.json(); }).then(function (locations) {
   					mapSearch.setLocations(locations.map(function (x) { return x[1]; }));
@@ -19027,7 +19181,7 @@ var basicweb_restaurant_app_client = (function () {
   				if (map) {
   					if (circle) { circle.removeFrom(map); }
 
-  					$$invalidate(10, circle = leafletSrc.circle([selectedLocation.lat, selectedLocation.lon], {
+  					$$invalidate(13, circle = leafletSrc.circle([selectedLocation.lat, selectedLocation.lon], {
   						radius: distance * 1000,
   						color: "#55f",
   						weight: 1,
@@ -19053,8 +19207,6 @@ var basicweb_restaurant_app_client = (function () {
   		map,
   		mapSelected,
   		setDistance,
-  		circle,
-  		timer,
   		mapsearch_binding,
   		mapsearch_map_binding,
   		input_change_input_handler
@@ -19074,11 +19226,12 @@ var basicweb_restaurant_app_client = (function () {
   	return LocationByDistance;
   }(SvelteComponent));
 
-  /* src/Stripe.html generated by Svelte v3.20.1 */
+  /* src/Stripe.html generated by Svelte v3.24.1 */
 
   function create_fragment$a(ctx) {
   	var script;
   	var script_src_value;
+  	var mounted;
   	var dispose;
 
   	return {
@@ -19086,16 +19239,20 @@ var basicweb_restaurant_app_client = (function () {
   			script = element("script");
   			if (script.src !== (script_src_value = "https://js.stripe.com/v3/")) { attr(script, "src", script_src_value); }
   		},
-  		m: function m(target, anchor, remount) {
+  		m: function m(target, anchor) {
   			append(document.head, script);
-  			if (remount) { dispose(); }
-  			dispose = listen(script, "load", /*stripeLoaded*/ ctx[0]);
+
+  			if (!mounted) {
+  				dispose = listen(script, "load", /*stripeLoaded*/ ctx[0]);
+  				mounted = true;
+  			}
   		},
   		p: noop$1,
   		i: noop$1,
   		o: noop$1,
   		d: function d(detaching) {
   			detach(script);
+  			mounted = false;
   			dispose();
   		}
   	};
@@ -19129,7 +19286,7 @@ var basicweb_restaurant_app_client = (function () {
   		$$invalidate(2, elements = stripe.elements());
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("clientKey" in $$props) { $$invalidate(3, clientKey = $$props.clientKey); }
   		if ("stripe" in $$props) { $$invalidate(1, stripe = $$props.stripe); }
   		if ("elements" in $$props) { $$invalidate(2, elements = $$props.elements); }
@@ -19151,7 +19308,7 @@ var basicweb_restaurant_app_client = (function () {
   	return Stripe_1;
   }(SvelteComponent));
 
-  /* src/elements/Generic.html generated by Svelte v3.20.1 */
+  /* src/elements/Generic.html generated by Svelte v3.24.1 */
 
   function create_else_block$4(ctx) {
   	var div;
@@ -19162,12 +19319,12 @@ var basicweb_restaurant_app_client = (function () {
   		},
   		m: function m(target, anchor) {
   			insert(target, div, anchor);
-  			/*div_binding_1*/ ctx[9](div);
+  			/*div_binding_1*/ ctx[8](div);
   		},
   		p: noop$1,
   		d: function d(detaching) {
   			if (detaching) { detach(div); }
-  			/*div_binding_1*/ ctx[9](null);
+  			/*div_binding_1*/ ctx[8](null);
   		}
   	};
   }
@@ -19191,14 +19348,14 @@ var basicweb_restaurant_app_client = (function () {
   			append(label_1, t0);
   			append(label_1, t1);
   			append(label_1, div);
-  			/*div_binding*/ ctx[8](div);
+  			/*div_binding*/ ctx[7](div);
   		},
   		p: function p(ctx, dirty) {
   			if (dirty & /*label*/ 4) { set_data(t0, /*label*/ ctx[2]); }
   		},
   		d: function d(detaching) {
   			if (detaching) { detach(label_1); }
-  			/*div_binding*/ ctx[8](null);
+  			/*div_binding*/ ctx[7](null);
   		}
   	};
   }
@@ -19271,17 +19428,19 @@ var basicweb_restaurant_app_client = (function () {
 
   	function div_binding($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
-  			$$invalidate(0, domNode = $$value);
+  			domNode = $$value;
+  			$$invalidate(0, domNode);
   		});
   	}
 
   	function div_binding_1($$value) {
   		binding_callbacks[$$value ? "unshift" : "push"](function () {
-  			$$invalidate(0, domNode = $$value);
+  			domNode = $$value;
+  			$$invalidate(0, domNode);
   		});
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("elements" in $$props) { $$invalidate(4, elements = $$props.elements); }
   		if ("kind" in $$props) { $$invalidate(5, kind = $$props.kind); }
   		if ("showLabel" in $$props) { $$invalidate(1, showLabel = $$props.showLabel); }
@@ -19299,7 +19458,6 @@ var basicweb_restaurant_app_client = (function () {
   		elements,
   		kind,
   		options,
-  		dispatch,
   		div_binding,
   		div_binding_1
   	];
@@ -19327,9 +19485,10 @@ var basicweb_restaurant_app_client = (function () {
   	return Generic;
   }(SvelteComponent));
 
-  /* src/elements/Card.html generated by Svelte v3.20.1 */
+  /* src/elements/Card.html generated by Svelte v3.24.1 */
 
   function create_fragment$c(ctx) {
+  	var generic;
   	var updating_element;
   	var updating_domNode;
   	var current;
@@ -19357,7 +19516,7 @@ var basicweb_restaurant_app_client = (function () {
   		generic_props.domNode = /*domNode*/ ctx[4];
   	}
 
-  	var generic = new Generic({ props: generic_props });
+  	generic = new Generic({ props: generic_props });
   	binding_callbacks.push(function () { return bind$1(generic, "element", generic_element_binding); });
   	binding_callbacks.push(function () { return bind$1(generic, "domNode", generic_domNode_binding); });
   	generic.$on("change", /*change_handler*/ ctx[7]);
@@ -19455,7 +19614,7 @@ var basicweb_restaurant_app_client = (function () {
   		bubble($$self, event);
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("elements" in $$props) { $$invalidate(0, elements = $$props.elements); }
   		if ("label" in $$props) { $$invalidate(1, label = $$props.label); }
   		if ("options" in $$props) { $$invalidate(2, options = $$props.options); }
@@ -19491,12 +19650,13 @@ var basicweb_restaurant_app_client = (function () {
   	return Card;
   }(SvelteComponent));
 
-  /* src/CreditCardForm.html generated by Svelte v3.20.1 */
+  /* src/CreditCardForm.html generated by Svelte v3.24.1 */
 
   function create_if_block$9(ctx) {
   	var form;
+  	var card;
   	var current;
-  	var card = new Card({ props: { elements: /*elements*/ ctx[1] } });
+  	card = new Card({ props: { elements: /*elements*/ ctx[1] } });
 
   	return {
   		c: function c() {
@@ -19530,6 +19690,7 @@ var basicweb_restaurant_app_client = (function () {
   }
 
   function create_fragment$d(ctx) {
+  	var stripe_1;
   	var updating_stripe;
   	var updating_elements;
   	var t;
@@ -19554,7 +19715,7 @@ var basicweb_restaurant_app_client = (function () {
   		stripe_1_props.elements = /*elements*/ ctx[1];
   	}
 
-  	var stripe_1 = new Stripe_1({ props: stripe_1_props });
+  	stripe_1 = new Stripe_1({ props: stripe_1_props });
   	binding_callbacks.push(function () { return bind$1(stripe_1, "stripe", stripe_1_stripe_binding); });
   	binding_callbacks.push(function () { return bind$1(stripe_1, "elements", stripe_1_elements_binding); });
   	var if_block = /*elements*/ ctx[1] && create_if_block$9(ctx);
@@ -19596,7 +19757,10 @@ var basicweb_restaurant_app_client = (function () {
   			if (/*elements*/ ctx[1]) {
   				if (if_block) {
   					if_block.p(ctx, dirty);
-  					transition_in(if_block, 1);
+
+  					if (dirty & /*elements*/ 2) {
+  						transition_in(if_block, 1);
+  					}
   				} else {
   					if_block = create_if_block$9(ctx);
   					if_block.c();
@@ -19648,7 +19812,7 @@ var basicweb_restaurant_app_client = (function () {
   		$$invalidate(1, elements);
   	}
 
-  	$$self.$set = function ($$props) {
+  	$$self.$$set = function ($$props) {
   		if ("clientKey" in $$props) { $$invalidate(0, clientKey = $$props.clientKey); }
   	};
 

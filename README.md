@@ -1,9 +1,11 @@
-# App-Restaurant
+# App-Biz
 
-Starter app for restaurant sites
+Starter app for biz sites
 Uses:
 - app
 - users
 - galleries
 - board
+- locations
+- catalog
 
