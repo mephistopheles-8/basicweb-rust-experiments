@@ -100,7 +100,7 @@ pub async fn login_form(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResp
 
         HttpResponse::Ok().body(body)
     }else{
-        HttpResponse::Found().header("location", "/manage-account").finish()
+        HttpResponse::Found().header("location", "/user/home").finish()
     }
 }
 
@@ -177,7 +177,7 @@ pub async fn login_action(
         id.remember(serde_json::to_string(&sess).unwrap());
 
         if sess.is_authorized() {
-            Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+            Ok(HttpResponse::Found().header("location", "/user/home").finish())
         }else{
             Ok(HttpResponse::Found().header("location", "/verify-account").finish())
         }
@@ -363,7 +363,7 @@ pub async fn reset_password_action(
                     let sess0 = UserSession::Authorized(uuid,vec![]);
                     id.remember(serde_json::to_string(&sess0)?);
                 }
-                Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+                Ok(HttpResponse::Found().header("location", "/user/home").finish())
            }else {
                 Ok(HttpResponse::Found().header("location", "/reset-password").finish())
            }
@@ -396,7 +396,7 @@ pub async fn verify_account_form(
 
             Ok(HttpResponse::Ok().body(body))
         }else {
-            Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+            Ok(HttpResponse::Found().header("location", "/user/home").finish())
         }
     }else{
         Ok(HttpResponse::Found().header("location", "/login").finish())
@@ -428,12 +428,12 @@ pub async fn verify_account_action(
               if verified {
                 let sess0 = UserSession::Authorized(*sess.uuid(),vec![]);
                 id.remember(serde_json::to_string(&sess0)?);
-                Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+                Ok(HttpResponse::Found().header("location", "/user/home").finish())
               }else {
                 Ok(HttpResponse::Found().header("location", "/verify-account").finish())
               }
         }else{
-            Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+            Ok(HttpResponse::Found().header("location", "/user/home").finish())
         }
     }else{
         Ok(HttpResponse::Found().header("location", "/login").finish())
@@ -562,7 +562,7 @@ pub async fn questions_form(
             Ok(HttpResponse::Ok().body(body))
         }else{
             if sess.is_authorized() {
-                Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+                Ok(HttpResponse::Found().header("location", "/user/home").finish())
             }else {
                 Ok(HttpResponse::Found().header("location", "/verify-account").finish())
             }
@@ -639,7 +639,7 @@ pub async fn questions_action(
             }
         }else{
             if sess.is_authorized() {
-                Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+                Ok(HttpResponse::Found().header("location", "/user/home").finish())
             }else {
                 Ok(HttpResponse::Found().header("location", "/verify-account").finish())
             }
@@ -1046,11 +1046,30 @@ pub async fn user_email_by_login_json(
     }
 }
 
-pub async fn manage_account(id: Identity) -> String {
-    format!(
-        "Hello {}",
-        id.identity().unwrap_or_else(|| "Anonymous".to_owned())
-    )
+pub async fn user_home_html(
+    id: Identity, hb: web::Data<Handlebars<'_>>
+ ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        // TODO: this sort of thing should be accomplished by middleware
+        match sess {
+            UserSession::Authorized(_,_) => {
+                let data = json!({
+                    "title": "Welcome"
+                  , "parent" : "main"
+                  , "logged_in" : true 
+                });
+                let body = hb.render("content/user-home", &data).unwrap();
+
+                Ok(HttpResponse::Ok().body(body))
+            },
+            UserSession::Partial(_) => Ok(HttpResponse::Found().header("location", "/verify-account").finish()),
+            UserSession::Questions(_,_) => Ok(HttpResponse::Found().header("location", "/questions").finish()),
+            UserSession::MustResetPassword(_) => Ok(HttpResponse::Found().header("location", "/reset-password").finish()),
+        }
+    }else{
+       Ok(HttpResponse::Found().header("location", "/login").finish())
+    }
 }
 
 /// Allow logout to support system simulation
@@ -1062,7 +1081,7 @@ pub async fn logout(
         if sess.is_simulated() {
             sess.simulate_pop();
             id.remember(serde_json::to_string(&sess)?);
-            Ok(HttpResponse::Found().header("location", "/manage-account").finish())
+            Ok(HttpResponse::Found().header("location", "/user/home").finish())
         }else{
             id.forget();
             Ok(HttpResponse::Found().header("location", "/").finish())
@@ -1143,8 +1162,8 @@ pub fn users_api( cfg: &mut web::ServiceConfig ) {
         .route(web::get().to(recover_password_form))
         .route(web::post().to(recover_password_action))
     )
-    .service(web::resource("/manage-account")
-        .route(web::get().to(manage_account))
+    .service(web::resource("/user/home")
+        .route(web::get().to(user_home_html))
     )
     .service(web::resource("/register")
         .route(web::get().to(register_form))
