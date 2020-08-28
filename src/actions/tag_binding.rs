@@ -10,7 +10,7 @@ pub fn tag_binding_create(
 
     use crate::schema::tag_bindings::dsl::*;
 
-    let new_tag_binding = models::NewTagBinding {
+    let new_tag_binding = models::TagBindingNew {
         kind : kind0
      ,  item_id : item_id0
      ,  tag : tag0
