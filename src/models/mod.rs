@@ -12,7 +12,7 @@ pub use gallery::{Gallery,GalleryUpd,GalleryNew};
 pub use gallery::{GalleryItem,GalleryItemUpd,GalleryItemNew};
 pub use gallery::{Resource,ResourceNew};
 pub use post::{Post,PostTree,PostUpd,PostNew};
-pub use tag::{Tag,TagPost,NewTag,TagBinding,NewTagBinding};
+pub use tag::{Tag,TagUpd,TagNew,TagBinding,TagBindingNew};
 pub use catalog::{Catalog,CatalogUpd,CatalogNew};
 pub use catalog::{Product,ProductPostNew,ProductPostUpdate,ProductNew};
 pub use catalog::{Transaction,TransactionUpd,TransactionNew};
