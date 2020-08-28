@@ -13,7 +13,7 @@ pub fn product_create(
 
     let uuid0 = Uuid::new_v4();
 
-    let new_product = models::NewProduct {
+    let new_product = models::ProductNew {
         catalog: catalog0,
         name: &product0.name,
         description: product0.description.as_deref(),

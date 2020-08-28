@@ -7,7 +7,7 @@ use actix_web::{web,HttpResponse};
 
 
 pub async fn catalog_create_json(
-     data : web::Json<models::CatalogPost>
+     data : web::Json<models::CatalogUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -122,7 +122,7 @@ pub async fn catalog_delete_by_id_json(
 
 pub async fn catalog_update_by_id_json(
      path: web::Path<i32>
-   , data : web::Json<models::CatalogPost>
+   , data : web::Json<models::CatalogUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 

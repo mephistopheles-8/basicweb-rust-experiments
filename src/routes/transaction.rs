@@ -8,7 +8,7 @@ use actix_web::{web,HttpResponse};
 
 pub async fn transaction_create_json(
      path: web::Path<i32>
-   , data : web::Json<models::TransactionPost>
+   , data : web::Json<models::TransactionUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
