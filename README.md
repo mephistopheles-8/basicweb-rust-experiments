@@ -1,7 +1,4 @@
-# Locations
+# Events
 
-This is a basic database structure for simple locations.
+This is a basic database structure for simple events.
 
-## Goals
-- Query locations by distance
-- Fuzzy searches
