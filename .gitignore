@@ -1,4 +1,8 @@
 /target
-database.sqlite
 .env
+*.sqlite
+*.tar.gz
+*.orig
+/tmp
 *.swp
+result
