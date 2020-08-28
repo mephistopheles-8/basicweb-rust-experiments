@@ -10,6 +10,23 @@ table! {
 }
 
 table! {
+    posts (id) {
+        id -> Integer,
+        parent -> Nullable<Integer>,
+        depth -> Integer,
+        title -> Nullable<Text>,
+        description -> Nullable<Text>,
+        body -> Text,
+        format -> Integer,
+        status -> Integer,
+        flagged -> Bool,
+        uuid -> Binary,
+        created -> Timestamp,
+        updated -> Timestamp,
+    }
+}
+
+table! {
     secret_questions (id) {
         id -> Integer,
         question -> Text,
@@ -41,6 +58,7 @@ table! {
 
 allow_tables_to_appear_in_same_query!(
     items,
+    posts,
     secret_questions,
     users,
 );

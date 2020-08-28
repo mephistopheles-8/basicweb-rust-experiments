@@ -1,0 +1,11 @@
+{{~#*inline "content"~}}
+<div id="post-create"></div>
+<script type="text/javascript" src="/js/basicweb_app_tasks_client.min.js"></script>
+<script type="text/javascript">
+    basicweb_app_tasks_client.postMarkdown( document.getElementById( "post-create" ), {
+        postId : {{{postId}}}
+    });
+</script>
+{{~/inline~}}
+{{~> (parent)~}}
+
