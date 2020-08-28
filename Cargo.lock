@@ -600,6 +600,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "events"
+version = "0.1.0"
+dependencies = [
+ "actix-files",
+ "actix-http",
+ "actix-rt",
+ "actix-web",
+ "chrono",
+ "diesel",
+ "dotenv",
+ "env_logger",
+ "futures",
+ "handlebars",
+ "r2d2",
+ "serde",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
 name = "failure"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -986,26 +1006,6 @@ name = "linked-hash-map"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8dd5a6d5999d9907cda8ed67bbd137d3af8085216c2ac62de5be860bd41f304a"
-
-[[package]]
-name = "locations"
-version = "0.1.0"
-dependencies = [
- "actix-files",
- "actix-http",
- "actix-rt",
- "actix-web",
- "chrono",
- "diesel",
- "dotenv",
- "env_logger",
- "futures",
- "handlebars",
- "r2d2",
- "serde",
- "serde_json",
- "uuid",
-]
 
 [[package]]
 name = "lock_api"
