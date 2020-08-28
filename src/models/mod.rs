@@ -16,4 +16,4 @@ pub use tag::{Tag,TagPost,NewTag,TagBinding,NewTagBinding};
 pub use catalog::{Catalog,CatalogUpd,CatalogNew};
 pub use catalog::{Product,ProductPostNew,ProductPostUpdate,ProductNew};
 pub use catalog::{Transaction,TransactionUpd,TransactionNew};
-pub use location::{Location,NewLocationPost,LocationUpdate,NewLocation};
+pub use location::{Location,LocationPostNew,LocationUpdate,LocationNew};
