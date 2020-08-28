@@ -6,14 +6,14 @@ use uuid::Uuid;
 
 
 pub fn catalog_create( 
-        catalog0: &models::CatalogPost, conn: &Connection 
+        catalog0: &models::CatalogUpd, conn: &Connection 
     ) -> Result<Uuid, diesel::result::Error> {
 
     use crate::schema::catalogs::dsl::*;
 
     let uuid0 = Uuid::new_v4();
 
-    let new_catalog = models::NewCatalog {
+    let new_catalog = models::CatalogNew {
         name: &catalog0.name,
         description: catalog0.description.as_deref(),
         kind: catalog0.kind,
@@ -70,7 +70,7 @@ pub fn catalog_delete_by_uuid ( uuid0: Uuid, conn: &Connection )
 }
 
 pub fn catalog_update_by_id( 
-        data: &models::CatalogPost, id0: i32, conn: &Connection 
+        data: &models::CatalogUpd, id0: i32, conn: &Connection 
     ) -> Result<usize, diesel::result::Error> {
 
     use crate::schema::catalogs::dsl::*;
@@ -79,7 +79,7 @@ pub fn catalog_update_by_id(
 }
 
 pub fn catalog_update_by_uuid( 
-        data: &models::CatalogPost, uuid0: Uuid, conn: &Connection 
+        data: &models::CatalogUpd, uuid0: Uuid, conn: &Connection 
     ) -> Result<usize, diesel::result::Error> {
 
     use crate::schema::catalogs::dsl::*;

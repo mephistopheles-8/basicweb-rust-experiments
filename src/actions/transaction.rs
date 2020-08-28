@@ -6,14 +6,14 @@ use uuid::Uuid;
 
 
 pub fn transaction_create( 
-        product0: i32, transaction0: &models::TransactionPost, conn: &Connection 
+        product0: i32, transaction0: &models::TransactionUpd, conn: &Connection 
     ) -> Result<Uuid, diesel::result::Error> {
 
     use crate::schema::transactions::dsl::*;
 
     let uuid0 = Uuid::new_v4();
 
-    let new_transaction = models::NewTransaction {
+    let new_transaction = models::TransactionNew {
         product: product0,
         txn_code: &transaction0.txn_code,
         name: transaction0.name.as_deref(),

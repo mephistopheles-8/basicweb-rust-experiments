@@ -1,4 +1,4 @@
-use super::schema::*;
+use crate::schema::{catalogs,products,transactions};
 use chrono::NaiveDateTime;
 use crate::util::uuid_json;
 use serde::{Serialize,Deserialize};
@@ -19,7 +19,7 @@ pub struct Catalog {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "catalogs"]
-pub struct CatalogPost {
+pub struct CatalogUpd {
     pub name: String,
     pub description: Option<String>,
     pub kind: i32,
@@ -28,7 +28,7 @@ pub struct CatalogPost {
 
 #[derive(Insertable)]
 #[table_name = "catalogs"]
-pub struct NewCatalog<'a> {
+pub struct CatalogNew<'a> {
     pub name: &'a str,
     pub description: Option<&'a str>,
     pub kind: i32,
@@ -73,7 +73,7 @@ pub struct ProductPostUpdate {
 
 #[derive(Insertable)]
 #[table_name = "products"]
-pub struct NewProduct<'a> {
+pub struct ProductNew<'a> {
     pub catalog: i32,
     pub name: &'a str,
     pub description: Option<&'a str>,
@@ -110,7 +110,7 @@ pub struct Transaction {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "transactions"]
-pub struct TransactionPost {
+pub struct TransactionUpd {
     pub product: i32,
     pub txn_code: String,
     pub name: Option<String>,
@@ -130,7 +130,7 @@ pub struct TransactionPost {
 
 #[derive(Insertable)]
 #[table_name = "transactions"]
-pub struct NewTransaction<'a> {
+pub struct TransactionNew<'a> {
     pub product: i32,
     pub txn_code: &'a str,
     pub name: Option<&'a str>,
