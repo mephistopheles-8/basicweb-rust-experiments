@@ -21,7 +21,7 @@ pub async fn gallery_listing_json(
 }
 
 pub async fn gallery_create_json(
-   data: web::Json<models::GalleryPost>, 
+   data: web::Json<models::GalleryUpd>, 
    pool: web::Data<DbPool>
  ) -> Result<HttpResponse,actix_web::Error> {
     let conn = pool.get().expect("couldn't get db connection from pool");
@@ -77,7 +77,7 @@ pub async fn gallery_by_uuid_json(
 
 pub async fn gallery_update_by_id_json(
     path: web::Path<i32>
-  , data: web::Json<models::GalleryPost>
+  , data: web::Json<models::GalleryUpd>
   , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
     let conn = pool.get().expect("couldn't get db connection from pool");
@@ -99,7 +99,7 @@ pub async fn gallery_update_by_id_json(
 
 pub async fn gallery_update_by_uuid_json(
     path: web::Path<Uuid>
-  , data: web::Json<models::GalleryPost>
+  , data: web::Json<models::GalleryUpd>
   , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
     let conn = pool.get().expect("couldn't get db connection from pool");

@@ -1,6 +1,6 @@
-# basicweb-restaurant-app-client
+# basicweb-biz-app-client
 
-A client for basicweb-restaurant-app.
+A client for basicweb-biz-app.
 
 Scripts:
 - `build` - do a debug build
