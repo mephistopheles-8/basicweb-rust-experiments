@@ -1,18 +1,23 @@
-extern crate app_tasks;
 #[macro_use]
 extern crate serde_json;
 
+extern crate app_tasks; 
+
+use app_tasks::min_api;
+
 use actix_files as fs;
+use actix_identity::RequestIdentity;
+use actix_identity::{CookieIdentityPolicy, IdentityService};
+use actix_web::{middleware, web, App, HttpServer};
 use actix_http::{body::Body, Response};
 use actix_web::dev::ServiceResponse;
 use actix_web::http::StatusCode;
 use actix_web::middleware::errhandlers::{ErrorHandlerResponse, ErrorHandlers};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
-use handlebars::Handlebars;
-use actix_web::{middleware, web, App, HttpServer};
 
-use app_tasks::min_api;
+use handlebars::Handlebars;
+use rand::Rng;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -27,16 +32,19 @@ async fn main() -> std::io::Result<()> {
         .build(manager)
         .expect("Failed to create pool.");
 
+    // Random session private key
+    let private_key = rand::thread_rng().gen::<[u8; 32]>();
+    // Static dir
+    let static_dir = std::env::var("STATIC_DIR").expect("STATIC_DIR");
+
     // Handlebar templates
     
-    let static_dir = std::env::var("STATIC_DIR").expect("STATIC_DIR");
     let mut handlebars = Handlebars::new();
     handlebars
         .register_templates_directory(".html", format!("{}/templates", static_dir))
         .unwrap();
     let handlebars_ref = web::Data::new(handlebars);
-
-    println!("Starting server on 0.0.0.0:8080"); 
+    println!("Starting server on port 0.0.0.0:8080");
     HttpServer::new(move || {
         App::new()
             // db pool
@@ -45,9 +53,14 @@ async fn main() -> std::io::Result<()> {
             .app_data(handlebars_ref.clone())
             // error handlers
             .wrap(error_handlers())
+            // identity (error handlers must be first)
+            .wrap(IdentityService::new(
+                CookieIdentityPolicy::new(&private_key)
+                    .name("sessid")
+                    .secure(false),
+            ))
             // logger (must be last)
             .wrap(middleware::Logger::default())
-            // the gallery api
             .configure(min_api)
             .service(fs::Files::new("/", format!("{}/root/", static_dir)))
     })
@@ -56,7 +69,7 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-// Error logic taken from actix-web/examples
+// Error logic taken from examples
 
 // Custom error handlers, to return HTML responses when an error occurs.
 fn error_handlers() -> ErrorHandlers<Body> {
@@ -87,12 +100,14 @@ fn get_error_response<B>(res: &ServiceResponse<B>, error: &str) -> Response<Body
         .app_data::<web::Data<Handlebars>>()
         .map(|t| t.get_ref());
    
+    let id = request.get_identity();
 
     match hb {
         Some(hb) => {
             let data = json!({
                 "title": error
               , "parent" : "main"
+              , "logged_in" : id.is_some()
               , "error": error
               , "status_code": res.status().as_str()
             });

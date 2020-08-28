@@ -1,0 +1,17 @@
+{{#*inline "content"}}
+<form method="POST" action="/questions">
+    <p>Please answer the security question below.</p>
+    <div>
+        <label for="answer">{{question}}</label>
+        <input type="text" name="answer" id="answer" title="Answer"> 
+    </div>
+    {{#if has_prev}}
+    <button name="action" value="previous">Try Previous</button>
+    {{/if}}
+    {{#if has_next}}
+    <button name="action" value="next">Try Next</button>
+    {{/if}}
+    <input type="submit" value="Submit Answer" title="Submit Answer">
+</form>
+{{/inline}}
+{{~> (parent)~}}

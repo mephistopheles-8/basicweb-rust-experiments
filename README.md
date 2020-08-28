@@ -1,5 +1,8 @@
-# Basic
+# App-Tasks
 
-This is a starter project with a basic
-named record.  Should be a useful starting
-point for most subsystems.
+Starter app for task managers and message boards
+Uses:
+- app
+- users
+- board
+- tags
