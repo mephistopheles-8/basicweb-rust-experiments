@@ -11,7 +11,6 @@ pub mod actions;
 pub mod routes;
 pub mod db;
 
-use routes::{user,post};
 
 use handlebars::Handlebars;
 use actix_web::{web,HttpResponse};
@@ -27,14 +26,15 @@ pub async fn index(hb: web::Data<Handlebars<'_>>) -> HttpResponse {
 }
 
 pub fn min_api( cfg: &mut web::ServiceConfig ) {
-    user::users_api(cfg);
-    post::api_html(cfg);
+    routes::user::users_api(cfg);
+    routes::post::api_html(cfg);
     cfg
       .service(web::resource("/").route(web::get().to(index)))
       .service(
           web::scope("/api/v1")
-            .configure(user::users_api_json)      
-            .configure(post::api_v1_json) 
+            .configure(routes::user::users_api_json)      
+            .configure(routes::post::api_v1_json) 
+            .configure(routes::tag::tags_api) 
           );
 }
 
