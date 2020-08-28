@@ -1,11 +1,16 @@
 <script>
     import { createEventDispatcher } from 'svelte';
+    import commonmark from "commonmark";
+
     export let post;
     const uri = "http://localhost:8080/api/v1";
 	const dispatch = createEventDispatcher();
 
     // sync posts to only allow one reply at a time.
     export let replyId;
+
+    const reader = new commonmark.Parser({smart: true});
+    const writer = new commonmark.HtmlRenderer({safe: true});
 
     let replyValue;
     let replyResponse = Promise.resolve(true);
@@ -20,7 +25,7 @@
                        }
                      , credentials: "same-origin"
                      , body : JSON.stringify({
-                           body : replyValue 
+                           body : replyValue
                         }) 
                  })
                 . then(res => res.json())
@@ -42,6 +47,15 @@
         }// end [if]
     }// end [keyHandler]
 
+    function splitLines( body ) {
+        return body.split(/\n+/);
+    }
+
+    // TODO: check security
+    function renderMarkdown( body ) {
+        let parsed = reader.parse( body );
+        return writer.render( parsed );
+    }
 </script>
 
 <div class="post">
@@ -51,7 +65,13 @@
     {#if post.description}
     <p>{post.description}<p>
     {/if}
-    <p>{post.body}</p>
+    {#if post.format === 1}
+    {@html renderMarkdown(post.body)}
+    {:else}
+        {#each splitLines(post.body) as line}
+        <p>{line}</p>
+        {/each}
+    {/if}
     {#await replyResponse}
     <p>...</p>
     {:then _}

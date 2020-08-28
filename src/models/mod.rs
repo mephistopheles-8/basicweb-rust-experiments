@@ -11,7 +11,7 @@ pub use user::{LoginParams,User,UserSecrets,RegisterParams,NewUser};
 pub use gallery::{Gallery,GalleryPost,NewGallery};
 pub use gallery::{GalleryItem,GalleryItemPost,NewGalleryItem};
 pub use gallery::{Resource,NewResource};
-pub use post::{Post,PostTree,PostPost,NewPost};
+pub use post::{Post,PostTree,PostUpd,PostNew};
 pub use tag::{Tag,TagPost,NewTag,TagBinding,NewTagBinding};
 pub use catalog::{Catalog,CatalogPost,NewCatalog};
 pub use catalog::{Product,ProductPostNew,ProductPostUpdate,NewProduct};

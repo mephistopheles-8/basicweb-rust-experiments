@@ -1,6 +1,7 @@
 import GalleryCreate from "./GalleryCreate.html"
 import Gallery from "./Gallery.html"
 import Board from "./Board.html"
+import PostMarkdown from "./PostMarkdown.html"
 import MapSearch from "./MapSearch.html"
 import MapListing from "./MapListing.html"
 import LocationCreate from "./LocationCreate.html"
@@ -38,6 +39,9 @@ export default {
     },
     board( target, props ){ 
         return  new Board({target,props});
+    },
+    postMarkdown( target, props ){ 
+        return  new PostMarkdown({target,props}); 
     },
     creditCardForm( target, props ){ 
         return  new CreditCardForm({target,props}); 

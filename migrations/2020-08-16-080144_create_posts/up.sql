@@ -7,6 +7,7 @@ CREATE TABLE posts (
     title TEXT,
     description TEXT,
     body TEXT NOT NULL,
+    format INTEGER NOT NULL,
     status INTEGER NOT NULL,
     flagged BOOLEAN NOT NULL DEFAULT 0,
     uuid BLOB NOT NULL UNIQUE,

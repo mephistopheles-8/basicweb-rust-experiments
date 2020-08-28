@@ -1,4 +1,4 @@
-use crate::schema::*;
+use crate::schema::posts;
 use chrono::NaiveDateTime;
 use crate::util::uuid_json;
 use serde::{Serialize,Deserialize};
@@ -13,6 +13,7 @@ pub struct Post {
     pub title: Option<String>,
     pub description: Option<String>,
     pub body: String,
+    pub format: i32,
     pub status: i32,
     pub flagged: bool,
     #[serde(with="uuid_json")]
@@ -30,6 +31,7 @@ pub struct PostTree {
     pub description: Option<String>,
     pub body: String,
     pub status: i32,
+    pub format: i32,
     pub flagged: bool,
     pub replies: Vec<PostTree>,
     #[serde(with="uuid_json")]
@@ -47,6 +49,7 @@ impl PostTree {
         , title : post.title
         , description : post.description
         , body : post.body
+        , format: post.format
         , status: post.status
         , flagged: post.flagged
         , replies : vec![]
@@ -59,21 +62,23 @@ impl PostTree {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "posts"]
-pub struct PostPost {
+pub struct PostUpd {
     pub title: Option<String>,
     pub description: Option<String>,
     pub body: String,
+    pub format: Option<i32>,
 }
 
 #[derive(Insertable)]
 #[table_name = "posts"]
-pub struct NewPost<'a> {
+pub struct PostNew<'a> {
     pub parent: Option<i32>,
     pub depth: i32,
     pub title: Option<&'a str>,
     pub description: Option<&'a str>,
     pub body: &'a str,
     pub status: i32,
+    pub format: i32,
     pub uuid: &'a [u8],
 }
 

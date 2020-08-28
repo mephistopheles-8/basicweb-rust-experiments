@@ -74,6 +74,7 @@ table! {
         title -> Nullable<Text>,
         description -> Nullable<Text>,
         body -> Text,
+        format -> Integer,
         status -> Integer,
         flagged -> Bool,
         uuid -> Binary,

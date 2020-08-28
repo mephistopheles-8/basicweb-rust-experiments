@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
 import buble from '@rollup/plugin-buble'
 import polyfill from 'rollup-plugin-polyfill'
 import { terser } from 'rollup-plugin-terser';
@@ -63,6 +64,7 @@ export default {
         main: true,
         browser : true
     }),
+    json(),
     commonjs(),
     svelte({
          css: function (css) {

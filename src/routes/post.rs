@@ -5,26 +5,30 @@ use crate::actions::post::*;
 use crate::db::DbPool;
 
 pub async fn post_create_json(
-     data : web::Json<models::PostPost>
+     data : web::Json<models::PostUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
     // use web::block to offload blocking Diesel code without blocking server thread
-    let uuid = web::block(move || post_create(&data, &conn))
+    let post = web::block(move || {
+        let uuid = post_create(&data, &conn)?;
+
+        post_by_uuid(uuid,&conn)
+     })
         .await
         .map_err(|e| {
             eprintln!("{}", e);
             HttpResponse::InternalServerError().finish()
         })?;
 
-    Ok(HttpResponse::Ok().json(uuid))
+    Ok(HttpResponse::Ok().json(post))
 }
 
 pub async fn post_reply_create_json(
      path : web::Path<i32>
-   , data : web::Json<models::PostPost>
+   , data : web::Json<models::PostUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -331,7 +335,7 @@ pub async fn post_delete_by_id_json(
 
 pub async fn post_update_by_id_json(
      path: web::Path<i32>
-   , data : web::Json<models::PostPost>
+   , data : web::Json<models::PostUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -421,6 +425,47 @@ pub async fn posts_dynamic_html(
     HttpResponse::Ok().body(body)
 }
 
+pub async fn post_create_dynamic_html(
+    hb: web::Data<Handlebars<'_>>
+  ) -> HttpResponse {
+    let data = json!({
+        "title": "Create Post"
+      , "parent" : "main"
+    });
+    let body = hb.render("content/post-create-dynamic", &data).unwrap();
+
+    HttpResponse::Ok().body(body)
+}
+
+pub async fn post_update_dynamic_html(
+    path: web::Path<i32>
+  , pool: web::Data<DbPool>
+  , hb: web::Data<Handlebars<'_>>
+  ) -> Result<HttpResponse, actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let post = 
+        web::block(move || post_by_id(*path, &conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+
+    if let Some(post) = post {
+        let data = json!({
+            "title": "Create Post"
+          , "parent" : "main"
+          , "postId" : post.id
+        });
+        let body = hb.render("content/post-update-dynamic", &data).unwrap();
+
+        Ok(HttpResponse::Ok().body(body))
+    }else{
+        Ok(HttpResponse::NotFound().finish())
+    }
+}
+
 pub async fn index(
     hb: web::Data<Handlebars<'_>>
   , pool: web::Data<DbPool>
@@ -482,6 +527,12 @@ pub async fn post_thread_html(
 pub fn api_html( cfg: &mut web::ServiceConfig ) {
     cfg
       .service(web::resource("/").route(web::get().to(posts_dynamic_html)))
+      .service(web::resource("/posts/create")
+          .route(web::get().to(post_create_dynamic_html))
+      )
+      .service(web::resource("/posts/update/{id}")
+          .route(web::get().to(post_update_dynamic_html))
+      )
       .service(web::resource("/posts/{id}")
           .route(web::get().to(post_thread_html))
       )
