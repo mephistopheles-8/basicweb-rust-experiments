@@ -1,4 +1,4 @@
-use super::schema::*;
+use crate::schema::locations;
 use chrono::NaiveDateTime;
 use serde::{Serialize,Deserialize};
 use crate::util::uuid_json;
@@ -22,7 +22,7 @@ pub struct Location {
 }
 
 #[derive(Serialize,Deserialize)]
-pub struct NewLocationPost{
+pub struct LocationPostNew{
     pub name: String,
     pub description: Option<String>,
     pub address: Option<String>,
@@ -51,7 +51,7 @@ pub struct LocationUpdate<'a> {
 
 #[derive(Insertable)]
 #[table_name = "locations"]
-pub struct NewLocation<'a> {
+pub struct LocationNew<'a> {
     pub name: &'a str,
     pub description: Option<&'a str>,
     pub address: Option<&'a str>,

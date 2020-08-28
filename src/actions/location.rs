@@ -150,14 +150,14 @@ pub fn location_update_lng_by_id ( lng0: f64, id0: i32, conn: &Connection )
 }
 
 pub fn location_create( 
-        loc: &models::NewLocationPost, conn: &Connection 
+        loc: &models::LocationPostNew, conn: &Connection 
     ) -> Result<Uuid, diesel::result::Error> {
 
     use crate::schema::locations::dsl::*;
 
     let uuid0 = Uuid::new_v4();
 
-    let new_location = models::NewLocation {
+    let new_location = models::LocationNew {
         name: &loc.name,
         description: loc.description.as_deref(),
         address: loc.address.as_deref(),
@@ -175,7 +175,7 @@ pub fn location_create(
 }
 
 pub fn location_update_by_id( 
-        loc: &models::NewLocationPost, id0: i32, conn: &Connection 
+        loc: &models::LocationPostNew, id0: i32, conn: &Connection 
     ) -> Result<usize, diesel::result::Error> {
 
     use crate::schema::locations::dsl::*;
@@ -196,7 +196,7 @@ pub fn location_update_by_id(
 }
 
 pub fn location_update_by_uuid( 
-        loc: &models::NewLocationPost, uuid0: Uuid, conn: &Connection 
+        loc: &models::LocationPostNew, uuid0: Uuid, conn: &Connection 
     ) -> Result<usize, diesel::result::Error> {
 
     use crate::schema::locations::dsl::*;

@@ -6,7 +6,7 @@ use crate::db::DbPool;
 use crate::actions::location::*;
 
 pub async fn location_create_json(
-     data : web::Json<models::NewLocationPost>
+     data : web::Json<models::LocationPostNew>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -66,7 +66,7 @@ pub async fn location_delete_by_id_json(
 
 pub async fn location_update_by_id_json(
      path: web::Path<i32>
-   , data : web::Json<models::NewLocationPost>
+   , data : web::Json<models::LocationPostNew>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
