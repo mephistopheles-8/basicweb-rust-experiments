@@ -1,4 +1,4 @@
-use super::schema::*;
+use crate::schema::items;
 use chrono::NaiveDateTime;
 use crate::util::uuid_json;
 use serde::{Serialize,Deserialize};
@@ -17,14 +17,14 @@ pub struct Item {
 
 #[derive(AsChangeset,Serialize,Deserialize)]
 #[table_name = "items"]
-pub struct ItemPost {
+pub struct ItemUpd {
     pub name: String,
     pub description: Option<String>,
 }
 
 #[derive(Insertable)]
 #[table_name = "items"]
-pub struct NewItem<'a> {
+pub struct ItemNew<'a> {
     pub name: &'a str,
     pub description: Option<&'a str>,
     pub uuid: &'a [u8],
