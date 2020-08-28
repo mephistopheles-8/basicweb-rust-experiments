@@ -18,7 +18,7 @@ pub fn gallery_item_create(
    let uuid0 = Uuid::new_v4();
 
    let new_gallery_item = 
-       models::NewGalleryItem {
+       models::GalleryItemNew {
          gallery: gallery0,
          resource: resource0,
          kind: kind0,

@@ -5,14 +5,14 @@ use crate::db::Connection as Connection0;
 use uuid::Uuid;
 
 pub fn gallery_create(
-      data : &models::GalleryPost
+      data : &models::GalleryUpd
     , conn: &Connection0 
   ) -> Result<Uuid, diesel::result::Error> {
     use crate::schema::galleries::dsl::*;
 
     let uuid0 = Uuid::new_v4();
 
-    let new_gallery = models::NewGallery {
+    let new_gallery = models::GalleryNew {
         kind: data.kind
      ,  name: &data.name
      ,  description: &data.description
@@ -25,7 +25,7 @@ pub fn gallery_create(
 
 pub fn gallery_update_by_id(
       id0 : i32
-    , data : &models::GalleryPost
+    , data : &models::GalleryUpd
     , conn: &Connection0 
   ) -> Result<usize, diesel::result::Error> {
     use crate::schema::galleries::dsl::*;
@@ -35,7 +35,7 @@ pub fn gallery_update_by_id(
 
 pub fn gallery_update_by_uuid(
       uuid0 : Uuid
-    , data : &models::GalleryPost
+    , data : &models::GalleryUpd
     , conn: &Connection0 
   ) -> Result<usize, diesel::result::Error> {
     use crate::schema::galleries::dsl::*;

@@ -42,7 +42,7 @@ pub async fn gallery_items_json(
 }
 
 
-// first field is GalleryItemPost json
+// first field is GalleryItemUpd json
 // next field is the resource file
 
 #[derive(Serialize,Deserialize)]
@@ -70,7 +70,7 @@ pub async fn gallery_item_multipart(
         }
    }
 
-   let item : models::GalleryItemPost 
+   let item : models::GalleryItemUpd 
         = serde_json::from_slice(buf.as_ref())
             .map_err(|_| actix_web::error::ParseError::Incomplete)?;
 
