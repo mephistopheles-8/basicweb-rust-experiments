@@ -7,7 +7,7 @@ use actix_web::{web,HttpResponse};
 
 
 pub async fn item_create_json(
-     data : web::Json<models::ItemPost>
+     data : web::Json<models::ItemUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 
@@ -122,7 +122,7 @@ pub async fn item_delete_by_id_json(
 
 pub async fn item_update_by_id_json(
      path: web::Path<i32>
-   , data : web::Json<models::ItemPost>
+   , data : web::Json<models::ItemUpd>
    , pool: web::Data<DbPool>
   ) -> Result<HttpResponse,actix_web::Error> {
 

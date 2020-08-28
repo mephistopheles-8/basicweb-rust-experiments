@@ -5,7 +5,7 @@ pub mod post;
 pub mod tag;
 pub mod catalog;
 pub mod location;
-pub use item::{Item,ItemPost,NewItem};
+pub use item::{Item,ItemUpd,ItemNew};
 pub use user::SecretQuestion;
 pub use user::{LoginParams,User,UserSecrets,RegisterParams,NewUser};
 pub use gallery::{Gallery,GalleryPost,NewGallery};
