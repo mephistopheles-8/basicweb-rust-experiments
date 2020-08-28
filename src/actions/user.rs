@@ -258,7 +258,7 @@ pub fn user_register(
 
     let uuid0 = Uuid::new_v4();
 
-    let new_user = models::NewUser {
+    let new_user = models::UserNew {
         name: &data.name
      ,  email: &data.email
      ,  handle: data.handle.as_deref()
