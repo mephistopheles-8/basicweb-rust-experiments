@@ -1,7 +1,7 @@
 {
-  "name": "basicweb-locations-client",
+  "name": "basicweb-events-client",
   "version": "0.0.1",
-  "description": "Client for basicweb/locations",
+  "description": "Client for basicweb/events",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
@@ -10,15 +10,17 @@
   },
   "author": "M. Bellaire",
   "devDependencies": {
+    "@mapbox/timespace": "^2.0.4",
     "@rollup/plugin-buble": "^0.21.1",
     "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "leaflet": "^1.6.0",
     "promise-polyfill": "^8.1.0",
     "rollup": "^2.1.0",
     "rollup-plugin-polyfill": "^2.0.1",
     "rollup-plugin-svelte": "^5.1.1",
-    "rollup-plugin-terser": "^5.3.0",
+    "rollup-plugin-terser": "^7.0.1",
     "svelte": "^3.20.1",
     "whatwg-fetch": "^3.0.0"
   }

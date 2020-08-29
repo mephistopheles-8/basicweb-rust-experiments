@@ -2,6 +2,7 @@ import MapSearch from "./MapSearch.html"
 import MapListing from "./MapListing.html"
 import LocationCreate from "./LocationCreate.html"
 import LocationByDistance from "./LocationByDistance.html"
+import TzByLocation from "./TzByLocation.html"
 import Leaflet from "leaflet";
 
 const L = Leaflet;
@@ -25,5 +26,8 @@ export default {
     },
     locationByDistance( target, props ){ 
         return  new LocationByDistance({target,props}); 
+    },
+    tzByLocation( target, props ) {
+        return  new TzByLocation({target,props}); 
     }
 }

@@ -1,6 +1,6 @@
-# basicweb-locations-client
+# basicweb-events-client
 
-A client for the basicweb-locations app.
+A client for the basicweb-events app.
 
 Scripts:
 - `build` - do a debug build

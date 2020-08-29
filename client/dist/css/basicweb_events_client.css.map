@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "file": "basicweb_locations_client.css",
+  "file": "basicweb_events_client.css",
   "sources": [
     "../../Leaflet.html"
   ],

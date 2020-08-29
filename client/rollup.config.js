@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
 import buble from '@rollup/plugin-buble'
 import polyfill from 'rollup-plugin-polyfill'
 import { terser } from 'rollup-plugin-terser';
@@ -26,7 +27,7 @@ const css_dest_path
       ? install_css_path
       : debug_css_path;
 
-const project = "basicweb_locations_client";
+const project = "basicweb_events_client";
 const author  = "M. Bellaire";
 const year    = "2020";
 const banner=
@@ -63,6 +64,7 @@ export default {
         main: true,
         browser : true
     }),
+    json(),
     commonjs(),
     svelte({
          css: function (css) {
