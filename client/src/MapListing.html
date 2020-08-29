@@ -23,10 +23,13 @@
                 leaflet.addMarker( latlng, loc.marker );
                 return latlng;
             });
-            if (bounds.length && fitBounds)
+            if (bounds.length && fitBounds) {
                 leaflet.fitBounds( bounds, {
                     padding : [50,50]
                 });
+                if( map && map.getZoom() > 15 ) 
+                    map.setZoom(15);
+            }
         }
     };
 
