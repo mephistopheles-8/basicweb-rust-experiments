@@ -16101,7 +16101,7 @@ var basicweb_events_client = (function () {
   	};
 
   	$$self.$$.update = function () {
-  		if ($$self.$$.dirty & /*leaflet, locations, fitBounds*/ 28) {
+  		if ($$self.$$.dirty & /*leaflet, locations, fitBounds, map*/ 29) {
   			 {
   				if (leaflet) {
   					leaflet.clearMarkers();
@@ -16112,7 +16112,10 @@ var basicweb_events_client = (function () {
   						return latlng;
   					});
 
-  					if (bounds.length && fitBounds) { leaflet.fitBounds(bounds, { padding: [50, 50] }); }
+  					if (bounds.length && fitBounds) {
+  						leaflet.fitBounds(bounds, { padding: [50, 50] });
+  						if (map && map.getZoom() > 15) { map.setZoom(15); }
+  					}
   				}
   			}
   		}
