@@ -1,4 +1,4 @@
-use crate::schema::*;
+use crate::schema::{tags,tag_bindings};
 use chrono::NaiveDateTime;
 use serde::{Serialize,Deserialize};
 

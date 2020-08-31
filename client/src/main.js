@@ -3,6 +3,7 @@ import UserGalleryCreate from "./UserGalleryCreate.html"
 import Gallery from "./Gallery.html"
 import Board from "./Board.html"
 import PostMarkdown from "./PostMarkdown.html"
+import Tags from "./Tags.html"
 
 export default {
     gallery( target, props ){ 
@@ -19,5 +20,8 @@ export default {
     },
     postMarkdown( target, props ){ 
         return  new PostMarkdown({target,props}); 
+    },
+    tags( target, props ){ 
+        return  new Tags({target,props});
     }
 }
