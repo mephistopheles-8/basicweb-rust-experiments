@@ -2,9 +2,7 @@
 <div id="post-create"></div>
 <script type="text/javascript" src="/js/basicweb_gallery_app_client.min.js"></script>
 <script type="text/javascript">
-    basicweb_gallery_app_client.postMarkdown( document.getElementById( "post-create" ), {
-        postId : {{{postId}}}
-    });
+    basicweb_gallery_app_client.userPost( document.getElementById( "post-create" ));
 </script>
 {{~/inline~}}
 {{~> (parent)~}}

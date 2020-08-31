@@ -79,6 +79,52 @@ pub fn user_post_create0_uuid(
     Ok(uuid0)
 }
 
+pub fn user_post_update0_uuid(
+      user0 : Uuid
+    , post0: Uuid
+    , data0 : &models::PostUpd
+    , data1 : &models::UserPostUpd
+    , conn: &Conn
+  ) -> Result<bool, diesel::result::Error> {
+
+
+    use crate::schema::*;
+
+    conn.transaction(|| {
+        if user_owns_post(user0,post0,conn)? {
+            let user = actions::user::user_by_uuid(user0,conn)?; 
+            let post = actions::post::post_by_uuid(post0,conn)?; 
+            if let Some(user) = user {
+                if let Some(post) = post {
+                    diesel::update(
+                       posts::table
+                        .filter(
+                            posts::id.eq(post.id))
+                        
+                    ).set(data0)
+                     .execute(conn)?;
+
+                    diesel::update(
+                       user_posts::table
+                        .filter(
+                            user_posts::user.eq(user.id)
+                            .and(user_posts::post.eq(post.id))
+                        )
+                    ).set(data1)
+                     .execute(conn)?;
+                
+                    Ok(true)
+                }else{
+                    Ok(false)
+                }
+            }else {
+                Ok(false)
+            }
+        }else{
+            Ok(false)
+        }
+    })
+}
 pub fn user_post_by_id(
       id0 : i32
     , conn: &Conn

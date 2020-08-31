@@ -125,6 +125,7 @@ pub async fn user_gallery_create_form(
             let data = json!({
                 "title": "Add New Gallery"
               , "parent" : "main"
+              , "logged_in" : true
             });
             let body = hb.render("content/user-gallery-create-dynamic", &data).unwrap();
 

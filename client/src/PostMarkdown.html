@@ -1,32 +1,13 @@
 <script>
     import commonmark from "commonmark";
-    export let postId;
-    export let title = "";
-    export let description = "";
-    export let body = "";
 
-    const api = "http://localhost:8080/api/v1";
+    export let body;
 
-    let postRequest = Promise.resolve(true);
-    let saveRequest;
     let rendered = "";
     let timer;
     
     const reader = new commonmark.Parser({smart: true});
     const writer = new commonmark.HtmlRenderer({safe: true});
-
-    $: if (postId && !saveRequest) {
-        postRequest 
-            = fetch(`${api}/posts/${postId}`)
-            . then( res => res.json() )
-            . then( res => {
-                title = res.title;
-                description = res.description;
-                body = res.body;
-                saveRequest = Promise.resolve(res);
-                return res;
-            });
-    }
 
     $: {
         if( timer ) {
@@ -38,40 +19,8 @@
         }, 250);
     }
 
-    function savePost () {
-        if( title && description && body) {
-            let endpoint 
-                = `${api}/posts`
-                + (postId ? `/${postId}` : "");
-
-            saveRequest
-                = fetch(endpoint,{
-                        method : "POST"
-                     ,  headers : {
-                            "Content-Type" : "application/json"
-                       }
-                     , credentials: "same-origin"
-                     , body : JSON.stringify({
-                           title
-                         , description
-                         , body
-                         , format : 1
-                        }) 
-                 })
-                . then(res => res.json())
-                . then(res => {
-                        if( !postId ) 
-                            postId = res.id;
-                        return res; 
-                  });
-        }
-    }
-
 </script>
 <style>
-    label {
-        display: block;
-    }
     textarea {
         resize: none;
     }
@@ -89,27 +38,7 @@
         padding: 1rem;
     }
 </style>
-
-{#await postRequest}
-<p>...</p>
-{:then}
-<label>Title <input bind:value={title} type="text"></label>
-<label>Description <input bind:value={description} type="text"></label>
-<label>Body</label>
 <div class="editor">
     <textarea bind:value={body}></textarea>
     <div class="preview">{@html rendered}</div>
 </div>
-<button on:click={savePost}>Save</button>
-{#if saveRequest}
-{#await saveRequest}
-<p>Saving...</p>
-{:then p}
-<p>Saved: {p.updated}</p>
-{:catch err}
-<p>Error: {err.message}</p>
-{/await}
-{/if}
-{:catch err}
-<p>Error: {err.message}</p>
-{/await}

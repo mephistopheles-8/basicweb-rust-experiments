@@ -20,16 +20,17 @@ pub async fn user_post_create_json(
         let sess : UserSession = serde_json::from_str(&sess)?;
         let uuid = *sess.uuid();
         if sess.is_authorized() {
-            let uuid1 = web::block(move || {
+            let post = web::block(move || {
                 let (gdata,ugdata) = &*data;
-                user_post_create0_uuid(uuid,&gdata,&ugdata,&conn)
+                let uuid = user_post_create0_uuid(uuid,&gdata,&ugdata,&conn)?;
+                user_post_by_uuid(uuid,&conn)
             }).await
               .map_err(|e| {
                 eprintln!("{}", e);
                 HttpResponse::InternalServerError().finish()
               })?;
             
-            Ok(HttpResponse::Ok().json(uuid1))
+            Ok(HttpResponse::Ok().json(post))
         }else{
             Ok(HttpResponse::Forbidden().finish())
         }
@@ -37,6 +38,74 @@ pub async fn user_post_create_json(
         Ok(HttpResponse::Unauthorized().finish())
     }
 
+}
+
+pub async fn user_post_update_json(
+   id: Identity
+ , path: web::Path<Uuid>
+ , data: web::Json<(models::PostUpd,models::UserPostUpd)>
+ , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        let uid = *sess.uuid();
+        let pid = *path;
+        if sess.is_authorized() {
+            let found = web::block(move || {
+                let (gdata,ugdata) = &*data;
+                user_post_update0_uuid(uid,pid,&gdata,&ugdata,&conn)
+            }).await
+              .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+              })?;
+
+            if found {
+                user_post_by_uuid_json(path,pool).await
+            }else{
+                Ok(HttpResponse::NotFound().finish())
+            }
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
+pub async fn user_post_by_uuid_auth_json(
+   id: Identity
+ , path: web::Path<Uuid>
+ , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        let uid = *sess.uuid();
+        let pid = *path;
+        if sess.is_authorized() {
+            let found = web::block(move || {
+                user_owns_post(uid,pid,&conn)
+            }).await
+              .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+              })?;
+
+            if found {
+                user_post_by_uuid_json(path,pool).await
+            }else{
+                Ok(HttpResponse::Forbidden().finish())
+            }
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
 }
 
 // TODO: access control
@@ -83,6 +152,7 @@ pub async fn user_post_create_form(
             let data = json!({
                 "title": "Add New Post"
               , "parent" : "main"
+              , "logged_in" : true
             });
             let body = hb.render("content/user-post-create-dynamic", &data).unwrap();
 

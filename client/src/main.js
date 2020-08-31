@@ -4,6 +4,7 @@ import Gallery from "./Gallery.html"
 import UserGallery from "./UserGallery.html"
 import Board from "./Board.html"
 import PostMarkdown from "./PostMarkdown.html"
+import UserPost from "./UserPost.html"
 import Tags from "./Tags.html"
 
 export default {
@@ -24,6 +25,9 @@ export default {
     },
     postMarkdown( target, props ){ 
         return  new PostMarkdown({target,props}); 
+    },
+    userPost( target, props ){ 
+        return  new UserPost({target,props}); 
     },
     tags( target, props ){ 
         return  new Tags({target,props});
