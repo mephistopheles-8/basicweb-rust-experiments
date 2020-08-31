@@ -21,6 +21,7 @@
     "rollup-plugin-svelte": "^5.1.1",
     "rollup-plugin-terser": "^7.0.0",
     "svelte": "^3.20.1",
+    "svelte-lazy": "^1.0.5",
     "whatwg-fetch": "^3.0.0"
   }
 }
