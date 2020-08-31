@@ -33,15 +33,15 @@
 {#await galleryRequest}
 <p>...</p>
 {:then [gallery,items]}
-<h3>{gallery.name}</h3>
-{#if gallery.description}
-<p>{gallery.description}</p>
+<h3>{gallery[1].name}</h3>
+{#if gallery[1].description}
+<p>{gallery[1].description}</p>
 {/if}
 <div class="gallery">
     {#each items as item}
     <figure>
         <figcaption>{item[2].name}</figcaption>
-        <img src="/assets/{item[2].uuid}">
+        <img src="/user/assets/{item[2].uuid}">
     </figure>
     {/each}
 </div>

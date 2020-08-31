@@ -79,6 +79,28 @@ pub fn user_gallery_create0_uuid(
     Ok(uuid0)
 }
 
+// NOTE: Galleries only have one owner.
+pub fn user_gallery_update_by_uuid(
+      gallery0: Uuid
+    , data0 : &models::GalleryUpd
+    , data1 : &models::UserGalleryUpd
+    , conn: &Connection0
+  ) -> Result<Option<(models::UserGallery,models::Gallery)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+    conn.transaction(|| {
+        let g0 = actions::gallery::gallery_by_uuid(gallery0,conn)?;
+        if let Some(g0) = g0 {
+            actions::gallery::gallery_update_by_uuid(gallery0,data0,conn)?;
+            diesel::update(
+                user_galleries::table
+                .filter(user_galleries::gallery.eq(g0.id))
+            ).set(data1).execute(conn)?;
+        }
+        user_gallery_by_uuid(gallery0, conn)    
+    })
+}
+
 pub fn user_gallery_by_id(
       id0 : i32
     , conn: &Connection0
@@ -87,7 +109,7 @@ pub fn user_gallery_by_id(
     use crate::schema::*;
 
     user_galleries::table
-        .filter(user_galleries::id.eq(id0))
+        .filter(galleries::id.eq(id0))
         .inner_join(galleries::table)
         .first(conn)
         .optional()
@@ -106,6 +128,27 @@ pub fn user_gallery_by_uuid(
         .first(conn)
         .optional()
 }
+
+pub fn user_owned_gallery_by_uuid(
+      uid0 : Uuid
+    , gid0 : Uuid
+    , conn: &Connection0
+  ) -> Result<Option<(models::UserGallery,models::Gallery)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    user_galleries::table
+        .inner_join(users::table)
+        .inner_join(galleries::table)
+        .filter(
+            galleries::uuid.eq(gid0.as_bytes().as_ref())
+            .and(users::uuid.eq(uid0.as_bytes().as_ref())) 
+         )
+        .select((user_galleries::all_columns,galleries::all_columns))
+        .first(conn)
+        .optional()
+}
+
 
 pub fn user_gallery_by_url(
       handle0: &str

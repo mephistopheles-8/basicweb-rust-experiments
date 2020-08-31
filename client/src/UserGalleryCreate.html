@@ -1,4 +1,6 @@
 <script>
+    import Tags from "./Tags.html";
+
     export let galleryId;
 
     let items = [];
@@ -34,7 +36,9 @@
       , permissions : 0
       , ord : 0
     };
-  
+ 
+    let tags = [];
+
     function galleryIsValid(galleryInfo) {
         return galleryInfo.name.length; 
     }
@@ -51,7 +55,18 @@
                  , credentials: "same-origin"
                  , body : JSON.stringify([galleryInfo,userGalleryInfo])
                 }).then( res => res.json() )
-                  .then( id => galleryId = id );
+                  .then( id => {
+                      galleryId = id;
+                      return fetch(
+                        `${api}/galleries/${id}/tags`, {
+                            method : "POST"
+                         ,  headers : {
+                                "Content-Type" : "application/json"
+                           }
+                         , credentials: "same-origin"
+                         , body : JSON.stringify(tags)
+                        }).then( res => res.json() )
+                  });
         }
     }
 
@@ -66,7 +81,18 @@
                    }
                  , credentials: "same-origin"
                  , body : JSON.stringify([galleryInfo,userGalleryInfo])
-                }).then( res => res.json() );
+                }).then( res => res.json() )
+                  .then( _ => 
+                      fetch(
+                        `${api}/galleries/${galleryId}/tags`, {
+                            method : "POST"
+                         ,  headers : {
+                                "Content-Type" : "application/json"
+                           }
+                         , credentials: "same-origin"
+                         , body : JSON.stringify(tags)
+                        }).then( res => res.json() )
+                   );
         }
     }
     
@@ -151,6 +177,7 @@
         <label>Name: <input type="text" bind:value={galleryInfo.name}></label>
         <label>Description: <input type="text" bind:value={galleryInfo.description}></label>
         <label>Url: <input type="text" bind:value={userGalleryInfo.url}></label>
+        <label>Tags: <Tags bind:tags /></label>
         {#if galleryId}
         <button type="button" on:click={updateGallery} disabled={!galleryIsValid(galleryInfo)}>Update Gallery</button>
         {:else}
@@ -180,14 +207,14 @@
             </li>
         {/each}
         </ul>
-        <fieldset>
-            <legend>New Item</legend>
-            <label>Name: <input type="text" bind:value={itemInfo.name}></label>
-            <label>Description: <input type="text" bind:value={itemInfo.description}></label>
-            <label>Url: <input type="text" bind:value={userItemInfo.url}></label>
-            <label>File: <input type="file" bind:files={itemInfo.files}></label>
-            <button type="button" on:click={addItem} disabled={!itemIsValid(itemInfo)}>Add Item</button>
-        </fieldset>
+    </fieldset>
+    <fieldset>
+        <legend>New Item</legend>
+        <label>Name: <input type="text" bind:value={itemInfo.name}></label>
+        <label>Description: <input type="text" bind:value={itemInfo.description}></label>
+        <label>Url: <input type="text" bind:value={userItemInfo.url}></label>
+        <label>File: <input type="file" bind:files={itemInfo.files}></label>
+        <button type="button" on:click={addItem} disabled={!itemIsValid(itemInfo)}>Add Item</button>
     </fieldset>
     {/if}
 </form>

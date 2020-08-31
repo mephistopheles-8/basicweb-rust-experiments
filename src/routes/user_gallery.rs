@@ -39,6 +39,48 @@ pub async fn user_gallery_create_json(
 
 }
 
+pub async fn user_gallery_update_by_uuid_json(
+   id: Identity
+ , path: web::Path<Uuid>
+ , data: web::Json<(models::GalleryUpd,models::UserGalleryUpd)>
+ , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        let gid = *path;
+        let uid = *sess.uuid();
+        if sess.is_authorized() {
+
+            let res = web::block(move || {
+                if user_owns_gallery(uid,gid,&conn)? {
+                    let (gdata,ugdata) = &*data;
+                    user_gallery_update_by_uuid(gid,&gdata,&ugdata,&conn)
+                }else{
+                    Ok(None)
+                }
+            }).await
+              .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+              })?;
+           
+             if let Some(res) = res {
+                Ok(HttpResponse::Ok().json(res))
+             }else{
+                // FIXME: handle 404 appropriately?
+                Ok(HttpResponse::Forbidden().finish())
+             }
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+
+}
+
 // TODO: access control
 pub async fn user_gallery_by_uuid_json(
     path: web::Path<Uuid> 
@@ -120,5 +162,81 @@ pub async fn user_galleries_by_login_json (
         }
     }else{
         Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
+pub async fn user_galleries_by_login_html(
+    id: Identity
+  , hb: web::Data<Handlebars<'_>>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let uuid = *sess.uuid();
+            let conn = pool.get().expect("couldn't get db connection from pool");
+            let galleries = web::block(move || user_galleries_by_user_uuid(uuid,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+ 
+            let data = json!({
+                "title": "Galleries"
+              , "parent" : "main"
+              , "galleries" : galleries
+              , "logged_in" : true
+            });
+            let body = hb.render("content/user-gallery-listing", &data).unwrap();
+
+            Ok(HttpResponse::Ok().body(body))
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else{
+        Ok(HttpResponse::Found().header("location", "/login").finish())
+    }
+}
+
+pub async fn user_gallery_by_login_html(
+    id: Identity
+  , path: web::Path<Uuid>
+  , hb: web::Data<Handlebars<'_>>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let uid = *sess.uuid();
+            let gid = *path;
+            let conn = pool.get().expect("couldn't get db connection from pool");
+            let gallery = web::block(move ||
+                    user_owned_gallery_by_uuid(uid,gid,&conn)
+                ).await
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+
+            
+            if let Some(gallery) = gallery {
+                let data = json!({
+                    "title": format!("Gallery - {}", gallery.1.name)
+                  , "parent" : "main"
+                  , "galleryId": gid
+                  , "logged_in" : true
+                });
+                let body = hb.render("content/user-gallery", &data).unwrap();
+                Ok(HttpResponse::Ok().body(body))
+            }else{
+                // FIXME: 404?
+                Ok(HttpResponse::Forbidden().finish())
+            }
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else{
+        Ok(HttpResponse::Found().header("location", "/login").finish())
     }
 }

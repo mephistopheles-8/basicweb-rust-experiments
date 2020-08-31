@@ -262,6 +262,89 @@ pub async fn user_gallery_item_by_uuid_json(
 }
 
 
+pub async fn user_gallery_item_update_by_uuid_json(
+   id: Identity
+ , path: web::Path<Uuid>
+ , data: web::Json<(models::GalleryItemUpd,models::UserGalleryItemUpd)>
+ , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        let gid = *path;
+        let uid = *sess.uuid();
+        if sess.is_authorized() {
+
+            let res = web::block(move || {
+                if user_owns_gallery_item(uid,gid,&conn)? {
+                    let (gdata,ugdata) = &*data;
+                    user_gallery_item_update_by_uuid(gid,&gdata,&ugdata,&conn)
+                }else{
+                    Ok(None)
+                }
+            }).await
+              .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+              })?;
+           
+             if let Some(res) = res {
+                Ok(HttpResponse::Ok().json(res))
+             }else{
+                // FIXME: handle 404 appropriately?
+                Ok(HttpResponse::Forbidden().finish())
+             }
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+
+}
+
+
+pub async fn user_gallery_item_serve_by_login(
+    req: HttpRequest
+  , id: Identity
+  , path: web::Path<Uuid>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        let gid = *path;
+        let uid = *sess.uuid();
+        if sess.is_authorized() {
+            let res = web::block(move || 
+                user_gallery_item_by_uuid0(uid,gid,&conn)
+             ).await
+              .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+              })?;
+           
+             if let Some((res,_,_)) = res {
+                let file = fs::NamedFile::open(res.filepath)?;
+                file
+                    .use_last_modified(true)
+                    .set_content_type(res.mime.parse().unwrap())
+                    .disable_content_disposition()
+                    .into_response(&req)
+             }else{
+                // FIXME: handle 404 appropriately?
+                Ok(HttpResponse::Forbidden().finish())
+             }
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+
+}
 
 
 

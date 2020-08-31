@@ -32,6 +32,19 @@ pub fn gallery_item_create(
     Ok(uuid0)
 }
 
+pub fn gallery_item_update_by_uuid(
+    gallery_item0: Uuid
+  , data0: &models::GalleryItemUpd
+  , conn: &Connection0
+) -> Result<usize, diesel::result::Error> {
+
+    use crate::schema::gallery_items::dsl::*;
+    diesel::update(
+        gallery_items
+        .filter(uuid.eq(gallery_item0.as_bytes().as_ref()))
+    ).set(data0).execute(conn)
+}
+
 pub fn gallery_items_by_gallery_id ( gallery_id: i32, conn: &Connection0 ) 
     -> Result<Vec<(i32, String, models::GalleryItem)>, diesel::result::Error> {
 

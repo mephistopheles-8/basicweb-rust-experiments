@@ -10,6 +10,7 @@ CREATE TABLE user_galleries (
     created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user,url),
+    UNIQUE(gallery),
     FOREIGN KEY(user) REFERENCES users(id),
     FOREIGN KEY(gallery) REFERENCES galleries(id)
 );
@@ -30,6 +31,7 @@ CREATE TABLE user_gallery_items (
     created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user,url),
+    UNIQUE(gallery_item),
     FOREIGN KEY(user) REFERENCES users(id),
     FOREIGN KEY(gallery_item) REFERENCES gallery_items(id)
 );

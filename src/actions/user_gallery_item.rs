@@ -81,6 +81,31 @@ pub fn user_gallery_item_resource_create_uuid(
     })
 }
 
+
+// NOTE: Galleries only have one owner.
+pub fn user_gallery_item_update_by_uuid(
+      gallery_item0: Uuid
+    , data0 : &models::GalleryItemUpd
+    , data1 : &models::UserGalleryItemUpd
+    , conn: &Connection0
+  ) -> Result<Option<(i32, String, models::GalleryItem,models::UserGalleryItem)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+    conn.transaction(|| {
+        let g0 = actions::gallery_item::gallery_item_by_uuid(gallery_item0,conn)?;
+        if let Some(g0) = g0 {
+            actions::gallery_item::gallery_item_update_by_uuid(gallery_item0,data0,conn)?;
+            diesel::update(
+                user_gallery_items::table
+                .filter(user_gallery_items::gallery_item.eq(g0.0.id))
+            ).set(data1).execute(conn)?;
+        }
+        user_gallery_item_by_uuid(gallery_item0, conn)    
+    })
+}
+
+
+
 pub fn user_gallery_item_by_url (
     handle0: &str
   , gallery_url0: &str
@@ -136,6 +161,26 @@ pub fn user_gallery_item_by_url0 (
           .first( conn )
           .optional() 
 }
+
+pub fn user_gallery_item_by_uuid0 (
+    uid0 : Uuid
+  , giid0: Uuid
+  , conn: &Connection0 
+  ) -> Result<Option<(models::Resource, models::GalleryItem, models::UserGalleryItem)>, diesel::result::Error> {
+
+    use crate::schema::*;
+
+    user_gallery_items::table
+          .inner_join(gallery_items::table
+            .inner_join(resources::table)
+          )
+          .inner_join(users::table)
+          .filter(users::uuid.eq(uid0.as_bytes().as_ref()).and( gallery_items::uuid.eq(giid0.as_bytes().as_ref())))
+          .select((resources::all_columns,gallery_items::all_columns,user_gallery_items::all_columns))
+          .first( conn )
+          .optional() 
+}
+
 
 pub fn user_gallery_item_by_uuid (
     uuid0: Uuid

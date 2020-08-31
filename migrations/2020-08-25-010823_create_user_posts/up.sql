@@ -10,6 +10,7 @@ CREATE TABLE user_posts (
     created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user,url),
+    UNIQUE(post),
     FOREIGN KEY(user) REFERENCES users(id),
     FOREIGN KEY(post) REFERENCES posts(id)
 );

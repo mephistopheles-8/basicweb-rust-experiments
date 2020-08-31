@@ -42,7 +42,7 @@ a {
     text-decoration:none;
 }
 
-input:not([type="range"]), button, select {
+input:not([type="range"]):not([type="progress"]), button, select {
     border-style:none;
    -webkit-appearance: none;
    -moz-appearance:    none;
