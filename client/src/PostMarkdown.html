@@ -1,6 +1,7 @@
 <script>
     import commonmark from "commonmark";
 
+    export let id;
     export let body;
 
     let rendered = "";
@@ -39,6 +40,6 @@
     }
 </style>
 <div class="editor">
-    <textarea bind:value={body}></textarea>
+    <textarea id={id} bind:value={body}></textarea>
     <div class="preview">{@html rendered}</div>
 </div>

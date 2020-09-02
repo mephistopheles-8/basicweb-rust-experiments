@@ -1,5 +1,6 @@
 <script>
     import Tags from "./Tags.html";
+    import Unique from "./Unique.html";
 
     export let galleryId;
 
@@ -38,6 +39,7 @@
     };
  
     let tags = [];
+    let fileInputElm;
 
     function galleryIsValid(galleryInfo) {
         return galleryInfo.name.length; 
@@ -162,22 +164,38 @@
 
             itemInfo.name = "";
             itemInfo.description = "";
+            userItemInfo.url = "";
+            itemInfo.files = [];
+            fileInputElm.value = "";
             itemInfo.kind = 0;
             items = items;
         }
     }
 
 </script>
+<Unique let:uniqueId={uniqueId}>
 <form>
     <fieldset>
         <legend>Gallery Information</legend>
         {#await galleryResult}
         <p>Submitting...</p>
         {:then}
-        <label>Name: <input type="text" bind:value={galleryInfo.name}></label>
-        <label>Description: <input type="text" bind:value={galleryInfo.description}></label>
-        <label>Url: <input type="text" bind:value={userGalleryInfo.url}></label>
-        <label>Tags: <Tags bind:tags /></label>
+        <div>
+            <label for="gallery-name-{uniqueId}">Name</label>
+            <input id="gallery-name-{uniqueId}" type="text" bind:value={galleryInfo.name}>
+        </div>
+        <div>
+            <label for="gallery-description-{uniqueId}">Description</label>
+            <input id="gallery-description-{uniqueId}" type="text" bind:value={galleryInfo.description}>
+        </div>
+        <div>
+            <label for="gallery-url-{uniqueId}">Url</label>
+            <input id="gallery-url-{uniqueId}" type="text" bind:value={userGalleryInfo.url}>
+        </div>
+        <div>
+            <label for="gallery-tags-{uniqueId}">Tags</label>
+            <Tags id="gallery-tags-{uniqueId}" bind:tags />
+        </div>
         {#if galleryId}
         <button type="button" on:click={updateGallery} disabled={!galleryIsValid(galleryInfo)}>Update Gallery</button>
         {:else}
@@ -188,6 +206,7 @@
         {/await}
     </fieldset>
     {#if galleryId}
+    {#if items && items.length > 0}
     <fieldset>
         <legend>Gallery Items</legend>
         <ul>
@@ -208,13 +227,27 @@
         {/each}
         </ul>
     </fieldset>
+    {/if}
     <fieldset>
         <legend>New Item</legend>
-        <label>Name: <input type="text" bind:value={itemInfo.name}></label>
-        <label>Description: <input type="text" bind:value={itemInfo.description}></label>
-        <label>Url: <input type="text" bind:value={userItemInfo.url}></label>
-        <label>File: <input type="file" bind:files={itemInfo.files}></label>
+        <div>
+            <label for="gallery-item-name-{uniqueId}">Name</label> 
+            <input id="gallery-item-name-{uniqueId}" type="text" bind:value={itemInfo.name}>
+        </div>
+        <div>
+            <label for="gallery-item-description-{uniqueId}">Description</label> 
+            <input id="gallery-item-description-{uniqueId}" type="text" bind:value={itemInfo.description}>
+        </div>
+        <div>
+            <label for="gallery-item-url-{uniqueId}">URL</label> 
+            <input id="gallery-item-url-{uniqueId}" type="text" bind:value={userItemInfo.url}>
+        </div>
+        <div>
+            <label for="gallery-item-file-{uniqueId}">File</label> 
+            <input bind:this={fileInputElm} id="gallery-item-file-{uniqueId}" type="file" bind:files={itemInfo.files}>
+        </div>
         <button type="button" on:click={addItem} disabled={!itemIsValid(itemInfo)}>Add Item</button>
     </fieldset>
     {/if}
 </form>
+</Unique>

@@ -1,6 +1,7 @@
 <script>
     import PostMarkdown from "./PostMarkdown.html";
     import Tags from "./Tags.html";
+    import Unique from "./Unique.html";
 
     export let postId;
     export let title = "";
@@ -71,35 +72,46 @@
         }
     }
 </script>
-<style>
-    label {
-        display: block;
-    }
-</style>
 {#await postRequest}
 <p>...</p>
 {:then}
+<Unique let:uniqueId={uniqueId}>
 <form>
-    <label>Title <input bind:value={title} type="text"></label>
-    <label>Description <input bind:value={description} type="text"></label>
-    <label>Url <input bind:value={url} type="text"></label>
-    <label>Tags:
-        <Tags bind:tags />
-    </label>
-    <label>Body:
-        <PostMarkdown bind:body />
-    </label>
-    <button type="button" on:click={savePost}>Save</button>
-    {#if saveRequest}
-    {#await saveRequest}
-    <p>Saving...</p>
-    {:then p}
-    <p>Saved: {p.updated}</p>
-    {:catch err}
-    <p>Error: {err.message}</p>
-    {/await}
-    {/if}
+    <fieldset>
+        <legend>Post Information</legend>
+        <div>
+            <label for="post-title-{uniqueId}">Title</label>
+            <input id="post-title-{uniqueId}" bind:value={title} type="text">
+        </div>
+        <div>
+            <label for="post-description-{uniqueId}">Description</label>
+            <input id="post-description-{uniqueId}" bind:value={description} type="text">
+        </div>
+        <div>
+            <label for="post-url-{uniqueId}">URL</label>
+            <input id="post-url-{uniqueId}" bind:value={url} type="text">
+        </div>
+        <div>
+            <label for="post-tags-{uniqueId}">Tags</label>
+            <Tags id="post-tags-{uniqueId}" bind:tags />
+        </div>
+        <div>
+            <label for="post-body-{uniqueId}">Body</label>
+            <PostMarkdown id="post-body-{uniqueId}" bind:body />
+        </div>
+        <button type="button" on:click={savePost}>Save</button>
+        {#if saveRequest}
+        {#await saveRequest}
+        <p>Saving...</p>
+        {:then p}
+        <p>Saved: {p.updated}</p>
+        {:catch err}
+        <p>Error: {err.message}</p>
+        {/await}
+        {/if}
+    </fieldset>
 </form>
+</Unique>
 {:catch err}
 <p>Error: {err.message}</p>
 {/await}

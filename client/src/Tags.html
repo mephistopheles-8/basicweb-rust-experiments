@@ -1,4 +1,5 @@
 <script>
+    export let id; // id for form elm
     export let tags = [];
     let value = "";
 
@@ -64,5 +65,5 @@
         <li on:click={(e) => clearTag(i)}>{tag}</li>
         {/each}
     </ul>
-    <input bind:value={value} on:keydown={keyHandler} type="text">
+    <input id={id} bind:value={value} on:keydown={keyHandler} type="text">
 </div>
