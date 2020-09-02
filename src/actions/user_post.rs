@@ -180,7 +180,7 @@ pub fn user_posts_by_user_id(
     user_posts::table
         .filter(user_posts::user.eq(uid))
         .inner_join(posts::table)
-        .order_by(user_posts::ord)
+        .order_by((user_posts::ord,posts::created.desc()))
         .load(conn)
 }
 
@@ -196,7 +196,7 @@ pub fn user_posts_by_user_uuid(
         .inner_join(users::table)
         .inner_join(posts::table)
         .select((user_posts::all_columns, posts::all_columns))
-        .order_by(user_posts::ord)
+        .order_by((user_posts::ord,posts::created.desc()))
         .load(conn)
 }
 
@@ -212,7 +212,7 @@ pub fn user_posts_by_user_handle(
         .inner_join(users::table)
         .inner_join(posts::table)
         .select((user_posts::all_columns, posts::all_columns))
-        .order_by(user_posts::ord)
+        .order_by((user_posts::ord,posts::created.desc()))
         .load(conn)
 }
 

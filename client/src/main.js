@@ -2,6 +2,7 @@ import GalleryCreate from "./GalleryCreate.html"
 import UserGalleryCreate from "./UserGalleryCreate.html"
 import Gallery from "./Gallery.html"
 import UserGallery from "./UserGallery.html"
+import UserGalleryList from "./UserGalleryList.html"
 import Board from "./Board.html"
 import PostMarkdown from "./PostMarkdown.html"
 import UserPost from "./UserPost.html"
@@ -19,6 +20,9 @@ export default {
     },
     userGalleryCreate( target, props ){ 
         return  new UserGalleryCreate({target,props});
+    },
+    userGalleryList( target, props ){ 
+        return  new UserGalleryList({target,props});
     },
     board( target, props ){ 
         return  new Board({target,props});

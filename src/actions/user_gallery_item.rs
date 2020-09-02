@@ -214,6 +214,7 @@ pub fn user_gallery_items_by_gallery_uuid ( gallery_uuid: Uuid, conn: &Connectio
               .inner_join(resources::table)
               .inner_join(user_gallery_items::table)
               .select((resources::kind,resources::mime,gallery_items::all_columns,user_gallery_items::all_columns))
+              .order_by((user_gallery_items::ord,gallery_items::created.asc()))
               .load( conn )?; 
     Ok(g0s)
 }
@@ -235,6 +236,7 @@ pub fn user_gallery_items_by_url ( handle0: &str, gallery_url: &str, conn: &Conn
                       .inner_join(galleries::table)
                   )
               .select((resources::kind,resources::mime,gallery_items::all_columns,user_gallery_items::all_columns))
+              .order_by((user_gallery_items::ord,gallery_items::created.asc()))
               .load( conn )?; 
 
     Ok(g0s)

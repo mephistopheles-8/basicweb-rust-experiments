@@ -200,6 +200,29 @@ pub async fn user_galleries_by_login_html(
     }
 }
 
+pub async fn user_galleries_by_login_dynamic_html(
+    id: Identity
+  , hb: web::Data<Handlebars<'_>>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let data = json!({
+                "title": "Galleries"
+              , "parent" : "main"
+              , "logged_in" : true
+            });
+            let body = hb.render("content/user-gallery-listing-dynamic", &data).unwrap();
+
+            Ok(HttpResponse::Ok().body(body))
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else{
+        Ok(HttpResponse::Found().header("location", "/login").finish())
+    }
+}
+
 pub async fn user_gallery_by_login_html(
     id: Identity
   , path: web::Path<Uuid>

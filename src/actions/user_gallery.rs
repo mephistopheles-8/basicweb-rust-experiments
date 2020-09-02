@@ -177,7 +177,7 @@ pub fn user_galleries_by_user_id(
     user_galleries::table
         .filter(user_galleries::user.eq(uid))
         .inner_join(galleries::table)
-        .order_by(user_galleries::ord)
+        .order_by((user_galleries::ord,galleries::created.desc()))
         .load(conn)
 }
 
@@ -193,7 +193,7 @@ pub fn user_galleries_by_user_uuid(
         .inner_join(users::table)
         .inner_join(galleries::table)
         .select((user_galleries::all_columns, galleries::all_columns))
-        .order_by(user_galleries::ord)
+        .order_by((user_galleries::ord,galleries::created.desc()))
         .load(conn)
 }
 
@@ -209,7 +209,7 @@ pub fn user_galleries_by_user_handle(
         .inner_join(users::table)
         .inner_join(galleries::table)
         .select((user_galleries::all_columns, galleries::all_columns))
-        .order_by(user_galleries::ord)
+        .order_by((user_galleries::ord,galleries::created.desc()))
         .load(conn)
 }
 

@@ -4,7 +4,7 @@ import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
-import buble from '@rollup/plugin-buble'
+import { getBabelOutputPlugin } from '@rollup/plugin-babel'
 import polyfill from 'rollup-plugin-polyfill'
 import { terser } from 'rollup-plugin-terser';
 
@@ -76,7 +76,17 @@ export default {
         css.write(`${css_dest_path}/${project}.css`);
       }
     }),
-    buble({transforms : {dangerousForOf: true}}),
+      /*
+    buble({
+        transforms : {dangerousForOf: true}
+    ,   objectAssign : "Object.assign"
+    }),*/
+    getBabelOutputPlugin({
+      allowAllFormats: true,
+      compact: false,
+      presets: ['@babel/preset-env'],
+      plugins: ['transform-remove-console']
+    }),
     min && terser({
         output : {
             comments : terser_comments 
