@@ -15,6 +15,35 @@ use crate::models;
 use crate::db::DbPool;
 use uuid::Uuid;
 
+pub async fn user_gallery_item_ord_json(
+   id: Identity
+ , data: web::Json<Vec<models::UserGalleryOrd>>
+ , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        let uuid = *sess.uuid();
+        if sess.is_authorized() {
+            web::block(move || {
+                user_gallery_item_ord(uuid,&data,&conn)
+            }).await
+              .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+              })?;
+            
+            Ok(HttpResponse::Ok().finish())
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+
+}
+
 pub async fn user_gallery_items_by_gallery_uuid_json(
     path: web::Path<Uuid>
   , pool: web::Data<DbPool>

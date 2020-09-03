@@ -1,0 +1,128 @@
+<script>
+    import Alert from "svelte-material-icons/Alert.svelte";
+    import Delete from "svelte-material-icons/Delete.svelte";
+    import ReorderHorizontal from "svelte-material-icons/ReorderHorizontal.svelte";
+    import PencilOutline from "svelte-material-icons/PencilOutline.svelte";
+    import { Circle } from 'svelte-loading-spinners';
+    import DndListSort from "./DndListSort.html";
+
+    const api = "http://localhost:8080/api/v1";
+
+    export let itemNamePlural;
+    export let listingEndpoint = itemNamePlural;
+    export let processItems = (g) => {
+       let g1 = g[1];
+       g1.ord = g[0].ord;
+       return g1; 
+    };
+
+    export let iconSize = 24;
+
+    let items = [];
+
+    let itemsReq 
+        = fetchItems(); 
+
+    function fetchItems() {
+        return fetch( `${api}/${listingEndpoint}` )
+           .then( res => res.json() )
+           .then( g0s => {
+                items = g0s.map(processItems);
+                return items;
+            });
+    }
+
+    function handleSortConsider(e) {
+        items = e.detail.items;
+    }
+
+    function handleSortFinalize(e) {
+        items = e.detail.items;
+    }
+
+    function submitOrder(e) {
+        let orders 
+            = items
+            . reduce((g0s,g0,i) => {
+                if(g0.ord !== i)
+                    g0s.push({ uuid : g0.uuid, ord : i });
+                return g0s;
+             }, []);
+
+        let itemsReq 
+              = fetch(
+              `${api}/${itemNamePlural}/reorder`, {
+                    method : "POST"
+                 ,  headers : {
+                        "Content-Type" : "application/json"
+                   }
+                 , credentials: "same-origin"
+                 , body : JSON.stringify(orders)
+                }).then( res => { 
+                    if (!res.ok)
+                        throw `Server responded with status ${res.status}`;
+                    return fetchItems();
+                });
+    }
+
+</script>
+<style>
+    .item-list-item button {
+        -moz-appearance:none;
+        -webkit-appearance:none;
+        appearance:none;
+        cursor:pointer;
+        border-style:none;
+        background:transparent;
+    }
+    .item-list-item {
+        background: var(--bg-color-3);
+        display: flex;
+        font-size: 1rem;
+        border: dotted 1px var(--accent-color-0);
+        border-left: solid 0.25rem var(--accent-color-1);
+        transition: all 0.25s;
+        max-width: 350px;
+    }
+    .item-list-item:hover {
+        background: var(--fg-color-1);
+        border-left-color: var(--accent-color-2);
+    }
+    .item-list-item > * {
+        font-size: 1rem;
+    }
+    .item-list-info > * {
+        padding: 0 0.5rem;
+    }
+    .item-list-item a {
+        flex-grow: 1;
+        color: var(--fg-color-3);
+    }
+</style>
+{#await itemsReq}
+<Circle color="var(--accent-color-1)" size={iconSize} />
+{:then _}
+<button type="button" on:click={submitOrder}>Save Order</button>
+<DndListSort bind:items={items} let:item={item}>
+    <div class="item-list-item">
+        <button>
+            <ReorderHorizontal color="var(--accent-color-1)" size={iconSize} />
+        </button>
+        <slot {item}>
+            <a href="/user/{itemNamePlural}/{item.uuid}">
+                <div class="item-list-info">
+                    <h6>{item.name}</h6>
+                    <p>{item.description}</p>
+                </div>
+            </a>
+        </slot>
+        <button class="edit-button" type="button" on:click={e => console.log(e)}><PencilOutline size={iconSize} /></button>
+        <button class="delete-button" type="button" on:click={e => console.log(e)}><Delete size={iconSize} /></button>
+    </div>
+</DndListSort>
+{:catch err}
+<div class="error">
+    <Alert color="#F80" size={iconSize} />
+    <p>Error: {err.message}</p>
+</div>
+{/await}

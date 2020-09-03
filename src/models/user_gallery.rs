@@ -2,7 +2,7 @@
 use crate::schema::*;
 use chrono::NaiveDateTime;
 use serde::{Serialize,Deserialize};
-
+use uuid::Uuid;
 
 #[derive(Queryable,Identifiable,Serialize,Deserialize)]
 #[table_name="user_galleries"]
@@ -23,6 +23,12 @@ pub struct UserGalleryUpd {
     pub permissions: i32,
     pub ord: i32,
     pub url: Option<String>,
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct UserGalleryOrd {
+    pub uuid: Uuid, // gallery uuid
+    pub ord: i32,
 }
 
 #[derive(Insertable)]
@@ -46,6 +52,12 @@ pub struct UserGalleryItem {
     pub url: Option<String>,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime, 
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct UserGalleryItemOrd {
+    pub uuid: Uuid, // gallery_item uuid
+    pub ord: i32,
 }
 
 #[derive(AsChangeset,Serialize,Deserialize)]

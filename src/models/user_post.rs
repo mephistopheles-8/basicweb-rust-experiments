@@ -2,7 +2,7 @@
 use crate::schema::*;
 use chrono::NaiveDateTime;
 use serde::{Serialize,Deserialize};
-
+use uuid::Uuid;
 
 #[derive(Queryable,Identifiable,Serialize,Deserialize)]
 #[table_name="user_posts"]
@@ -15,6 +15,12 @@ pub struct UserPost {
     pub url: Option<String>,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime, 
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct UserPostOrd {
+    pub uuid: Uuid, // post uuid
+    pub ord: i32,
 }
 
 #[derive(AsChangeset,Serialize,Deserialize)]

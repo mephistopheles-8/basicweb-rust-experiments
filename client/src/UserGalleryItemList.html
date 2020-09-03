@@ -1,0 +1,11 @@
+<script>
+    import UserItemList from "./UserItemList.html";
+    export let galleryId;
+    let listingEndpoint = `galleries/${galleryId}/items`;
+    function processItems(gi) {
+       let g1 = gi[2];
+       g1.ord = gi[3].ord;
+       return g1; 
+    }
+</script>
+<UserItemList itemNamePlural="galleries/items" {listingEndpoint} {processItems}/>

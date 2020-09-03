@@ -9,6 +9,35 @@ use crate::routes::user::UserSession;
 use handlebars::Handlebars;
 
 
+pub async fn user_post_ord_json(
+   id: Identity
+ , data: web::Json<Vec<models::UserPostOrd>>
+ , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        let uuid = *sess.uuid();
+        if sess.is_authorized() {
+            web::block(move || {
+                user_post_ord(uuid,&data,&conn)
+            }).await
+              .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+              })?;
+            
+            Ok(HttpResponse::Ok().finish())
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+
+}
+
 pub async fn user_post_create_json(
    id: Identity
  , data: web::Json<(models::PostUpd,models::UserPostUpd)>
@@ -190,5 +219,28 @@ pub async fn user_posts_by_login_json (
         }
     }else{
         Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
+pub async fn user_posts_by_login_dynamic_html(
+    id: Identity
+  , hb: web::Data<Handlebars<'_>>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let data = json!({
+                "title": "Posts"
+              , "parent" : "main"
+              , "logged_in" : true
+            });
+            let body = hb.render("content/user-post-listing-dynamic", &data).unwrap();
+
+            Ok(HttpResponse::Ok().body(body))
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else{
+        Ok(HttpResponse::Found().header("location", "/login").finish())
     }
 }

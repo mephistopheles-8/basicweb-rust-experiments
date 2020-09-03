@@ -1,0 +1,17 @@
+<script>
+    import UserItemList from "./UserItemList.html";
+</script>
+<style>
+a {
+    flex-grow: 1;
+    color: var(--fg-color-3);
+}
+</style>
+<UserItemList itemNamePlural="posts" let:item={post}>
+    <a href="/user/posts/{post.uuid}">
+        <div class="post-list-info">
+            <h6>{post.title}</h6>
+            <p>{post.description}</p>
+        </div>
+    </a>
+</UserItemList>

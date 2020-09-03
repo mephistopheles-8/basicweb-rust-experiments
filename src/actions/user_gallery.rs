@@ -101,6 +101,37 @@ pub fn user_gallery_update_by_uuid(
     })
 }
 
+// Update ord
+// FIXME: diesel joins?
+
+pub fn user_gallery_ord(
+     user0: Uuid 
+   , data0 : &Vec<models::UserGalleryOrd>
+   , conn: &Connection0
+) -> Result<(), diesel::result::Error> {
+
+    use crate::schema::*;
+    conn.transaction(|| {
+        let user 
+            = actions::user::user_by_uuid(user0,conn)?
+             .ok_or_else(|| diesel::result::Error::NotFound)?;
+
+        for ord in data0.iter() {
+            let g0 = actions::gallery::gallery_by_uuid(ord.uuid,conn)?
+                     .ok_or_else(|| diesel::result::Error::NotFound)?;
+
+            diesel::update(
+                user_galleries::table
+                .filter(
+                    user_galleries::gallery.eq(g0.id)
+                    .and(user_galleries::user.eq(user.id))
+                    )
+            ).set(user_galleries::ord.eq(ord.ord)).execute(conn)?;
+        }
+        Ok(())
+    })
+}
+
 pub fn user_gallery_by_id(
       id0 : i32
     , conn: &Connection0

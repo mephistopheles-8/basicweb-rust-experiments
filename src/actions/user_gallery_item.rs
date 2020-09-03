@@ -48,6 +48,42 @@ pub fn user_gallery_item_create_uuid(
     user_gallery_item_create(uid,gid,data,conn)
 }
 
+// Update ord
+// FIXME: diesel joins?
+
+pub fn user_gallery_item_ord(
+     user0: Uuid
+   , data0 : &Vec<models::UserGalleryOrd>
+   , conn: &Connection0
+) -> Result<(), diesel::result::Error> {
+
+    use crate::schema::*;
+    conn.transaction(|| {
+        let user 
+            = actions::user::user_by_uuid(user0,conn)?
+             .ok_or_else(|| diesel::result::Error::NotFound)?;
+
+        for ord in data0.iter() {
+            let gi0 
+                = gallery_items::table
+                    .filter(
+                        gallery_items::uuid.eq(ord.uuid.as_bytes().as_ref())
+                    )
+                    .first::<models::GalleryItem>(conn)?;
+
+            diesel::update(
+                user_gallery_items::table
+                .filter(
+                    user_gallery_items::gallery_item.eq(gi0.id)
+                    .and(user_gallery_items::user.eq(user.id))
+                    )
+            ).set(user_gallery_items::ord.eq(ord.ord)).execute(conn)?;
+        }
+        Ok(())
+    })
+}
+
+
 
 pub fn user_gallery_item_resource_create_uuid(
       user0: Uuid

@@ -125,6 +125,43 @@ pub fn user_post_update0_uuid(
         }
     })
 }
+
+
+// Update ord
+// FIXME: diesel joins?
+
+pub fn user_post_ord(
+     user0: Uuid
+   , data0 : &Vec<models::UserPostOrd>
+   , conn: &Conn
+) -> Result<(), diesel::result::Error> {
+
+    use crate::schema::*;
+    conn.transaction(|| {
+        let user 
+            = actions::user::user_by_uuid(user0,conn)?
+             .ok_or_else(|| diesel::result::Error::NotFound)?;
+
+        for ord in data0.iter() {
+            let p0 
+                = posts::table
+                    .filter(
+                        posts::uuid.eq(ord.uuid.as_bytes().as_ref())
+                    )
+                    .first::<models::Post>(conn)?;
+
+            diesel::update(
+                user_posts::table
+                .filter(
+                    user_posts::post.eq(p0.id)
+                    .and(user_posts::user.eq(user.id))
+                    )
+            ).set(user_posts::ord.eq(ord.ord)).execute(conn)?;
+        }
+        Ok(())
+    })
+}
+
 pub fn user_post_by_id(
       id0 : i32
     , conn: &Conn
