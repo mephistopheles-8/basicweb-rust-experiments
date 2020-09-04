@@ -104,6 +104,46 @@ pub async fn user_post_update_json(
     }
 }
 
+pub async fn user_post_delete_by_uuid_json(
+   id: Identity
+ , path: web::Path<Uuid>
+ , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        let gid = *path;
+        let uid = *sess.uuid();
+        if sess.is_authorized() {
+
+            let res = web::block(move || {
+                if user_owns_post(uid,gid,&conn)? {
+                    user_post_delete_by_uuid(gid,&conn)
+                }else{
+                    Ok(false)
+                }
+            }).await
+              .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+              })?;
+           
+             if res {
+                Ok(HttpResponse::NoContent().finish())
+             }else{
+                // FIXME: handle 404 appropriately?
+                Ok(HttpResponse::Forbidden().finish())
+             }
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else {
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+
+}
+
 pub async fn user_post_by_uuid_auth_json(
    id: Identity
  , path: web::Path<Uuid>

@@ -5,6 +5,41 @@ use crate::actions;
 use crate::db::Connection as Connection0;
 use uuid::Uuid;
 
+// Update ord
+// FIXME: diesel joins?
+
+pub fn user_gallery_item_ord(
+     user0: Uuid
+   , data0 : &Vec<models::UserGalleryOrd>
+   , conn: &Connection0
+) -> Result<(), diesel::result::Error> {
+
+    use crate::schema::*;
+    conn.transaction(|| {
+        let user 
+            = actions::user::user_by_uuid(user0,conn)?
+             .ok_or_else(|| diesel::result::Error::NotFound)?;
+
+        for ord in data0.iter() {
+            let gi0 
+                = gallery_items::table
+                    .filter(
+                        gallery_items::uuid.eq(ord.uuid.as_bytes().as_ref())
+                    )
+                    .first::<models::GalleryItem>(conn)?;
+
+            diesel::update(
+                user_gallery_items::table
+                .filter(
+                    user_gallery_items::gallery_item.eq(gi0.id)
+                    .and(user_gallery_items::user.eq(user.id))
+                    )
+            ).set(user_gallery_items::ord.eq(ord.ord)).execute(conn)?;
+        }
+        Ok(())
+    })
+}
+
 pub fn user_gallery_item_create(
       user0 : i32
     , gallery_item0: i32 
@@ -48,41 +83,45 @@ pub fn user_gallery_item_create_uuid(
     user_gallery_item_create(uid,gid,data,conn)
 }
 
-// Update ord
-// FIXME: diesel joins?
-
-pub fn user_gallery_item_ord(
-     user0: Uuid
-   , data0 : &Vec<models::UserGalleryOrd>
-   , conn: &Connection0
-) -> Result<(), diesel::result::Error> {
-
+pub fn user_gallery_item_delete_by_id(
+      gallery_item0: i32
+    , conn: &Connection0
+  ) -> Result<(), diesel::result::Error> {
+    
     use crate::schema::*;
+
     conn.transaction(|| {
-        let user 
-            = actions::user::user_by_uuid(user0,conn)?
-             .ok_or_else(|| diesel::result::Error::NotFound)?;
+        diesel::delete(
+            user_gallery_items::table
+            .filter(user_gallery_items::gallery_item.eq(gallery_item0))
+        ).execute(conn)?;
 
-        for ord in data0.iter() {
-            let gi0 
-                = gallery_items::table
-                    .filter(
-                        gallery_items::uuid.eq(ord.uuid.as_bytes().as_ref())
-                    )
-                    .first::<models::GalleryItem>(conn)?;
-
-            diesel::update(
-                user_gallery_items::table
-                .filter(
-                    user_gallery_items::gallery_item.eq(gi0.id)
-                    .and(user_gallery_items::user.eq(user.id))
-                    )
-            ).set(user_gallery_items::ord.eq(ord.ord)).execute(conn)?;
-        }
         Ok(())
     })
 }
 
+pub fn user_gallery_item_delete_by_uuid(
+      gallery_item0: Uuid
+    , conn: &Connection0
+  ) -> Result<bool, diesel::result::Error> {
+    
+    use crate::schema::*;
+    conn.transaction(|| {
+        let g0 
+            = actions::gallery_item::gallery_item_by_uuid(gallery_item0,conn)?;
+        if let Some(g0) = g0 {
+
+            diesel::delete(
+                user_gallery_items::table
+                .filter(user_gallery_items::gallery_item.eq(g0.0.id))
+            ).execute(conn)?;
+            
+            Ok(true)
+        }else{
+            Ok(false)
+        }
+    })
+}
 
 
 pub fn user_gallery_item_resource_create_uuid(

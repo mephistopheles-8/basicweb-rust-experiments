@@ -18,6 +18,22 @@
 
     export let iconSize = 24;
 
+    export let deleteHandler = (item)  => {
+        itemsReq 
+          = fetch(
+          `${api}/${itemNamePlural}/${item.uuid}`, {
+                method : "DELETE"
+             ,  headers : {
+                    "Content-Type" : "application/json"
+               }
+             , credentials: "same-origin"
+            }).then( res => { 
+                if (!res.ok)
+                    throw `Server responded with status ${res.status}`;
+                return fetchItems();
+            });
+    }
+
     let items = [];
 
     let itemsReq 
@@ -40,6 +56,7 @@
         items = e.detail.items;
     }
 
+
     function submitOrder(e) {
         let orders 
             = items
@@ -49,20 +66,20 @@
                 return g0s;
              }, []);
 
-        let itemsReq 
-              = fetch(
-              `${api}/${itemNamePlural}/reorder`, {
-                    method : "POST"
-                 ,  headers : {
-                        "Content-Type" : "application/json"
-                   }
-                 , credentials: "same-origin"
-                 , body : JSON.stringify(orders)
-                }).then( res => { 
-                    if (!res.ok)
-                        throw `Server responded with status ${res.status}`;
-                    return fetchItems();
-                });
+        itemsReq 
+          = fetch(
+          `${api}/${itemNamePlural}/reorder`, {
+                method : "POST"
+             ,  headers : {
+                    "Content-Type" : "application/json"
+               }
+             , credentials: "same-origin"
+             , body : JSON.stringify(orders)
+            }).then( res => { 
+                if (!res.ok)
+                    throw `Server responded with status ${res.status}`;
+                return fetchItems();
+            });
     }
 
 </script>
@@ -117,7 +134,7 @@
             </a>
         </slot>
         <button class="edit-button" type="button" on:click={e => console.log(e)}><PencilOutline size={iconSize} /></button>
-        <button class="delete-button" type="button" on:click={e => console.log(e)}><Delete size={iconSize} /></button>
+        <button class="delete-button" type="button" on:click={e => deleteHandler(item)}><Delete size={iconSize} /></button>
     </div>
 </DndListSort>
 {:catch err}

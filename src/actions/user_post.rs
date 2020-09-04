@@ -4,6 +4,41 @@ use crate::{models,actions};
 use crate::db::Connection as Conn;
 use uuid::Uuid;
 
+// Update ord
+// FIXME: diesel joins?
+
+pub fn user_post_ord(
+     user0: Uuid
+   , data0 : &Vec<models::UserPostOrd>
+   , conn: &Conn
+) -> Result<(), diesel::result::Error> {
+
+    use crate::schema::*;
+    conn.transaction(|| {
+        let user 
+            = actions::user::user_by_uuid(user0,conn)?
+             .ok_or_else(|| diesel::result::Error::NotFound)?;
+
+        for ord in data0.iter() {
+            let p0 
+                = posts::table
+                    .filter(
+                        posts::uuid.eq(ord.uuid.as_bytes().as_ref())
+                    )
+                    .first::<models::Post>(conn)?;
+
+            diesel::update(
+                user_posts::table
+                .filter(
+                    user_posts::post.eq(p0.id)
+                    .and(user_posts::user.eq(user.id))
+                    )
+            ).set(user_posts::ord.eq(ord.ord)).execute(conn)?;
+        }
+        Ok(())
+    })
+}
+
 pub fn user_post_create(
       user0 : i32
     , post0: i32 
@@ -126,41 +161,46 @@ pub fn user_post_update0_uuid(
     })
 }
 
-
-// Update ord
-// FIXME: diesel joins?
-
-pub fn user_post_ord(
-     user0: Uuid
-   , data0 : &Vec<models::UserPostOrd>
-   , conn: &Conn
-) -> Result<(), diesel::result::Error> {
-
+pub fn user_post_delete_by_id(
+      post0: i32
+    , conn: &Conn
+  ) -> Result<(), diesel::result::Error> {
+    
     use crate::schema::*;
+
     conn.transaction(|| {
-        let user 
-            = actions::user::user_by_uuid(user0,conn)?
-             .ok_or_else(|| diesel::result::Error::NotFound)?;
+        diesel::delete(
+            user_posts::table
+            .filter(user_posts::post.eq(post0))
+        ).execute(conn)?;
 
-        for ord in data0.iter() {
-            let p0 
-                = posts::table
-                    .filter(
-                        posts::uuid.eq(ord.uuid.as_bytes().as_ref())
-                    )
-                    .first::<models::Post>(conn)?;
-
-            diesel::update(
-                user_posts::table
-                .filter(
-                    user_posts::post.eq(p0.id)
-                    .and(user_posts::user.eq(user.id))
-                    )
-            ).set(user_posts::ord.eq(ord.ord)).execute(conn)?;
-        }
         Ok(())
     })
 }
+
+pub fn user_post_delete_by_uuid(
+      post0: Uuid
+    , conn: &Conn
+  ) -> Result<bool, diesel::result::Error> {
+    
+    use crate::schema::*;
+    conn.transaction(|| {
+        let g0 
+            = actions::post::post_by_uuid(post0,conn)?;
+        if let Some(g0) = g0 {
+
+            diesel::delete(
+                user_posts::table
+                .filter(user_posts::post.eq(g0.id))
+            ).execute(conn)?;
+            
+            Ok(true)
+        }else{
+            Ok(false)
+        }
+    })
+}
+
 
 pub fn user_post_by_id(
       id0 : i32

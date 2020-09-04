@@ -9738,7 +9738,7 @@ var basicweb_gallery_app_client = function () {
     return {
       item: dirty &
       /*item*/
-      131072
+      262144
     };
   };
 
@@ -9746,9 +9746,9 @@ var basicweb_gallery_app_client = function () {
     return {
       item:
       /*item*/
-      ctx[17]
+      ctx[18]
     };
-  }; // (123:0) {:catch err}
+  }; // (140:0) {:catch err}
 
 
   function create_catch_block$4(ctx) {
@@ -9758,7 +9758,7 @@ var basicweb_gallery_app_client = function () {
     var t1;
     var t2_value =
     /*err*/
-    ctx[16].message + "";
+    ctx[17].message + "";
     var t2;
     var current;
     var alert = new Alert({
@@ -9796,6 +9796,11 @@ var basicweb_gallery_app_client = function () {
         /*iconSize*/
         ctx[1];
         alert.$set(alert_changes);
+        if ((!current || dirty &
+        /*itemsReq*/
+        16) && t2_value !== (t2_value =
+        /*err*/
+        ctx[17].message + "")) set_data(t2, t2_value);
       },
       i: function i(local) {
         if (current) return;
@@ -9811,7 +9816,7 @@ var basicweb_gallery_app_client = function () {
         destroy_component(alert);
       }
     };
-  } // (104:0) {:then _}
+  } // (121:0) {:then _}
 
 
   function create_then_block$4(ctx) {
@@ -9823,7 +9828,7 @@ var basicweb_gallery_app_client = function () {
 
     function dndlistsort_items_binding(value) {
       /*dndlistsort_items_binding*/
-      ctx[13].call(null, value);
+      ctx[14].call(null, value);
     }
 
     var dndlistsort_props = {
@@ -9831,11 +9836,11 @@ var basicweb_gallery_app_client = function () {
         "default": [create_default_slot$4, function (_ref38) {
           var item = _ref38.item;
           return {
-            17: item
+            18: item
           };
         }, function (_ref39) {
           var item = _ref39.item;
-          return item ? 131072 : 0;
+          return item ? 262144 : 0;
         }]
       },
       $$scope: {
@@ -9845,10 +9850,10 @@ var basicweb_gallery_app_client = function () {
 
     if (
     /*items*/
-    ctx[2] !== void 0) {
+    ctx[3] !== void 0) {
       dndlistsort_props.items =
       /*items*/
-      ctx[2];
+      ctx[3];
     }
 
     var dndlistsort = new DndListSort({
@@ -9874,14 +9879,14 @@ var basicweb_gallery_app_client = function () {
         if (remount) dispose();
         dispose = listen(button, "click",
         /*submitOrder*/
-        ctx[4]);
+        ctx[5]);
       },
       p: function p(ctx, dirty) {
         var dndlistsort_changes = {};
 
         if (dirty &
-        /*$$scope, iconSize, itemNamePlural, item*/
-        147459) {
+        /*$$scope, deleteHandler, iconSize, itemNamePlural, item*/
+        294919) {
           dndlistsort_changes.$$scope = {
             dirty: dirty,
             ctx: ctx
@@ -9890,11 +9895,11 @@ var basicweb_gallery_app_client = function () {
 
         if (!updating_items && dirty &
         /*items*/
-        4) {
+        8) {
           updating_items = true;
           dndlistsort_changes.items =
           /*items*/
-          ctx[2];
+          ctx[3];
           add_flush_callback(function () {
             return updating_items = false;
           });
@@ -9918,7 +9923,7 @@ var basicweb_gallery_app_client = function () {
         dispose();
       }
     };
-  } // (111:21)              
+  } // (128:21)              
 
 
   function fallback_block$1(ctx) {
@@ -9927,13 +9932,13 @@ var basicweb_gallery_app_client = function () {
     var h6;
     var t0_value =
     /*item*/
-    ctx[17].name + "";
+    ctx[18].name + "";
     var t0;
     var t1;
     var p;
     var t2_value =
     /*item*/
-    ctx[17].description + "";
+    ctx[18].description + "";
     var t2;
     var a_href_value;
     return {
@@ -9952,7 +9957,7 @@ var basicweb_gallery_app_client = function () {
         /*itemNamePlural*/
         ctx[0] + "/" +
         /*item*/
-        ctx[17].uuid);
+        ctx[18].uuid);
         attr(a, "class", "svelte-1bnafym");
       },
       m: function m(target, anchor) {
@@ -9967,22 +9972,22 @@ var basicweb_gallery_app_client = function () {
       p: function p(ctx, dirty) {
         if (dirty &
         /*item*/
-        131072 && t0_value !== (t0_value =
+        262144 && t0_value !== (t0_value =
         /*item*/
-        ctx[17].name + "")) set_data(t0, t0_value);
+        ctx[18].name + "")) set_data(t0, t0_value);
         if (dirty &
         /*item*/
-        131072 && t2_value !== (t2_value =
+        262144 && t2_value !== (t2_value =
         /*item*/
-        ctx[17].description + "")) set_data(t2, t2_value);
+        ctx[18].description + "")) set_data(t2, t2_value);
 
         if (dirty &
         /*itemNamePlural, item*/
-        131073 && a_href_value !== (a_href_value = "/user/" +
+        262145 && a_href_value !== (a_href_value = "/user/" +
         /*itemNamePlural*/
         ctx[0] + "/" +
         /*item*/
-        ctx[17].uuid)) {
+        ctx[18].uuid)) {
           attr(a, "href", a_href_value);
         }
       },
@@ -9990,7 +9995,7 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(a);
       }
     };
-  } // (106:0) <DndListSort bind:items={items} let:item={item}>
+  } // (123:0) <DndListSort bind:items={items} let:item={item}>
 
 
   function create_default_slot$4(ctx) {
@@ -10013,10 +10018,10 @@ var basicweb_gallery_app_client = function () {
     });
     var default_slot_template =
     /*$$slots*/
-    ctx[10]["default"];
+    ctx[11]["default"];
     var default_slot = create_slot(default_slot_template, ctx,
     /*$$scope*/
-    ctx[14], get_default_slot_context$2);
+    ctx[15], get_default_slot_context$2);
     var default_slot_or_fallback = default_slot || fallback_block$1(ctx);
     var penciloutline = new PencilOutline({
       props: {
@@ -10032,6 +10037,22 @@ var basicweb_gallery_app_client = function () {
         ctx[1]
       }
     });
+
+    function click_handler_1() {
+      var _ctx4;
+
+      for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+        args[_key4] = arguments[_key4];
+      }
+
+      return (
+        /*click_handler_1*/
+        (_ctx4 = ctx)[13].apply(_ctx4, [
+        /*item*/
+        ctx[18]].concat(args))
+      );
+    }
+
     return {
       c: function c() {
         div = element("div");
@@ -10072,11 +10093,10 @@ var basicweb_gallery_app_client = function () {
         if (remount) run_all(dispose);
         dispose = [listen(button1, "click",
         /*click_handler*/
-        ctx[11]), listen(button2, "click",
-        /*click_handler_1*/
-        ctx[12])];
+        ctx[12]), listen(button2, "click", click_handler_1)];
       },
-      p: function p(ctx, dirty) {
+      p: function p(new_ctx, dirty) {
+        ctx = new_ctx;
         var reorderhorizontal_changes = {};
         if (dirty &
         /*iconSize*/
@@ -10088,17 +10108,17 @@ var basicweb_gallery_app_client = function () {
         if (default_slot) {
           if (default_slot.p && dirty &
           /*$$scope, item*/
-          147456) {
+          294912) {
             default_slot.p(get_slot_context(default_slot_template, ctx,
             /*$$scope*/
-            ctx[14], get_default_slot_context$2), get_slot_changes(default_slot_template,
+            ctx[15], get_default_slot_context$2), get_slot_changes(default_slot_template,
             /*$$scope*/
-            ctx[14], dirty, get_default_slot_changes$2));
+            ctx[15], dirty, get_default_slot_changes$2));
           }
         } else {
           if (default_slot_or_fallback && default_slot_or_fallback.p && dirty &
           /*itemNamePlural, item*/
-          131073) {
+          262145) {
             default_slot_or_fallback.p(ctx, dirty);
           }
         }
@@ -10142,7 +10162,7 @@ var basicweb_gallery_app_client = function () {
         run_all(dispose);
       }
     };
-  } // (102:17)  <Circle color="var(--accent-color-1)" size={iconSize}
+  } // (119:17)  <Circle color="var(--accent-color-1)" size={iconSize}
 
 
   function create_pending_block$4(ctx) {
@@ -10198,13 +10218,13 @@ var basicweb_gallery_app_client = function () {
       pending: create_pending_block$4,
       then: create_then_block$4,
       "catch": create_catch_block$4,
-      value: 15,
-      error: 16,
+      value: 16,
+      error: 17,
       blocks: [,,,]
     };
     handle_promise(promise =
     /*itemsReq*/
-    ctx[3], info);
+    ctx[4], info);
     return {
       c: function c() {
         await_block_anchor = empty();
@@ -10226,9 +10246,14 @@ var basicweb_gallery_app_client = function () {
             dirty = _ref41[0];
 
         ctx = new_ctx;
-        {
+        info.ctx = ctx;
+        if (dirty &
+        /*itemsReq*/
+        16 && promise !== (promise =
+        /*itemsReq*/
+        ctx[4]) && handle_promise(promise, info)) ;else {
           var child_ctx = ctx.slice();
-          child_ctx[15] = info.resolved;
+          child_ctx[16] = info.resolved;
           info.block.p(child_ctx, dirty);
         }
       },
@@ -10268,6 +10293,19 @@ var basicweb_gallery_app_client = function () {
     } : _$$props$processItems;
     var _$$props$iconSize = $$props.iconSize,
         iconSize = _$$props$iconSize === void 0 ? 24 : _$$props$iconSize;
+    var _$$props$deleteHandle = $$props.deleteHandler,
+        deleteHandler = _$$props$deleteHandle === void 0 ? function (item) {
+      $$invalidate(4, itemsReq = fetch("".concat(api$3, "/").concat(itemNamePlural, "/").concat(item.uuid), {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "same-origin"
+      }).then(function (res) {
+        if (!res.ok) throw "Server responded with status ".concat(res.status);
+        return fetchItems();
+      }));
+    } : _$$props$deleteHandle;
     var items = [];
     var itemsReq = fetchItems();
 
@@ -10275,17 +10313,17 @@ var basicweb_gallery_app_client = function () {
       return fetch("".concat(api$3, "/").concat(listingEndpoint)).then(function (res) {
         return res.json();
       }).then(function (g0s) {
-        $$invalidate(2, items = g0s.map(processItems));
+        $$invalidate(3, items = g0s.map(processItems));
         return items;
       });
     }
 
     function handleSortConsider(e) {
-      $$invalidate(2, items = e.detail.items);
+      $$invalidate(3, items = e.detail.items);
     }
 
     function handleSortFinalize(e) {
-      $$invalidate(2, items = e.detail.items);
+      $$invalidate(3, items = e.detail.items);
     }
 
     function submitOrder(e) {
@@ -10296,7 +10334,7 @@ var basicweb_gallery_app_client = function () {
         });
         return g0s;
       }, []);
-      var itemsReq = fetch("".concat(api$3, "/").concat(itemNamePlural, "/reorder"), {
+      $$invalidate(4, itemsReq = fetch("".concat(api$3, "/").concat(itemNamePlural, "/reorder"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -10306,7 +10344,7 @@ var basicweb_gallery_app_client = function () {
       }).then(function (res) {
         if (!res.ok) throw "Server responded with status ".concat(res.status);
         return fetchItems();
-      });
+      }));
     }
 
     var _$$props$$$slots4 = $$props.$$slots,
@@ -10317,24 +10355,25 @@ var basicweb_gallery_app_client = function () {
       return void 0;
     };
 
-    var click_handler_1 = function click_handler_1(e) {
-      return void 0;
+    var click_handler_1 = function click_handler_1(item, e) {
+      return deleteHandler(item);
     };
 
     function dndlistsort_items_binding(value) {
       items = value;
-      $$invalidate(2, items);
+      $$invalidate(3, items);
     }
 
     $$self.$set = function ($$props) {
       if ("itemNamePlural" in $$props) $$invalidate(0, itemNamePlural = $$props.itemNamePlural);
-      if ("listingEndpoint" in $$props) $$invalidate(5, listingEndpoint = $$props.listingEndpoint);
-      if ("processItems" in $$props) $$invalidate(6, processItems = $$props.processItems);
+      if ("listingEndpoint" in $$props) $$invalidate(6, listingEndpoint = $$props.listingEndpoint);
+      if ("processItems" in $$props) $$invalidate(7, processItems = $$props.processItems);
       if ("iconSize" in $$props) $$invalidate(1, iconSize = $$props.iconSize);
-      if ("$$scope" in $$props) $$invalidate(14, $$scope = $$props.$$scope);
+      if ("deleteHandler" in $$props) $$invalidate(2, deleteHandler = $$props.deleteHandler);
+      if ("$$scope" in $$props) $$invalidate(15, $$scope = $$props.$$scope);
     };
 
-    return [itemNamePlural, iconSize, items, itemsReq, submitOrder, listingEndpoint, processItems, fetchItems, handleSortConsider, handleSortFinalize, $$slots, click_handler, click_handler_1, dndlistsort_items_binding, $$scope];
+    return [itemNamePlural, iconSize, deleteHandler, items, itemsReq, submitOrder, listingEndpoint, processItems, fetchItems, handleSortConsider, handleSortFinalize, $$slots, click_handler, click_handler_1, dndlistsort_items_binding, $$scope];
   }
 
   var UserItemList = /*#__PURE__*/function (_SvelteComponent12) {
@@ -10350,9 +10389,10 @@ var basicweb_gallery_app_client = function () {
       _this15 = _super15.call(this);
       init(_assertThisInitialized(_this15), options, instance$d, create_fragment$d, safe_not_equal, {
         itemNamePlural: 0,
-        listingEndpoint: 5,
-        processItems: 6,
-        iconSize: 1
+        listingEndpoint: 6,
+        processItems: 7,
+        iconSize: 1,
+        deleteHandler: 2
       });
       return _this15;
     }
@@ -22756,15 +22796,15 @@ var basicweb_gallery_app_client = function () {
     var dispose;
 
     function click_handler() {
-      var _ctx4;
+      var _ctx5;
 
-      for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-        args[_key4] = arguments[_key4];
+      for (var _len5 = arguments.length, args = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+        args[_key5] = arguments[_key5];
       }
 
       return (
         /*click_handler*/
-        (_ctx4 = ctx)[6].apply(_ctx4, [
+        (_ctx5 = ctx)[6].apply(_ctx5, [
         /*post*/
         ctx[9]].concat(args))
       );

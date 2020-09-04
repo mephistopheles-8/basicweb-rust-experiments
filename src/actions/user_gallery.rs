@@ -79,7 +79,73 @@ pub fn user_gallery_create0_uuid(
     Ok(uuid0)
 }
 
-// NOTE: Galleries only have one owner.
+// NOTE: Galleries only have one owner.  Therefore, we can key by gallery uuid (there won't
+// be multiple user_gallery records).
+// NOTE: Shallow deletion; cleanup orphans with another process.  This will delete associated
+// user_gallery_items, however.  The gallery record will exist as an orphan, and could be
+// used for resource cleanup.
+
+pub fn user_gallery_delete_by_id(
+      gallery0: i32
+    , conn: &Connection0
+  ) -> Result<(), diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    conn.transaction(|| {
+        diesel::delete(
+            user_galleries::table
+            .filter(user_galleries::gallery.eq(gallery0))
+        ).execute(conn)?;
+
+        diesel::delete(
+            user_gallery_items::table
+            .filter(user_gallery_items::gallery_item.eq_any(
+                gallery_items::table
+                .filter(gallery_items::gallery.eq(gallery0))
+                .select(gallery_items::id)
+            ))
+        ).execute(conn)?;
+
+        Ok(())
+    })
+}
+
+pub fn user_gallery_delete_by_uuid(
+      gallery0: Uuid
+    , conn: &Connection0
+  ) -> Result<bool, diesel::result::Error> {
+    
+    use crate::schema::*;
+    conn.transaction(|| {
+        let g0 
+            = actions::gallery::gallery_by_uuid(gallery0,conn)?;
+        if let Some(g0) = g0 {
+
+            diesel::delete(
+                user_galleries::table
+                .filter(user_galleries::gallery.eq(g0.id))
+            ).execute(conn)?;
+            
+            diesel::delete(
+                user_gallery_items::table
+                .filter(user_gallery_items::gallery_item.eq_any(
+                    gallery_items::table
+                    .filter(gallery_items::gallery.eq(g0.id))
+                    .select(gallery_items::id)
+                ))
+            ).execute(conn)?;
+            
+            Ok(true)
+        }else{
+            Ok(false)
+        }
+    })
+}
+
+
+// NOTE: Galleries only have one owner.  Therefore, we can key by gallery uuid (there won't
+// be multiple user_gallery records)
 pub fn user_gallery_update_by_uuid(
       gallery0: Uuid
     , data0 : &models::GalleryUpd
