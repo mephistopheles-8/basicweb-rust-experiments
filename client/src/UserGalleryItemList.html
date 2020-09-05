@@ -7,5 +7,16 @@
        g1.ord = gi[3].ord;
        return g1; 
     }
+    function processItemCallback(gi) {
+       return [gi[3],gi[2]]; 
+    }
 </script>
-<UserItemList itemNamePlural="galleries/items" {listingEndpoint} {processItems}/>
+<UserItemList 
+    itemNamePlural="galleries/items"
+    itemNameSingular="gallery item" 
+    on:orderChanged
+    on:orderSubmitted 
+    {listingEndpoint} 
+    {processItems}
+    {processItemCallback} 
+    />

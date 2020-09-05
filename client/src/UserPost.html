@@ -2,6 +2,7 @@
     import PostMarkdown from "./PostMarkdown.html";
     import Tags from "./Tags.html";
     import Unique from "./Unique.html";
+    import Permissions from "./Permissions.html";
 
     export let postId;
     export let title = "";
@@ -20,15 +21,20 @@
 
     $: if (postId && !saveRequest) {
         postRequest 
-            = fetch(`${api}/posts/${postId}`)
-            . then( res => res.json() )
-            . then( ([usr,res]) => {
+            = Promise.all([
+                fetch(`${api}/posts/${postId}`)
+                . then( res => res.json() )
+              , fetch(`${api}/posts/${postId}/tags`)
+                . then( res => res.json() )
+             ]).then( ([post,tags0]) => {
+                let [usr,res] = post;
                 title = res.title;
                 description = res.description;
                 body = res.body;
                 url = usr.url;
                 permissions = usr.permissions;
                 ord = usr.ord;
+                tags = tags0.map(tag => tag.name);
                 saveRequest = Promise.resolve(res);
                 return res;
             });
@@ -94,6 +100,10 @@
         <div>
             <label for="post-tags-{uniqueId}">Tags</label>
             <Tags id="post-tags-{uniqueId}" bind:tags />
+        </div>
+        <div>
+            <label for="post-permissions-{uniqueId}">Permissions</label>
+            <Permissions id="post-permissions-{uniqueId}" bind:value={permissions} />
         </div>
         <div>
             <label for="post-body-{uniqueId}">Body</label>

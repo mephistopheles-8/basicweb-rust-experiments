@@ -1,5 +1,31 @@
 <script>
     import UserItemList from "./UserItemList.html";
+
+    function processItems(pi) {
+       let p1 = pi[1];
+       p1.name = p1.title;
+       p1.ord = pi[0].ord;
+       return p1; 
+    }
+    function processItemCallback(pi) {
+       let p0 = pi[1];
+       p0.name = p0.title;
+       return [pi[0],p0]; 
+    }
+    function itemInfoExtractCallback(item){
+        let itemInfo = {
+            title : item[1].name
+          , description : item[1].description
+          , body : item[1].body
+          , format : item[1].format
+        };
+        let userItemInfo = {
+            permissions : item[0].permissions
+          , ord : item[0].ord
+          , url : item[0].url
+        };
+        return [itemInfo,userItemInfo];
+    };
 </script>
 <style>
 a {
@@ -7,11 +33,12 @@ a {
     color: var(--fg-color-3);
 }
 </style>
-<UserItemList itemNamePlural="posts" let:item={post}>
-    <a href="/user/posts/{post.uuid}">
-        <div class="post-list-info">
-            <h6>{post.title}</h6>
-            <p>{post.description}</p>
-        </div>
-    </a>
-</UserItemList>
+<UserItemList 
+    itemNamePlural="posts" 
+    itemNameSingular="post"
+    on:orderChanged
+    on:orderSubmitted 
+    {processItems} 
+    {processItemCallback} 
+    {itemInfoExtractCallback} 
+    /> 

@@ -16,6 +16,7 @@ const debug_js_path = "dist/js";
 const install_css_path = "../static/root/css";
 const debug_css_path = "dist/css";
 
+const removeConsoleLog = true;
 
 const js_dest_path 
       = install 
@@ -85,7 +86,7 @@ export default {
       allowAllFormats: true,
       compact: false,
       presets: ['@babel/preset-env'],
-      plugins: ['transform-remove-console']
+      plugins: (removeConsoleLog) ? ['transform-remove-console'] : []
     }),
     min && terser({
         output : {

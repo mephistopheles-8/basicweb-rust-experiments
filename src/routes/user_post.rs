@@ -231,6 +231,48 @@ pub async fn user_post_create_form(
         }
     }else{
         Ok(HttpResponse::Found().header("location", "/login").finish())
+    }
+}
+
+pub async fn user_post_update_form(
+      id: Identity
+    , path: web::Path<Uuid>
+    , hb: web::Data<Handlebars<'_>>
+    , pool : web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let uid = *sess.uuid();
+            let pid = *path;
+
+            let owns_post = web::block(move || 
+                user_owns_post(uid,pid,&conn)
+            ).await
+              .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+              })?;
+
+            if owns_post {
+                let data = json!({
+                    "title": "Add New Post"
+                  , "parent" : "main"
+                  , "logged_in" : true
+                  , "postId" : pid
+                });
+                let body = hb.render("content/user-post-update-dynamic", &data).unwrap();
+
+                Ok(HttpResponse::Ok().body(body))
+            }else{
+                Ok(HttpResponse::Forbidden().finish())
+            }
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else{
+        Ok(HttpResponse::Found().header("location", "/login").finish())
 
     }
 }

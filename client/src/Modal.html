@@ -1,0 +1,40 @@
+<script>
+    import { fade } from "svelte/transition";
+
+    export let shown = false;
+    export let modalClass = "modal-window";
+
+    function showModal() {
+        shown = true;
+    }
+
+    function hideModal() {
+        shown = false;
+    }
+</script>
+<style>
+    .shadow-box {
+        position:fixed;
+        top:0;
+        bottom:0;
+        left:0;
+        right:0;
+        background: rgba(30,30,30,0.8);
+        padding: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-window {
+        background: var(--bg-color-3);
+        width: 350px;
+        margin-top: -25%;
+    }
+</style>
+{#if shown}
+<div transition:fade="{{ duration: 200 }}" class="shadow-box">
+    <div class={modalClass}>
+        <slot></slot>
+    </div>
+</div>
+{/if}

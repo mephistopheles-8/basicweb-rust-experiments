@@ -1,0 +1,56 @@
+<script>
+    import { createEventDispatcher } from 'svelte';
+    import Alert from "svelte-material-icons/Alert.svelte";
+    import Modal from "./Modal.html";
+
+	const dispatch = createEventDispatcher();
+
+    export let shown = false;
+    export let iconComponent = Alert;
+    export let iconColor = "#f80";
+    export let iconSize = 24;
+    export let iconProps = {
+        color: iconColor
+     ,  size: iconSize
+    };
+    export let modalClass = "modal-window";
+    export let message = "Are you sure?";
+    export let confirmLabel = "Confirm";
+    export let cancelLabel = "Cancel";
+</script>
+<style>
+    .alert-confirm {
+        display: flex;
+        flex-direction:column;
+        padding: 1rem;
+    }
+    .alert-confirm-message {
+        flex-grow: 1;
+        display: flex;
+    }
+    .alert-confirm-message > * {
+        padding: 0.5rem;
+    }
+    .alert-confirm-message-text {
+        flex-grow: 1;
+    }
+    .alert-confirm-controls {
+        text-align: center;
+    }
+</style>
+<Modal bind:shown={shown} modalClass={modalClass}>
+    <div class="alert-confirm">
+        <div class="alert-confirm-message">
+            <div class="alert-confirm-icon">
+                <svelte:component this={iconComponent} {...iconProps} />
+            </div>
+            <div class="alert-confirm-message-text">
+                {message}
+            </div>
+        </div>
+        <div class="alert-confirm-controls">
+            <button type="button" on:click={e => dispatch("confirm")}>{confirmLabel}</button>
+            <button type="button" on:click={e => dispatch("cancel")}>{cancelLabel}</button> 
+        </div>
+    </div>
+</Modal>

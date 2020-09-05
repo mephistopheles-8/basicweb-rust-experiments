@@ -1,6 +1,8 @@
 <script>
     import { fade } from "svelte/transition";
-    import Lazy from "svelte-lazy";
+    //import Lazy from "svelte-lazy";
+    import UserGalleryItemList from "./UserGalleryItemList.html";
+
     export let galleryId;
     const api = "http://localhost:8080/api/v1";
     
@@ -16,6 +18,11 @@
             ]);
         }
 
+    function refreshGallery() {
+        let gid = galleryId;
+        galleryId = null;
+        galleryId = gid;
+    }
     function showModal( item ) {
         displayItem = item;
     }
@@ -73,6 +80,9 @@
         display: flex;
         flex-wrap: wrap;
     }
+    .gallery-panel {
+        display: flex;
+    }
 </style>
 {#await galleryRequest}
 <p>...</p>
@@ -81,15 +91,21 @@
 {#if info[0][1].description}
 <p>{info[0][1].description}</p>
 {/if}
-<div class="gallery">
-    {#each info[1] as item}
-        <figure class="card-image" on:click={(e) => showModal(item[2])}>
-            <Lazy height={200}>
-                 <img alt={item[2].description} src="/user/assets/{item[2].uuid}">
-            </Lazy>
-            <figcaption>{item[2].name}</figcaption>
-        </figure>
-    {/each}
+<div class="gallery-panel">
+    <div>
+        <UserGalleryItemList {galleryId} on:orderSubmitted={refreshGallery} />
+    </div>
+    <div>
+        <div class="gallery">
+            {#each info[1] as item}
+                <figure class="card-image" on:click={(e) => showModal(item[2])}>
+                    <!-- FIXME: svelte-lazy goes here -->
+                     <img alt={item[2].description} src="/user/assets/{item[2].uuid}">
+                    <figcaption>{item[2].name}</figcaption>
+                </figure>
+            {/each}
+        </div>
+    </div>
 </div>
 {:catch err}
 <p>Error: {err.message}</p>
