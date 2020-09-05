@@ -2,7 +2,7 @@
 use actix_identity::Identity;
 use actix_web::{web,HttpResponse};
 use crate::actions::user_gallery::*;
-use crate::models;
+use crate::{actions,models};
 use crate::db::DbPool;
 use uuid::Uuid;
 use crate::routes::user::UserSession;
@@ -166,6 +166,31 @@ pub async fn user_gallery_by_uuid_json(
     Ok(HttpResponse::Ok().json(gallery))
 }
 
+pub async fn user_galleries_by_url_json(
+    path: web::Path<String> 
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let galleries = web::block(move || {
+        let user = actions::user::user_by_handle(&path,&conn)?;
+        if user.is_some() {
+            let galleries = user_galleries_by_user_handle(&path,&conn)?;
+            Ok::<_,diesel::result::Error>(Some(galleries))
+        }else{
+            Ok(None)
+        }
+    }).await
+      .map_err(|e| {
+        eprintln!("{}", e);
+        HttpResponse::InternalServerError().finish()
+      })?;
+    if let Some(galleries) = galleries {
+        Ok(HttpResponse::Ok().json(galleries))
+    }else{
+        Ok(HttpResponse::NotFound().finish())
+    }
+}
+
 pub async fn user_gallery_by_url_json(
     path: web::Path<(String,String)> 
   , pool: web::Data<DbPool>
@@ -179,8 +204,11 @@ pub async fn user_gallery_by_url_json(
         eprintln!("{}", e);
         HttpResponse::InternalServerError().finish()
       })?;
-            
-    Ok(HttpResponse::Ok().json(gallery))
+    if let Some(gallery) = gallery {
+        Ok(HttpResponse::Ok().json(gallery))
+    }else{
+        Ok(HttpResponse::NotFound().finish())
+    }
 }
 
 pub async fn user_gallery_create_form(

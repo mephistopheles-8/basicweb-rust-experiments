@@ -239,7 +239,11 @@ pub fn user_post_by_url(
     use crate::schema::*;
 
     user_posts::table
-        .filter(user_posts::url.eq(url0).and(users::handle.eq(handle0)))
+        .filter(
+            user_posts::url.eq(url0)
+            .and(users::handle.eq(handle0))
+            .and(user_posts::permissions.eq(1))
+        )
         .inner_join(users::table)
         .inner_join(posts::table)
         .select((user_posts::all_columns,posts::all_columns))
@@ -285,7 +289,10 @@ pub fn user_posts_by_user_handle(
     use crate::schema::*;
 
     user_posts::table
-        .filter(users::handle.eq(handle0))
+        .filter(
+            users::handle.eq(handle0)
+            .and(user_posts::permissions.eq(1))
+        )
         .inner_join(users::table)
         .inner_join(posts::table)
         .select((user_posts::all_columns, posts::all_columns))

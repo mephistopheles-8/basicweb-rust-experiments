@@ -22,6 +22,18 @@ pub fn user_by_email(
     Ok(user)
 }
 
+pub fn user_by_handle(
+    handle0 : &str
+  , conn: &Connection 
+) -> Result<Option<models::User>, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
+    let user = users
+        .filter(handle.eq(handle0))
+        .first::<models::User>(conn)
+        .optional()?;
+    Ok(user)
+}
+
 pub fn user_by_uuid(
     uuid0 : Uuid  
   , conn: &Connection 

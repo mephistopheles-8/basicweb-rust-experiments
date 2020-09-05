@@ -2,7 +2,7 @@
 use actix_identity::Identity;
 use actix_web::{web,HttpResponse};
 use crate::actions::user_post::*;
-use crate::models;
+use crate::{models,actions};
 use crate::db::DbPool;
 use uuid::Uuid;
 use crate::routes::user::UserSession;
@@ -192,6 +192,31 @@ pub async fn user_post_by_uuid_json(
       })?;
             
     Ok(HttpResponse::Ok().json(post))
+}
+
+pub async fn user_posts_by_url_json(
+    path: web::Path<String> 
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || {
+        let user = actions::user::user_by_handle(&path,&conn)?;
+        if user.is_some() {
+            let posts = user_posts_by_user_handle(&path,&conn)?;
+            Ok::<_,diesel::result::Error>(Some(posts))
+        }else{
+            Ok(None)
+        }
+    }).await
+      .map_err(|e| {
+        eprintln!("{}", e);
+        HttpResponse::InternalServerError().finish()
+      })?;
+    if let Some(posts) = posts {
+        Ok(HttpResponse::Ok().json(posts))
+    }else{
+        Ok(HttpResponse::NotFound().finish())
+    }
 }
 
 pub async fn user_post_by_url_json(

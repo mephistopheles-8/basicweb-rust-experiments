@@ -256,7 +256,11 @@ pub fn user_gallery_by_url(
     use crate::schema::*;
 
     user_galleries::table
-        .filter(user_galleries::url.eq(url0).and(users::handle.eq(handle0)))
+        .filter(
+            user_galleries::url.eq(url0)
+            .and(user_galleries::permissions.eq(1))
+            .and(users::handle.eq(handle0))
+        )
         .inner_join(users::table)
         .inner_join(galleries::table)
         .select((user_galleries::all_columns,galleries::all_columns))
@@ -302,7 +306,10 @@ pub fn user_galleries_by_user_handle(
     use crate::schema::*;
 
     user_galleries::table
-        .filter(users::handle.eq(handle0))
+        .filter(
+            user_galleries::permissions.eq(1)
+            .and(users::handle.eq(handle0))
+        )
         .inner_join(users::table)
         .inner_join(galleries::table)
         .select((user_galleries::all_columns, galleries::all_columns))

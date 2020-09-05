@@ -193,6 +193,7 @@ pub fn user_gallery_item_by_url (
     user_gallery_items::table
           .filter(users::handle.eq(handle0)
               .and(user_gallery_items::url.eq(item_url0))
+              .and(user_gallery_items::permissions.eq(1))
             )
           .inner_join(users::table)
           .inner_join(gallery_items::table
@@ -201,6 +202,7 @@ pub fn user_gallery_item_by_url (
           )
           .inner_join(user_galleries::table.on(
                user_galleries::url.eq(gallery_url0)
+               .and(user_galleries::permissions.eq(1))
                .and(users::id.eq(user_galleries::user))
                .and(galleries::id.eq(user_galleries::gallery))
             ))
@@ -221,6 +223,7 @@ pub fn user_gallery_item_by_url0 (
     user_gallery_items::table
           .filter(users::handle.eq(handle0)
               .and(user_gallery_items::url.eq(item_url0))
+              .and(user_gallery_items::permissions.eq(1))
             )
           .inner_join(users::table)
           .inner_join(gallery_items::table
@@ -229,6 +232,7 @@ pub fn user_gallery_item_by_url0 (
           )
           .inner_join(user_galleries::table.on(
                user_galleries::url.eq(gallery_url0)
+               .and(user_galleries::permissions.eq(1))
                .and(users::id.eq(user_galleries::user))
                .and(galleries::id.eq(user_galleries::gallery))
             ))
@@ -295,26 +299,28 @@ pub fn user_gallery_items_by_gallery_uuid ( gallery_uuid: Uuid, conn: &Connectio
 }
 
 
-pub fn user_gallery_items_by_url ( handle0: &str, gallery_url: &str, conn: &Connection0 ) 
+pub fn user_gallery_items_by_url ( handle0: &str, gallery_url0: &str, conn: &Connection0 ) 
     -> Result<Vec<(i32, String, models::GalleryItem, models::UserGalleryItem)>, diesel::result::Error> {
 
     use crate::schema::*;
-    let g0s = user_gallery_items::table
-              .filter(
-                  user_gallery_items::url.eq(gallery_url)
-                  .and(users::handle.eq(handle0))
-              )
-              .inner_join( users::table )
-              .inner_join(
-                   gallery_items::table
-                      .inner_join(resources::table)
-                      .inner_join(galleries::table)
-                  )
-              .select((resources::kind,resources::mime,gallery_items::all_columns,user_gallery_items::all_columns))
-              .order_by((user_gallery_items::ord,gallery_items::created.asc()))
-              .load( conn )?; 
-
-    Ok(g0s)
+    user_gallery_items::table
+          .filter(users::handle.eq(handle0)
+              .and(user_gallery_items::permissions.eq(1))
+            )
+          .inner_join(users::table)
+          .inner_join(gallery_items::table
+              .inner_join(galleries::table)
+              .inner_join(resources::table)
+          )
+          .inner_join(user_galleries::table.on(
+               user_galleries::url.eq(gallery_url0)
+               .and(user_galleries::permissions.eq(1))
+               .and(users::id.eq(user_galleries::user))
+               .and(galleries::id.eq(user_galleries::gallery))
+            ))
+          .select(( resources::kind, resources::mime, gallery_items::all_columns,user_gallery_items::all_columns))
+          .order_by((user_gallery_items::ord,gallery_items::created.desc()))
+          .load( conn )
 }
 
 
