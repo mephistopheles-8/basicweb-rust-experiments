@@ -862,7 +862,9 @@ var basicweb_gallery_app_client = function () {
   };
 
   Promise$1._unhandledRejectionFn = function _unhandledRejectionFn(err) {
-    if (typeof console !== 'undefined' && console) {}
+    if (typeof console !== 'undefined' && console) {
+      console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
+    }
   };
 
   function noop$1() {}
@@ -1068,6 +1070,10 @@ var basicweb_gallery_app_client = function () {
   function select_value(select) {
     var selected_option = select.querySelector(':checked') || select.options[0];
     return selected_option && selected_option.__value;
+  }
+
+  function toggle_class(element, name, toggle) {
+    element.classList[toggle ? 'add' : 'remove'](name);
   }
 
   function custom_event(type, detail) {
@@ -1300,6 +1306,10 @@ var basicweb_gallery_app_client = function () {
   function get_current_component() {
     if (!current_component) throw new Error("Function called outside component initialization");
     return current_component;
+  }
+
+  function onMount(fn) {
+    get_current_component().$$.on_mount.push(fn);
   }
 
   function createEventDispatcher() {
@@ -2040,13 +2050,13 @@ var basicweb_gallery_app_client = function () {
     var _super = _createSuper(Unique);
 
     function Unique(options) {
-      var _this;
+      var _this2;
 
       _classCallCheck(this, Unique);
 
-      _this = _super.call(this);
-      init(_assertThisInitialized(_this), options, instance, create_fragment, safe_not_equal, {});
-      return _this;
+      _this2 = _super.call(this);
+      init(_assertThisInitialized(_this2), options, instance, create_fragment, safe_not_equal, {});
+      return _this2;
     }
 
     return Unique;
@@ -3138,15 +3148,15 @@ var basicweb_gallery_app_client = function () {
     var _super2 = _createSuper(GalleryCreate);
 
     function GalleryCreate(options) {
-      var _this2;
+      var _this3;
 
       _classCallCheck(this, GalleryCreate);
 
-      _this2 = _super2.call(this);
-      init(_assertThisInitialized(_this2), options, instance$1, create_fragment$1, safe_not_equal, {
+      _this3 = _super2.call(this);
+      init(_assertThisInitialized(_this3), options, instance$1, create_fragment$1, safe_not_equal, {
         galleryId: 0
       });
-      return _this2;
+      return _this3;
     }
 
     return GalleryCreate;
@@ -3380,16 +3390,16 @@ var basicweb_gallery_app_client = function () {
     var _super3 = _createSuper(Tags);
 
     function Tags(options) {
-      var _this3;
+      var _this4;
 
       _classCallCheck(this, Tags);
 
-      _this3 = _super3.call(this);
-      init(_assertThisInitialized(_this3), options, instance$2, create_fragment$2, safe_not_equal, {
+      _this4 = _super3.call(this);
+      init(_assertThisInitialized(_this4), options, instance$2, create_fragment$2, safe_not_equal, {
         id: 1,
         tags: 0
       });
-      return _this3;
+      return _this4;
     }
 
     return Tags;
@@ -3506,16 +3516,16 @@ var basicweb_gallery_app_client = function () {
     var _super4 = _createSuper(Permissions);
 
     function Permissions(options) {
-      var _this4;
+      var _this5;
 
       _classCallCheck(this, Permissions);
 
-      _this4 = _super4.call(this);
-      init(_assertThisInitialized(_this4), options, instance$3, create_fragment$3, safe_not_equal, {
+      _this5 = _super4.call(this);
+      init(_assertThisInitialized(_this5), options, instance$3, create_fragment$3, safe_not_equal, {
         value: 3,
         id: 0
       });
-      return _this4;
+      return _this5;
     }
 
     return Permissions;
@@ -4987,15 +4997,15 @@ var basicweb_gallery_app_client = function () {
     var _super5 = _createSuper(UserGalleryCreate);
 
     function UserGalleryCreate(options) {
-      var _this5;
+      var _this6;
 
       _classCallCheck(this, UserGalleryCreate);
 
-      _this5 = _super5.call(this);
-      init(_assertThisInitialized(_this5), options, instance$4, create_fragment$4, safe_not_equal, {
+      _this6 = _super5.call(this);
+      init(_assertThisInitialized(_this6), options, instance$4, create_fragment$4, safe_not_equal, {
         galleryId: 0
       });
-      return _this5;
+      return _this6;
     }
 
     return UserGalleryCreate;
@@ -5874,15 +5884,15 @@ var basicweb_gallery_app_client = function () {
     var _super6 = _createSuper(Placeholder);
 
     function Placeholder(options) {
-      var _this6;
+      var _this7;
 
       _classCallCheck(this, Placeholder);
 
-      _this6 = _super6.call(this);
-      init$1(_assertThisInitialized(_this6), options, instance$5, create_fragment$5, safe_not_equal$1, {
+      _this7 = _super6.call(this);
+      init$1(_assertThisInitialized(_this7), options, instance$5, create_fragment$5, safe_not_equal$1, {
         placeholder: 0
       });
-      return _this6;
+      return _this7;
     }
 
     return Placeholder;
@@ -6373,12 +6383,12 @@ var basicweb_gallery_app_client = function () {
     var _super7 = _createSuper(Src);
 
     function Src(options) {
-      var _this7;
+      var _this8;
 
       _classCallCheck(this, Src);
 
-      _this7 = _super7.call(this);
-      init$1(_assertThisInitialized(_this7), options, instance$1$1, create_fragment$1$1, safe_not_equal$1, {
+      _this8 = _super7.call(this);
+      init$1(_assertThisInitialized(_this8), options, instance$1$1, create_fragment$1$1, safe_not_equal$1, {
         height: 7,
         offset: 8,
         fadeOption: 0,
@@ -6387,7 +6397,7 @@ var basicweb_gallery_app_client = function () {
         placeholder: 1,
         "class": 11
       });
-      return _this7;
+      return _this8;
     }
 
     return Src;
@@ -6996,15 +7006,15 @@ var basicweb_gallery_app_client = function () {
     var _super8 = _createSuper(Gallery);
 
     function Gallery(options) {
-      var _this8;
+      var _this9;
 
       _classCallCheck(this, Gallery);
 
-      _this8 = _super8.call(this);
-      init(_assertThisInitialized(_this8), options, instance$6, create_fragment$6, safe_not_equal, {
+      _this9 = _super8.call(this);
+      init(_assertThisInitialized(_this9), options, instance$6, create_fragment$6, safe_not_equal, {
         galleryId: 4
       });
-      return _this8;
+      return _this9;
     }
 
     return Gallery;
@@ -7110,19 +7120,19 @@ var basicweb_gallery_app_client = function () {
     var _super9 = _createSuper(Alert);
 
     function Alert(options) {
-      var _this9;
+      var _this10;
 
       _classCallCheck(this, Alert);
 
-      _this9 = _super9.call(this);
-      init(_assertThisInitialized(_this9), options, instance$7, create_fragment$7, safe_not_equal, {
+      _this10 = _super9.call(this);
+      init(_assertThisInitialized(_this10), options, instance$7, create_fragment$7, safe_not_equal, {
         size: 4,
         width: 0,
         height: 1,
         color: 2,
         viewBox: 3
       });
-      return _this9;
+      return _this10;
     }
 
     return Alert;
@@ -7228,19 +7238,19 @@ var basicweb_gallery_app_client = function () {
     var _super10 = _createSuper(Delete);
 
     function Delete(options) {
-      var _this10;
+      var _this11;
 
       _classCallCheck(this, Delete);
 
-      _this10 = _super10.call(this);
-      init(_assertThisInitialized(_this10), options, instance$8, create_fragment$8, safe_not_equal, {
+      _this11 = _super10.call(this);
+      init(_assertThisInitialized(_this11), options, instance$8, create_fragment$8, safe_not_equal, {
         size: 4,
         width: 0,
         height: 1,
         color: 2,
         viewBox: 3
       });
-      return _this10;
+      return _this11;
     }
 
     return Delete;
@@ -7346,19 +7356,19 @@ var basicweb_gallery_app_client = function () {
     var _super11 = _createSuper(ReorderHorizontal);
 
     function ReorderHorizontal(options) {
-      var _this11;
+      var _this12;
 
       _classCallCheck(this, ReorderHorizontal);
 
-      _this11 = _super11.call(this);
-      init(_assertThisInitialized(_this11), options, instance$9, create_fragment$9, safe_not_equal, {
+      _this12 = _super11.call(this);
+      init(_assertThisInitialized(_this12), options, instance$9, create_fragment$9, safe_not_equal, {
         size: 4,
         width: 0,
         height: 1,
         color: 2,
         viewBox: 3
       });
-      return _this11;
+      return _this12;
     }
 
     return ReorderHorizontal;
@@ -7464,19 +7474,19 @@ var basicweb_gallery_app_client = function () {
     var _super12 = _createSuper(PencilOutline);
 
     function PencilOutline(options) {
-      var _this12;
+      var _this13;
 
       _classCallCheck(this, PencilOutline);
 
-      _this12 = _super12.call(this);
-      init(_assertThisInitialized(_this12), options, instance$a, create_fragment$a, safe_not_equal, {
+      _this13 = _super12.call(this);
+      init(_assertThisInitialized(_this13), options, instance$a, create_fragment$a, safe_not_equal, {
         size: 4,
         width: 0,
         height: 1,
         color: 2,
         viewBox: 3
       });
-      return _this12;
+      return _this13;
     }
 
     return PencilOutline;
@@ -7837,18 +7847,18 @@ var basicweb_gallery_app_client = function () {
     var _super13 = _createSuper(Circle);
 
     function Circle(options) {
-      var _this13;
+      var _this14;
 
       _classCallCheck(this, Circle);
 
-      _this13 = _super13.call(this);
+      _this14 = _super13.call(this);
       if (!document.getElementById("svelte-cm45hh-style")) add_css();
-      init$2(_assertThisInitialized(_this13), options, instance$b, create_fragment$b, safe_not_equal$2, {
+      init$2(_assertThisInitialized(_this14), options, instance$b, create_fragment$b, safe_not_equal$2, {
         size: 0,
         color: 1,
         unit: 2
       });
-      return _this13;
+      return _this14;
     }
 
     return Circle;
@@ -8767,12 +8777,12 @@ var basicweb_gallery_app_client = function () {
     var _super14 = _createSuper(UserItemForm);
 
     function UserItemForm(options) {
-      var _this14;
+      var _this15;
 
       _classCallCheck(this, UserItemForm);
 
-      _this14 = _super14.call(this);
-      init(_assertThisInitialized(_this14), options, instance$c, create_fragment$c, safe_not_equal, {
+      _this15 = _super14.call(this);
+      init(_assertThisInitialized(_this15), options, instance$c, create_fragment$c, safe_not_equal, {
         itemId: 8,
         itemNamePlural: 9,
         itemNameSingular: 10,
@@ -8785,7 +8795,7 @@ var basicweb_gallery_app_client = function () {
         processItemCallback: 13,
         itemInfoExtractCallback: 14
       });
-      return _this14;
+      return _this15;
     }
 
     return UserItemForm;
@@ -9237,6 +9247,7 @@ var basicweb_gallery_app_client = function () {
       }
 
       if (isElementOffDocument(draggedEl)) {
+        console.debug("off document");
         dispatchDraggedLeftDocument(draggedEl);
         return;
       }
@@ -9298,6 +9309,7 @@ var basicweb_gallery_app_client = function () {
 
 
   function unobserve() {
+    console.debug("unobserving");
     clearTimeout(next);
     resetScrolling();
   }
@@ -9337,6 +9349,7 @@ var basicweb_gallery_app_client = function () {
 
 
   function armWindowScroller() {
+    console.debug('arming window scroller');
     window.addEventListener('mousemove', updateMousePosition);
     window.addEventListener('touchmove', updateMousePosition);
     loop$2();
@@ -9347,6 +9360,7 @@ var basicweb_gallery_app_client = function () {
 
 
   function disarmWindowScroller() {
+    console.debug('disarming window scroller');
     window.removeEventListener('mousemove', updateMousePosition);
     window.removeEventListener('touchmove', updateMousePosition);
     mousePosition = undefined;
@@ -9542,6 +9556,8 @@ var basicweb_gallery_app_client = function () {
   /* drop-zones registration management */
 
   function registerDropZone(dropZoneEl, type) {
+    console.debug('registering drop-zone if absent');
+
     if (!typeToDropZones.has(type)) {
       typeToDropZones.set(type, new Set());
     }
@@ -9562,6 +9578,7 @@ var basicweb_gallery_app_client = function () {
 
 
   function watchDraggedElement() {
+    console.debug('watching dragged element');
     armWindowScroller();
     var dropZones = typeToDropZones.get(draggedElType);
 
@@ -9590,6 +9607,7 @@ var basicweb_gallery_app_client = function () {
   }
 
   function unWatchDraggedElement() {
+    console.debug('unwatching dragged element');
     disarmWindowScroller();
     var dropZones = typeToDropZones.get(draggedElType);
 
@@ -9616,11 +9634,14 @@ var basicweb_gallery_app_client = function () {
 
 
   function handleDraggedEntered(e) {
+    console.debug('dragged entered', e.currentTarget, e.detail);
+
     var _dzToConfig$get = dzToConfig.get(e.currentTarget),
         items = _dzToConfig$get.items,
         dropFromOthersDisabled = _dzToConfig$get.dropFromOthersDisabled;
 
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
+      console.debug('drop is currently disabled');
       return;
     } // this deals with another svelte related race condition. in rare occasions (super rapid operations) the list hasn't updated yet
 
@@ -9628,6 +9649,7 @@ var basicweb_gallery_app_client = function () {
     items = items.filter(function (i) {
       return i.id !== shadowElData.id;
     });
+    console.debug("dragged entered items ".concat(toString(items)));
     var _e$detail$indexObj = e.detail.indexObj,
         index = _e$detail$indexObj.index,
         isProximityBased = _e$detail$indexObj.isProximityBased;
@@ -9638,11 +9660,14 @@ var basicweb_gallery_app_client = function () {
   }
 
   function handleDraggedLeft(e) {
+    console.debug('dragged left', e.currentTarget, e.detail);
+
     var _dzToConfig$get2 = dzToConfig.get(e.currentTarget),
         items = _dzToConfig$get2.items,
         dropFromOthersDisabled = _dzToConfig$get2.dropFromOthersDisabled;
 
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
+      console.debug('drop is currently disabled');
       return;
     }
 
@@ -9653,11 +9678,14 @@ var basicweb_gallery_app_client = function () {
   }
 
   function handleDraggedIsOverIndex(e) {
+    console.debug('dragged is over index', e.currentTarget, e.detail);
+
     var _dzToConfig$get3 = dzToConfig.get(e.currentTarget),
         items = _dzToConfig$get3.items,
         dropFromOthersDisabled = _dzToConfig$get3.dropFromOthersDisabled;
 
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
+      console.debug('drop is currently disabled');
       return;
     }
 
@@ -9681,6 +9709,7 @@ var basicweb_gallery_app_client = function () {
   }
 
   function handleDrop() {
+    console.debug('dropped');
     finalizingPreviousDrag = true; // cleanup
 
     window.removeEventListener('mousemove', handleMouseMove);
@@ -9704,6 +9733,8 @@ var basicweb_gallery_app_client = function () {
       };
 
       // it was dropped in a drop-zone
+      console.debug('dropped in dz', shadowElDropZone);
+
       var _dzToConfig$get4 = dzToConfig.get(shadowElDropZone),
           items = _dzToConfig$get4.items,
           type = _dzToConfig$get4.type;
@@ -9725,6 +9756,8 @@ var basicweb_gallery_app_client = function () {
       };
 
       // it needs to return to its place
+      console.debug('no dz available');
+
       var _dzToConfig$get5 = dzToConfig.get(originDropZone),
           _items = _dzToConfig$get5.items,
           _type = _dzToConfig$get5.type;
@@ -9805,6 +9838,9 @@ var basicweb_gallery_app_client = function () {
       dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
       transformDraggedElement: function transformDraggedElement() {}
     };
+    console.debug("dndzone good to go options: ".concat(toString(options), ", config: ").concat(toString(config)), {
+      node: node
+    });
     var elToIdx = new Map();
 
     function addMaybeListeners() {
@@ -9854,10 +9890,12 @@ var basicweb_gallery_app_client = function () {
     function handleMouseDown(e) {
       // prevents responding to any button but left click which equals 0 (which is falsy)
       if (e.button) {
+        console.debug("ignoring none left click button: ".concat(e.button));
         return;
       }
 
       if (isWorkingOnPreviousDrag) {
+        console.debug('cannot start a new drag before finalizing previous one');
         return;
       }
 
@@ -9873,6 +9911,7 @@ var basicweb_gallery_app_client = function () {
     }
 
     function handleDragStart() {
+      console.debug("drag start config: ".concat(toString(config)), originalDragTarget);
       isWorkingOnPreviousDrag = true; // initialising globals
 
       var currentIdx = elToIdx.get(originalDragTarget);
@@ -9943,7 +9982,9 @@ var basicweb_gallery_app_client = function () {
           transformDraggedElement = _ref39$transformDragg === void 0 ? function () {} : _ref39$transformDragg,
           rest = _objectWithoutProperties(_ref39, ["items", "flipDurationMs", "type", "dragDisabled", "dropFromOthersDisabled", "dropTargetStyle", "transformDraggedElement"]);
 
-      if (Object.keys(rest).length > 0) {}
+      if (Object.keys(rest).length > 0) {
+        console.warn("dndzone will ignore unknown options", rest);
+      }
 
       config.dropAnimationDurationMs = dropAnimationDurationMs;
 
@@ -10018,9 +10059,11 @@ var basicweb_gallery_app_client = function () {
     configure(options);
     return {
       update: function update(newOptions) {
+        console.debug("dndzone will update newOptions: ".concat(toString(newOptions)));
         configure(newOptions);
       },
       destroy: function destroy() {
+        console.debug("dndzone will destroy");
         unregisterDropZone(node, config.type);
         dzToConfig["delete"](node);
       }
@@ -10315,15 +10358,15 @@ var basicweb_gallery_app_client = function () {
     var _super15 = _createSuper(DndListSort);
 
     function DndListSort(options) {
-      var _this15;
+      var _this16;
 
       _classCallCheck(this, DndListSort);
 
-      _this15 = _super15.call(this);
-      init(_assertThisInitialized(_this15), options, instance$d, create_fragment$d, safe_not_equal, {
+      _this16 = _super15.call(this);
+      init(_assertThisInitialized(_this16), options, instance$d, create_fragment$d, safe_not_equal, {
         items: 0
       });
-      return _this15;
+      return _this16;
     }
 
     return DndListSort;
@@ -10500,16 +10543,16 @@ var basicweb_gallery_app_client = function () {
     var _super16 = _createSuper(Modal);
 
     function Modal(options) {
-      var _this16;
+      var _this17;
 
       _classCallCheck(this, Modal);
 
-      _this16 = _super16.call(this);
-      init(_assertThisInitialized(_this16), options, instance$e, create_fragment$e, safe_not_equal, {
+      _this17 = _super16.call(this);
+      init(_assertThisInitialized(_this17), options, instance$e, create_fragment$e, safe_not_equal, {
         shown: 0,
         modalClass: 1
       });
-      return _this16;
+      return _this17;
     }
 
     return Modal;
@@ -10827,12 +10870,12 @@ var basicweb_gallery_app_client = function () {
     var _super17 = _createSuper(AlertConfirm);
 
     function AlertConfirm(options) {
-      var _this17;
+      var _this18;
 
       _classCallCheck(this, AlertConfirm);
 
-      _this17 = _super17.call(this);
-      init(_assertThisInitialized(_this17), options, instance$f, create_fragment$f, safe_not_equal, {
+      _this18 = _super17.call(this);
+      init(_assertThisInitialized(_this18), options, instance$f, create_fragment$f, safe_not_equal, {
         shown: 0,
         iconComponent: 1,
         iconColor: 8,
@@ -10843,7 +10886,7 @@ var basicweb_gallery_app_client = function () {
         confirmLabel: 5,
         cancelLabel: 6
       });
-      return _this17;
+      return _this18;
     }
 
     return AlertConfirm;
@@ -10865,7 +10908,7 @@ var basicweb_gallery_app_client = function () {
       /*item*/
       ctx[29]
     };
-  }; // (170:0) {:catch err}
+  }; // (174:0) {:catch err}
 
 
   function create_catch_block$4(ctx) {
@@ -10894,7 +10937,7 @@ var basicweb_gallery_app_client = function () {
         p = element("p");
         t1 = text("Error: ");
         t2 = text(t2_value);
-        attr(div, "class", "error svelte-1bnafym");
+        attr(div, "class", "error svelte-9hp4i1");
       },
       m: function m(target, anchor) {
         insert(target, div, anchor);
@@ -10933,7 +10976,7 @@ var basicweb_gallery_app_client = function () {
         destroy_component(alert);
       }
     };
-  } // (149:0) {:then _}
+  } // (153:0) {:then _}
 
 
   function create_then_block$4(ctx) {
@@ -11055,7 +11098,7 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(if_block_anchor);
       }
     };
-  } // (155:21)              
+  } // (159:21)              
 
 
   function fallback_block$2(ctx) {
@@ -11082,15 +11125,15 @@ var basicweb_gallery_app_client = function () {
         t1 = space();
         p = element("p");
         t2 = text(t2_value);
-        attr(h6, "class", "svelte-1bnafym");
-        attr(p, "class", "svelte-1bnafym");
-        attr(div, "class", "item-list-info svelte-1bnafym");
+        attr(h6, "class", "svelte-9hp4i1");
+        attr(p, "class", "svelte-9hp4i1");
+        attr(div, "class", "item-list-info svelte-9hp4i1");
         attr(a, "href", a_href_value = "/user/" +
         /*itemNamePlural*/
         ctx[0] + "/" +
         /*item*/
         ctx[29].uuid);
-        attr(a, "class", "svelte-1bnafym");
+        attr(a, "class", "svelte-9hp4i1");
       },
       m: function m(target, anchor) {
         insert(target, a, anchor);
@@ -11127,7 +11170,7 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(a);
       }
     };
-  } // (150:0) <DndListSort bind:items={items} let:item={item} on:finalize={orderChanged}>
+  } // (154:0) <DndListSort bind:items={items} let:item={item} on:finalize={orderChanged}>
 
 
   function create_default_slot_1(ctx) {
@@ -11214,12 +11257,12 @@ var basicweb_gallery_app_client = function () {
         t2 = space();
         button2 = element("button");
         create_component(delete_1.$$.fragment);
-        attr(button0, "class", "svelte-1bnafym");
-        attr(button1, "class", "edit-button svelte-1bnafym");
+        attr(button0, "class", "svelte-9hp4i1");
+        attr(button1, "class", "edit-button svelte-9hp4i1");
         attr(button1, "type", "button");
-        attr(button2, "class", "delete-button svelte-1bnafym");
+        attr(button2, "class", "delete-button svelte-9hp4i1");
         attr(button2, "type", "button");
-        attr(div, "class", "item-list-item svelte-1bnafym");
+        attr(div, "class", "item-list-item svelte-9hp4i1");
       },
       m: function m(target, anchor, remount) {
         insert(target, div, anchor);
@@ -11308,7 +11351,7 @@ var basicweb_gallery_app_client = function () {
         run_all(dispose);
       }
     };
-  } // (167:0) {#if orderHasChanged}
+  } // (171:0) {#if orderHasChanged}
 
 
   function create_if_block$6(ctx) {
@@ -11319,7 +11362,7 @@ var basicweb_gallery_app_client = function () {
         button = element("button");
         button.textContent = "Save Order";
         attr(button, "type", "button");
-        attr(button, "class", "svelte-1bnafym");
+        attr(button, "class", "svelte-9hp4i1");
       },
       m: function m(target, anchor, remount) {
         insert(target, button, anchor);
@@ -11334,7 +11377,7 @@ var basicweb_gallery_app_client = function () {
         dispose();
       }
     };
-  } // (147:17)  <Circle color="var(--accent-color-1)" size={iconSize}
+  } // (151:17)  <Circle color="var(--accent-color-1)" size={iconSize}
 
 
   function create_pending_block$4(ctx) {
@@ -11377,7 +11420,7 @@ var basicweb_gallery_app_client = function () {
         destroy_component(circle, detaching);
       }
     };
-  } // (184:0) <Modal shown={editItem !== null} >
+  } // (188:0) <Modal shown={editItem !== null} >
 
 
   function create_default_slot$5(ctx) {
@@ -11733,12 +11776,12 @@ var basicweb_gallery_app_client = function () {
     var _super18 = _createSuper(UserItemList);
 
     function UserItemList(options) {
-      var _this18;
+      var _this19;
 
       _classCallCheck(this, UserItemList);
 
-      _this18 = _super18.call(this);
-      init(_assertThisInitialized(_this18), options, instance$g, create_fragment$g, safe_not_equal, {
+      _this19 = _super18.call(this);
+      init(_assertThisInitialized(_this19), options, instance$g, create_fragment$g, safe_not_equal, {
         itemNamePlural: 0,
         itemNameSingular: 1,
         listingEndpoint: 14,
@@ -11748,7 +11791,7 @@ var basicweb_gallery_app_client = function () {
         processItemCallback: 3,
         itemInfoExtractCallback: 4
       });
-      return _this18;
+      return _this19;
     }
 
     return UserItemList;
@@ -11834,15 +11877,15 @@ var basicweb_gallery_app_client = function () {
     var _super19 = _createSuper(UserGalleryItemList);
 
     function UserGalleryItemList(options) {
-      var _this19;
+      var _this20;
 
       _classCallCheck(this, UserGalleryItemList);
 
-      _this19 = _super19.call(this);
-      init(_assertThisInitialized(_this19), options, instance$h, create_fragment$h, safe_not_equal, {
+      _this20 = _super19.call(this);
+      init(_assertThisInitialized(_this20), options, instance$h, create_fragment$h, safe_not_equal, {
         galleryId: 1
       });
-      return _this19;
+      return _this20;
     }
 
     return UserGalleryItemList;
@@ -12419,15 +12462,15 @@ var basicweb_gallery_app_client = function () {
     var _super20 = _createSuper(UserGallery);
 
     function UserGallery(options) {
-      var _this20;
+      var _this21;
 
       _classCallCheck(this, UserGallery);
 
-      _this20 = _super20.call(this);
-      init(_assertThisInitialized(_this20), options, instance$i, create_fragment$i, safe_not_equal, {
+      _this21 = _super20.call(this);
+      init(_assertThisInitialized(_this21), options, instance$i, create_fragment$i, safe_not_equal, {
         galleryId: 0
       });
-      return _this20;
+      return _this21;
     }
 
     return UserGallery;
@@ -12491,13 +12534,13 @@ var basicweb_gallery_app_client = function () {
     var _super21 = _createSuper(UserGalleryList);
 
     function UserGalleryList(options) {
-      var _this21;
+      var _this22;
 
       _classCallCheck(this, UserGalleryList);
 
-      _this21 = _super21.call(this);
-      init(_assertThisInitialized(_this21), options, instance$j, create_fragment$j, safe_not_equal, {});
-      return _this21;
+      _this22 = _super21.call(this);
+      init(_assertThisInitialized(_this22), options, instance$j, create_fragment$j, safe_not_equal, {});
+      return _this22;
     }
 
     return UserGalleryList;
@@ -12917,6 +12960,7 @@ var basicweb_gallery_app_client = function () {
   encode.defaultChars = ";/?:@&=+$,-_.!~*'()#";
   encode.componentChars = "-_.!~*'()";
   var encode_1 = encode;
+  var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
   function createCommonjsModule(fn, module) {
     return module = {
@@ -23091,7 +23135,9 @@ var basicweb_gallery_app_client = function () {
     this.lastMatchedContainer = this.doc;
     this.currentLine = "";
 
-    if (this.options.time) {}
+    if (this.options.time) {
+      console.time("preparing input");
+    }
 
     var lines = input.split(reLineEnding);
     var len = lines.length;
@@ -23101,9 +23147,13 @@ var basicweb_gallery_app_client = function () {
       len -= 1;
     }
 
-    if (this.options.time) {}
+    if (this.options.time) {
+      console.timeEnd("preparing input");
+    }
 
-    if (this.options.time) {}
+    if (this.options.time) {
+      console.time("block parsing");
+    }
 
     for (var i = 0; i < len; i++) {
       this.incorporateLine(lines[i]);
@@ -23113,13 +23163,19 @@ var basicweb_gallery_app_client = function () {
       this.finalize(this.tip, len);
     }
 
-    if (this.options.time) {}
+    if (this.options.time) {
+      console.timeEnd("block parsing");
+    }
 
-    if (this.options.time) {}
+    if (this.options.time) {
+      console.time("inline parsing");
+    }
 
     this.processInlines(this.doc);
 
-    if (this.options.time) {}
+    if (this.options.time) {
+      console.timeEnd("inline parsing");
+    }
 
     return this.doc;
   }; // The Parser object.
@@ -23570,7 +23626,9 @@ var basicweb_gallery_app_client = function () {
     var nodetype;
     var options = this.options;
 
-    if (options.time) {}
+    if (options.time) {
+      console.time("rendering");
+    }
 
     this.buffer += '<?xml version="1.0" encoding="UTF-8"?>\n';
     this.buffer += '<!DOCTYPE document SYSTEM "CommonMark.dtd">\n';
@@ -23673,7 +23731,9 @@ var basicweb_gallery_app_client = function () {
       }
     }
 
-    if (options.time) {}
+    if (options.time) {
+      console.timeEnd("rendering");
+    }
 
     this.buffer += '\n';
     return this.buffer;
@@ -24435,6 +24495,7 @@ var basicweb_gallery_app_client = function () {
         }).then(function (res) {
           return res.json();
         }).then(function (res) {
+          console.log(res);
           $$invalidate(2, replyValue = "");
           dispatch("reply", post);
           $$invalidate(0, replyId = false);
@@ -24490,16 +24551,16 @@ var basicweb_gallery_app_client = function () {
     var _super22 = _createSuper(PostThread);
 
     function PostThread(options) {
-      var _this22;
+      var _this23;
 
       _classCallCheck(this, PostThread);
 
-      _this22 = _super22.call(this);
-      init(_assertThisInitialized(_this22), options, instance$k, create_fragment$k, safe_not_equal, {
+      _this23 = _super22.call(this);
+      init(_assertThisInitialized(_this23), options, instance$k, create_fragment$k, safe_not_equal, {
         post: 1,
         replyId: 0
       });
-      return _this22;
+      return _this23;
     }
 
     return PostThread;
@@ -24971,15 +25032,15 @@ var basicweb_gallery_app_client = function () {
     var _super23 = _createSuper(Board);
 
     function Board(options) {
-      var _this23;
+      var _this24;
 
       _classCallCheck(this, Board);
 
-      _this23 = _super23.call(this);
-      init(_assertThisInitialized(_this23), options, instance$l, create_fragment$l, safe_not_equal, {
+      _this24 = _super23.call(this);
+      init(_assertThisInitialized(_this24), options, instance$l, create_fragment$l, safe_not_equal, {
         postId: 0
       });
-      return _this23;
+      return _this24;
     }
 
     return Board;
@@ -25105,16 +25166,16 @@ var basicweb_gallery_app_client = function () {
     var _super24 = _createSuper(PostMarkdown);
 
     function PostMarkdown(options) {
-      var _this24;
+      var _this25;
 
       _classCallCheck(this, PostMarkdown);
 
-      _this24 = _super24.call(this);
-      init(_assertThisInitialized(_this24), options, instance$m, create_fragment$m, safe_not_equal, {
+      _this25 = _super24.call(this);
+      init(_assertThisInitialized(_this25), options, instance$m, create_fragment$m, safe_not_equal, {
         id: 1,
         body: 0
       });
-      return _this24;
+      return _this25;
     }
 
     return PostMarkdown;
@@ -26072,12 +26133,12 @@ var basicweb_gallery_app_client = function () {
     var _super25 = _createSuper(UserPost);
 
     function UserPost(options) {
-      var _this25;
+      var _this26;
 
       _classCallCheck(this, UserPost);
 
-      _this25 = _super25.call(this);
-      init(_assertThisInitialized(_this25), options, instance$n, create_fragment$n, safe_not_equal, {
+      _this26 = _super25.call(this);
+      init(_assertThisInitialized(_this26), options, instance$n, create_fragment$n, safe_not_equal, {
         postId: 9,
         title: 0,
         description: 1,
@@ -26087,7 +26148,7 @@ var basicweb_gallery_app_client = function () {
         ord: 10,
         tags: 5
       });
-      return _this25;
+      return _this26;
     }
 
     return UserPost;
@@ -26182,16 +26243,3582 @@ var basicweb_gallery_app_client = function () {
     var _super26 = _createSuper(UserPostList);
 
     function UserPostList(options) {
-      var _this26;
+      var _this27;
 
       _classCallCheck(this, UserPostList);
 
-      _this26 = _super26.call(this);
-      init(_assertThisInitialized(_this26), options, instance$o, create_fragment$o, safe_not_equal, {});
-      return _this26;
+      _this27 = _super26.call(this);
+      init(_assertThisInitialized(_this27), options, instance$o, create_fragment$o, safe_not_equal, {});
+      return _this27;
     }
 
     return UserPostList;
+  }(SvelteComponent);
+
+  var evEmitter = createCommonjsModule(function (module) {
+    /**
+     * EvEmitter v1.1.0
+     * Lil' event emitter
+     * MIT License
+     */
+
+    /* jshint unused: true, undef: true, strict: true */
+    (function (global, factory) {
+      // universal module definition
+
+      /* jshint strict: false */
+
+      /* globals define, module, window */
+      if (module.exports) {
+        // CommonJS - Browserify, Webpack
+        module.exports = factory();
+      } else {
+        // Browser globals
+        global.EvEmitter = factory();
+      }
+    })(typeof window != 'undefined' ? window : commonjsGlobal, function () {
+      function EvEmitter() {}
+
+      var proto = EvEmitter.prototype;
+
+      proto.on = function (eventName, listener) {
+        if (!eventName || !listener) {
+          return;
+        } // set events hash
+
+
+        var events = this._events = this._events || {}; // set listeners array
+
+        var listeners = events[eventName] = events[eventName] || []; // only add once
+
+        if (listeners.indexOf(listener) == -1) {
+          listeners.push(listener);
+        }
+
+        return this;
+      };
+
+      proto.once = function (eventName, listener) {
+        if (!eventName || !listener) {
+          return;
+        } // add event
+
+
+        this.on(eventName, listener); // set once flag
+        // set onceEvents hash
+
+        var onceEvents = this._onceEvents = this._onceEvents || {}; // set onceListeners object
+
+        var onceListeners = onceEvents[eventName] = onceEvents[eventName] || {}; // set flag
+
+        onceListeners[listener] = true;
+        return this;
+      };
+
+      proto.off = function (eventName, listener) {
+        var listeners = this._events && this._events[eventName];
+
+        if (!listeners || !listeners.length) {
+          return;
+        }
+
+        var index = listeners.indexOf(listener);
+
+        if (index != -1) {
+          listeners.splice(index, 1);
+        }
+
+        return this;
+      };
+
+      proto.emitEvent = function (eventName, args) {
+        var listeners = this._events && this._events[eventName];
+
+        if (!listeners || !listeners.length) {
+          return;
+        } // copy over to avoid interference if .off() in listener
+
+
+        listeners = listeners.slice(0);
+        args = args || []; // once stuff
+
+        var onceListeners = this._onceEvents && this._onceEvents[eventName];
+
+        for (var i = 0; i < listeners.length; i++) {
+          var listener = listeners[i];
+          var isOnce = onceListeners && onceListeners[listener];
+
+          if (isOnce) {
+            // remove listener
+            // remove before trigger to prevent recursion
+            this.off(eventName, listener); // unset once flag
+
+            delete onceListeners[listener];
+          } // trigger listener
+
+
+          listener.apply(this, args);
+        }
+
+        return this;
+      };
+
+      proto.allOff = function () {
+        delete this._events;
+        delete this._onceEvents;
+      };
+
+      return EvEmitter;
+    });
+  });
+  var getSize = createCommonjsModule(function (module) {
+    /*!
+     * getSize v2.0.3
+     * measure size of elements
+     * MIT license
+     */
+
+    /* jshint browser: true, strict: true, undef: true, unused: true */
+
+    /* globals console: false */
+    (function (window, factory) {
+      /* jshint strict: false */
+
+      /* globals define, module */
+      if (module.exports) {
+        // CommonJS
+        module.exports = factory();
+      } else {
+        // browser global
+        window.getSize = factory();
+      }
+    })(window, function factory() {
+      // -------------------------- helpers -------------------------- //
+      // get a number from a string, not a percentage
+      function getStyleSize(value) {
+        var num = parseFloat(value); // not a percent like '100%', and a number
+
+        var isValid = value.indexOf('%') == -1 && !isNaN(num);
+        return isValid && num;
+      }
+
+      function noop() {}
+
+      var logError = typeof console == 'undefined' ? noop : function (message) {
+        console.error(message);
+      }; // -------------------------- measurements -------------------------- //
+
+      var measurements = ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom', 'marginLeft', 'marginRight', 'marginTop', 'marginBottom', 'borderLeftWidth', 'borderRightWidth', 'borderTopWidth', 'borderBottomWidth'];
+      var measurementsLength = measurements.length;
+
+      function getZeroSize() {
+        var size = {
+          width: 0,
+          height: 0,
+          innerWidth: 0,
+          innerHeight: 0,
+          outerWidth: 0,
+          outerHeight: 0
+        };
+
+        for (var i = 0; i < measurementsLength; i++) {
+          var measurement = measurements[i];
+          size[measurement] = 0;
+        }
+
+        return size;
+      } // -------------------------- getStyle -------------------------- //
+
+      /**
+       * getStyle, get style of element, check for Firefox bug
+       * https://bugzilla.mozilla.org/show_bug.cgi?id=548397
+       */
+
+
+      function getStyle(elem) {
+        var style = getComputedStyle(elem);
+
+        if (!style) {
+          logError('Style returned ' + style + '. Are you running this code in a hidden iframe on Firefox? ' + 'See https://bit.ly/getsizebug1');
+        }
+
+        return style;
+      } // -------------------------- setup -------------------------- //
+
+
+      var isSetup = false;
+      var isBoxSizeOuter;
+      /**
+       * setup
+       * check isBoxSizerOuter
+       * do on first getSize() rather than on page load for Firefox bug
+       */
+
+      function setup() {
+        // setup once
+        if (isSetup) {
+          return;
+        }
+
+        isSetup = true; // -------------------------- box sizing -------------------------- //
+
+        /**
+         * Chrome & Safari measure the outer-width on style.width on border-box elems
+         * IE11 & Firefox<29 measures the inner-width
+         */
+
+        var div = document.createElement('div');
+        div.style.width = '200px';
+        div.style.padding = '1px 2px 3px 4px';
+        div.style.borderStyle = 'solid';
+        div.style.borderWidth = '1px 2px 3px 4px';
+        div.style.boxSizing = 'border-box';
+        var body = document.body || document.documentElement;
+        body.appendChild(div);
+        var style = getStyle(div); // round value for browser zoom. desandro/masonry#928
+
+        isBoxSizeOuter = Math.round(getStyleSize(style.width)) == 200;
+        getSize.isBoxSizeOuter = isBoxSizeOuter;
+        body.removeChild(div);
+      } // -------------------------- getSize -------------------------- //
+
+
+      function getSize(elem) {
+        setup(); // use querySeletor if elem is string
+
+        if (typeof elem == 'string') {
+          elem = document.querySelector(elem);
+        } // do not proceed on non-objects
+
+
+        if (!elem || _typeof(elem) != 'object' || !elem.nodeType) {
+          return;
+        }
+
+        var style = getStyle(elem); // if hidden, everything is 0
+
+        if (style.display == 'none') {
+          return getZeroSize();
+        }
+
+        var size = {};
+        size.width = elem.offsetWidth;
+        size.height = elem.offsetHeight;
+        var isBorderBox = size.isBorderBox = style.boxSizing == 'border-box'; // get all measurements
+
+        for (var i = 0; i < measurementsLength; i++) {
+          var measurement = measurements[i];
+          var value = style[measurement];
+          var num = parseFloat(value); // any 'auto', 'medium' value will be 0
+
+          size[measurement] = !isNaN(num) ? num : 0;
+        }
+
+        var paddingWidth = size.paddingLeft + size.paddingRight;
+        var paddingHeight = size.paddingTop + size.paddingBottom;
+        var marginWidth = size.marginLeft + size.marginRight;
+        var marginHeight = size.marginTop + size.marginBottom;
+        var borderWidth = size.borderLeftWidth + size.borderRightWidth;
+        var borderHeight = size.borderTopWidth + size.borderBottomWidth;
+        var isBorderBoxSizeOuter = isBorderBox && isBoxSizeOuter; // overwrite width and height if we can get it from style
+
+        var styleWidth = getStyleSize(style.width);
+
+        if (styleWidth !== false) {
+          size.width = styleWidth + ( // add padding and border unless it's already including it
+          isBorderBoxSizeOuter ? 0 : paddingWidth + borderWidth);
+        }
+
+        var styleHeight = getStyleSize(style.height);
+
+        if (styleHeight !== false) {
+          size.height = styleHeight + ( // add padding and border unless it's already including it
+          isBorderBoxSizeOuter ? 0 : paddingHeight + borderHeight);
+        }
+
+        size.innerWidth = size.width - (paddingWidth + borderWidth);
+        size.innerHeight = size.height - (paddingHeight + borderHeight);
+        size.outerWidth = size.width + marginWidth;
+        size.outerHeight = size.height + marginHeight;
+        return size;
+      }
+
+      return getSize;
+    });
+  });
+  var matchesSelector = createCommonjsModule(function (module) {
+    /**
+     * matchesSelector v2.0.2
+     * matchesSelector( element, '.selector' )
+     * MIT license
+     */
+
+    /*jshint browser: true, strict: true, undef: true, unused: true */
+    (function (window, factory) {
+      // universal module definition
+      if (module.exports) {
+        // CommonJS
+        module.exports = factory();
+      } else {
+        // browser global
+        window.matchesSelector = factory();
+      }
+    })(window, function factory() {
+      var matchesMethod = function () {
+        var ElemProto = window.Element.prototype; // check for the standard method name first
+
+        if (ElemProto.matches) {
+          return 'matches';
+        } // check un-prefixed
+
+
+        if (ElemProto.matchesSelector) {
+          return 'matchesSelector';
+        } // check vendor prefixes
+
+
+        var prefixes = ['webkit', 'moz', 'ms', 'o'];
+
+        for (var i = 0; i < prefixes.length; i++) {
+          var prefix = prefixes[i];
+          var method = prefix + 'MatchesSelector';
+
+          if (ElemProto[method]) {
+            return method;
+          }
+        }
+      }();
+
+      return function matchesSelector(elem, selector) {
+        return elem[matchesMethod](selector);
+      };
+    });
+  });
+  var utils = createCommonjsModule(function (module) {
+    /**
+     * Fizzy UI utils v2.0.7
+     * MIT license
+     */
+
+    /*jshint browser: true, undef: true, unused: true, strict: true */
+    (function (window, factory) {
+      // universal module definition
+
+      /*jshint strict: false */
+
+      /*globals define, module, require */
+      if (module.exports) {
+        // CommonJS
+        module.exports = factory(window, matchesSelector);
+      } else {
+        // browser global
+        window.fizzyUIUtils = factory(window, window.matchesSelector);
+      }
+    })(window, function factory(window, matchesSelector) {
+      var utils = {}; // ----- extend ----- //
+      // extends objects
+
+      utils.extend = function (a, b) {
+        for (var prop in b) {
+          a[prop] = b[prop];
+        }
+
+        return a;
+      }; // ----- modulo ----- //
+
+
+      utils.modulo = function (num, div) {
+        return (num % div + div) % div;
+      }; // ----- makeArray ----- //
+
+
+      var arraySlice = Array.prototype.slice; // turn element or nodeList into an array
+
+      utils.makeArray = function (obj) {
+        if (Array.isArray(obj)) {
+          // use object if already an array
+          return obj;
+        } // return empty array if undefined or null. #6
+
+
+        if (obj === null || obj === undefined) {
+          return [];
+        }
+
+        var isArrayLike = _typeof(obj) == 'object' && typeof obj.length == 'number';
+
+        if (isArrayLike) {
+          // convert nodeList to array
+          return arraySlice.call(obj);
+        } // array of single index
+
+
+        return [obj];
+      }; // ----- removeFrom ----- //
+
+
+      utils.removeFrom = function (ary, obj) {
+        var index = ary.indexOf(obj);
+
+        if (index != -1) {
+          ary.splice(index, 1);
+        }
+      }; // ----- getParent ----- //
+
+
+      utils.getParent = function (elem, selector) {
+        while (elem.parentNode && elem != document.body) {
+          elem = elem.parentNode;
+
+          if (matchesSelector(elem, selector)) {
+            return elem;
+          }
+        }
+      }; // ----- getQueryElement ----- //
+      // use element as selector string
+
+
+      utils.getQueryElement = function (elem) {
+        if (typeof elem == 'string') {
+          return document.querySelector(elem);
+        }
+
+        return elem;
+      }; // ----- handleEvent ----- //
+      // enable .ontype to trigger from .addEventListener( elem, 'type' )
+
+
+      utils.handleEvent = function (event) {
+        var method = 'on' + event.type;
+
+        if (this[method]) {
+          this[method](event);
+        }
+      }; // ----- filterFindElements ----- //
+
+
+      utils.filterFindElements = function (elems, selector) {
+        // make array of elems
+        elems = utils.makeArray(elems);
+        var ffElems = [];
+        elems.forEach(function (elem) {
+          // check that elem is an actual element
+          if (!(elem instanceof HTMLElement)) {
+            return;
+          } // add elem if no selector
+
+
+          if (!selector) {
+            ffElems.push(elem);
+            return;
+          } // filter & find items if we have a selector
+          // filter
+
+
+          if (matchesSelector(elem, selector)) {
+            ffElems.push(elem);
+          } // find children
+
+
+          var childElems = elem.querySelectorAll(selector); // concat childElems to filterFound array
+
+          for (var i = 0; i < childElems.length; i++) {
+            ffElems.push(childElems[i]);
+          }
+        });
+        return ffElems;
+      }; // ----- debounceMethod ----- //
+
+
+      utils.debounceMethod = function (_class, methodName, threshold) {
+        threshold = threshold || 100; // original method
+
+        var method = _class.prototype[methodName];
+        var timeoutName = methodName + 'Timeout';
+
+        _class.prototype[methodName] = function () {
+          var timeout = this[timeoutName];
+          clearTimeout(timeout);
+          var args = arguments;
+
+          var _this = this;
+
+          this[timeoutName] = setTimeout(function () {
+            method.apply(_this, args);
+            delete _this[timeoutName];
+          }, threshold);
+        };
+      }; // ----- docReady ----- //
+
+
+      utils.docReady = function (callback) {
+        var readyState = document.readyState;
+
+        if (readyState == 'complete' || readyState == 'interactive') {
+          // do async to allow for other scripts to run. metafizzy/flickity#441
+          setTimeout(callback);
+        } else {
+          document.addEventListener('DOMContentLoaded', callback);
+        }
+      }; // ----- htmlInit ----- //
+      // http://jamesroberts.name/blog/2010/02/22/string-functions-for-javascript-trim-to-camel-case-to-dashed-and-to-underscore/
+
+
+      utils.toDashed = function (str) {
+        return str.replace(/(.)([A-Z])/g, function (match, $1, $2) {
+          return $1 + '-' + $2;
+        }).toLowerCase();
+      };
+
+      var console = window.console;
+      /**
+       * allow user to initialize classes via [data-namespace] or .js-namespace class
+       * htmlInit( Widget, 'widgetName' )
+       * options are parsed from data-namespace-options
+       */
+
+      utils.htmlInit = function (WidgetClass, namespace) {
+        utils.docReady(function () {
+          var dashedNamespace = utils.toDashed(namespace);
+          var dataAttr = 'data-' + dashedNamespace;
+          var dataAttrElems = document.querySelectorAll('[' + dataAttr + ']');
+          var jsDashElems = document.querySelectorAll('.js-' + dashedNamespace);
+          var elems = utils.makeArray(dataAttrElems).concat(utils.makeArray(jsDashElems));
+          var dataOptionsAttr = dataAttr + '-options';
+          var jQuery = window.jQuery;
+          elems.forEach(function (elem) {
+            var attr = elem.getAttribute(dataAttr) || elem.getAttribute(dataOptionsAttr);
+            var options;
+
+            try {
+              options = attr && JSON.parse(attr);
+            } catch (error) {
+              // log error, do not initialize
+              if (console) {
+                console.error('Error parsing ' + dataAttr + ' on ' + elem.className + ': ' + error);
+              }
+
+              return;
+            } // initialize
+
+
+            var instance = new WidgetClass(elem, options); // make available via $().data('namespace')
+
+            if (jQuery) {
+              jQuery.data(elem, namespace, instance);
+            }
+          });
+        });
+      }; // -----  ----- //
+
+
+      return utils;
+    });
+  });
+  var item$1 = createCommonjsModule(function (module) {
+    /**
+     * Outlayer Item
+     */
+    (function (window, factory) {
+      // universal module definition
+
+      /* jshint strict: false */
+
+      /* globals define, module, require */
+      if (module.exports) {
+        // CommonJS - Browserify, Webpack
+        module.exports = factory(evEmitter, getSize);
+      } else {
+        // browser global
+        window.Outlayer = {};
+        window.Outlayer.Item = factory(window.EvEmitter, window.getSize);
+      }
+    })(window, function factory(EvEmitter, getSize) {
+      // ----- helpers ----- //
+      function isEmptyObj(obj) {
+        for (var prop in obj) {
+          return false;
+        }
+
+        prop = null;
+        return true;
+      } // -------------------------- CSS3 support -------------------------- //
+
+
+      var docElemStyle = document.documentElement.style;
+      var transitionProperty = typeof docElemStyle.transition == 'string' ? 'transition' : 'WebkitTransition';
+      var transformProperty = typeof docElemStyle.transform == 'string' ? 'transform' : 'WebkitTransform';
+      var transitionEndEvent = {
+        WebkitTransition: 'webkitTransitionEnd',
+        transition: 'transitionend'
+      }[transitionProperty]; // cache all vendor properties that could have vendor prefix
+
+      var vendorProperties = {
+        transform: transformProperty,
+        transition: transitionProperty,
+        transitionDuration: transitionProperty + 'Duration',
+        transitionProperty: transitionProperty + 'Property',
+        transitionDelay: transitionProperty + 'Delay'
+      }; // -------------------------- Item -------------------------- //
+
+      function Item(element, layout) {
+        if (!element) {
+          return;
+        }
+
+        this.element = element; // parent layout class, i.e. Masonry, Isotope, or Packery
+
+        this.layout = layout;
+        this.position = {
+          x: 0,
+          y: 0
+        };
+
+        this._create();
+      } // inherit EvEmitter
+
+
+      var proto = Item.prototype = Object.create(EvEmitter.prototype);
+      proto.constructor = Item;
+
+      proto._create = function () {
+        // transition objects
+        this._transn = {
+          ingProperties: {},
+          clean: {},
+          onEnd: {}
+        };
+        this.css({
+          position: 'absolute'
+        });
+      }; // trigger specified handler for event type
+
+
+      proto.handleEvent = function (event) {
+        var method = 'on' + event.type;
+
+        if (this[method]) {
+          this[method](event);
+        }
+      };
+
+      proto.getSize = function () {
+        this.size = getSize(this.element);
+      };
+      /**
+       * apply CSS styles to element
+       * @param {Object} style
+       */
+
+
+      proto.css = function (style) {
+        var elemStyle = this.element.style;
+
+        for (var prop in style) {
+          // use vendor property if available
+          var supportedProp = vendorProperties[prop] || prop;
+          elemStyle[supportedProp] = style[prop];
+        }
+      }; // measure position, and sets it
+
+
+      proto.getPosition = function () {
+        var style = getComputedStyle(this.element);
+
+        var isOriginLeft = this.layout._getOption('originLeft');
+
+        var isOriginTop = this.layout._getOption('originTop');
+
+        var xValue = style[isOriginLeft ? 'left' : 'right'];
+        var yValue = style[isOriginTop ? 'top' : 'bottom'];
+        var x = parseFloat(xValue);
+        var y = parseFloat(yValue); // convert percent to pixels
+
+        var layoutSize = this.layout.size;
+
+        if (xValue.indexOf('%') != -1) {
+          x = x / 100 * layoutSize.width;
+        }
+
+        if (yValue.indexOf('%') != -1) {
+          y = y / 100 * layoutSize.height;
+        } // clean up 'auto' or other non-integer values
+
+
+        x = isNaN(x) ? 0 : x;
+        y = isNaN(y) ? 0 : y; // remove padding from measurement
+
+        x -= isOriginLeft ? layoutSize.paddingLeft : layoutSize.paddingRight;
+        y -= isOriginTop ? layoutSize.paddingTop : layoutSize.paddingBottom;
+        this.position.x = x;
+        this.position.y = y;
+      }; // set settled position, apply padding
+
+
+      proto.layoutPosition = function () {
+        var layoutSize = this.layout.size;
+        var style = {};
+
+        var isOriginLeft = this.layout._getOption('originLeft');
+
+        var isOriginTop = this.layout._getOption('originTop'); // x
+
+
+        var xPadding = isOriginLeft ? 'paddingLeft' : 'paddingRight';
+        var xProperty = isOriginLeft ? 'left' : 'right';
+        var xResetProperty = isOriginLeft ? 'right' : 'left';
+        var x = this.position.x + layoutSize[xPadding]; // set in percentage or pixels
+
+        style[xProperty] = this.getXValue(x); // reset other property
+
+        style[xResetProperty] = ''; // y
+
+        var yPadding = isOriginTop ? 'paddingTop' : 'paddingBottom';
+        var yProperty = isOriginTop ? 'top' : 'bottom';
+        var yResetProperty = isOriginTop ? 'bottom' : 'top';
+        var y = this.position.y + layoutSize[yPadding]; // set in percentage or pixels
+
+        style[yProperty] = this.getYValue(y); // reset other property
+
+        style[yResetProperty] = '';
+        this.css(style);
+        this.emitEvent('layout', [this]);
+      };
+
+      proto.getXValue = function (x) {
+        var isHorizontal = this.layout._getOption('horizontal');
+
+        return this.layout.options.percentPosition && !isHorizontal ? x / this.layout.size.width * 100 + '%' : x + 'px';
+      };
+
+      proto.getYValue = function (y) {
+        var isHorizontal = this.layout._getOption('horizontal');
+
+        return this.layout.options.percentPosition && isHorizontal ? y / this.layout.size.height * 100 + '%' : y + 'px';
+      };
+
+      proto._transitionTo = function (x, y) {
+        this.getPosition(); // get current x & y from top/left
+
+        var curX = this.position.x;
+        var curY = this.position.y;
+        var didNotMove = x == this.position.x && y == this.position.y; // save end position
+
+        this.setPosition(x, y); // if did not move and not transitioning, just go to layout
+
+        if (didNotMove && !this.isTransitioning) {
+          this.layoutPosition();
+          return;
+        }
+
+        var transX = x - curX;
+        var transY = y - curY;
+        var transitionStyle = {};
+        transitionStyle.transform = this.getTranslate(transX, transY);
+        this.transition({
+          to: transitionStyle,
+          onTransitionEnd: {
+            transform: this.layoutPosition
+          },
+          isCleaning: true
+        });
+      };
+
+      proto.getTranslate = function (x, y) {
+        // flip cooridinates if origin on right or bottom
+        var isOriginLeft = this.layout._getOption('originLeft');
+
+        var isOriginTop = this.layout._getOption('originTop');
+
+        x = isOriginLeft ? x : -x;
+        y = isOriginTop ? y : -y;
+        return 'translate3d(' + x + 'px, ' + y + 'px, 0)';
+      }; // non transition + transform support
+
+
+      proto.goTo = function (x, y) {
+        this.setPosition(x, y);
+        this.layoutPosition();
+      };
+
+      proto.moveTo = proto._transitionTo;
+
+      proto.setPosition = function (x, y) {
+        this.position.x = parseFloat(x);
+        this.position.y = parseFloat(y);
+      }; // ----- transition ----- //
+
+      /**
+       * @param {Object} style - CSS
+       * @param {Function} onTransitionEnd
+       */
+      // non transition, just trigger callback
+
+
+      proto._nonTransition = function (args) {
+        this.css(args.to);
+
+        if (args.isCleaning) {
+          this._removeStyles(args.to);
+        }
+
+        for (var prop in args.onTransitionEnd) {
+          args.onTransitionEnd[prop].call(this);
+        }
+      };
+      /**
+       * proper transition
+       * @param {Object} args - arguments
+       *   @param {Object} to - style to transition to
+       *   @param {Object} from - style to start transition from
+       *   @param {Boolean} isCleaning - removes transition styles after transition
+       *   @param {Function} onTransitionEnd - callback
+       */
+
+
+      proto.transition = function (args) {
+        // redirect to nonTransition if no transition duration
+        if (!parseFloat(this.layout.options.transitionDuration)) {
+          this._nonTransition(args);
+
+          return;
+        }
+
+        var _transition = this._transn; // keep track of onTransitionEnd callback by css property
+
+        for (var prop in args.onTransitionEnd) {
+          _transition.onEnd[prop] = args.onTransitionEnd[prop];
+        } // keep track of properties that are transitioning
+
+
+        for (prop in args.to) {
+          _transition.ingProperties[prop] = true; // keep track of properties to clean up when transition is done
+
+          if (args.isCleaning) {
+            _transition.clean[prop] = true;
+          }
+        } // set from styles
+
+
+        if (args.from) {
+          this.css(args.from); // force redraw. http://blog.alexmaccaw.com/css-transitions
+
+          var h = this.element.offsetHeight; // hack for JSHint to hush about unused var
+
+          h = null;
+        } // enable transition
+
+
+        this.enableTransition(args.to); // set styles that are transitioning
+
+        this.css(args.to);
+        this.isTransitioning = true;
+      }; // dash before all cap letters, including first for
+      // WebkitTransform => -webkit-transform
+
+
+      function toDashedAll(str) {
+        return str.replace(/([A-Z])/g, function ($1) {
+          return '-' + $1.toLowerCase();
+        });
+      }
+
+      var transitionProps = 'opacity,' + toDashedAll(transformProperty);
+
+      proto.enableTransition = function ()
+      /* style */
+      {
+        // HACK changing transitionProperty during a transition
+        // will cause transition to jump
+        if (this.isTransitioning) {
+          return;
+        } // make `transition: foo, bar, baz` from style object
+        // HACK un-comment this when enableTransition can work
+        // while a transition is happening
+        // var transitionValues = [];
+        // for ( var prop in style ) {
+        //   // dash-ify camelCased properties like WebkitTransition
+        //   prop = vendorProperties[ prop ] || prop;
+        //   transitionValues.push( toDashedAll( prop ) );
+        // }
+        // munge number to millisecond, to match stagger
+
+
+        var duration = this.layout.options.transitionDuration;
+        duration = typeof duration == 'number' ? duration + 'ms' : duration; // enable transition styles
+
+        this.css({
+          transitionProperty: transitionProps,
+          transitionDuration: duration,
+          transitionDelay: this.staggerDelay || 0
+        }); // listen for transition end event
+
+        this.element.addEventListener(transitionEndEvent, this, false);
+      }; // ----- events ----- //
+
+
+      proto.onwebkitTransitionEnd = function (event) {
+        this.ontransitionend(event);
+      };
+
+      proto.onotransitionend = function (event) {
+        this.ontransitionend(event);
+      }; // properties that I munge to make my life easier
+
+
+      var dashedVendorProperties = {
+        '-webkit-transform': 'transform'
+      };
+
+      proto.ontransitionend = function (event) {
+        // disregard bubbled events from children
+        if (event.target !== this.element) {
+          return;
+        }
+
+        var _transition = this._transn; // get property name of transitioned property, convert to prefix-free
+
+        var propertyName = dashedVendorProperties[event.propertyName] || event.propertyName; // remove property that has completed transitioning
+
+        delete _transition.ingProperties[propertyName]; // check if any properties are still transitioning
+
+        if (isEmptyObj(_transition.ingProperties)) {
+          // all properties have completed transitioning
+          this.disableTransition();
+        } // clean style
+
+
+        if (propertyName in _transition.clean) {
+          // clean up style
+          this.element.style[event.propertyName] = '';
+          delete _transition.clean[propertyName];
+        } // trigger onTransitionEnd callback
+
+
+        if (propertyName in _transition.onEnd) {
+          var onTransitionEnd = _transition.onEnd[propertyName];
+          onTransitionEnd.call(this);
+          delete _transition.onEnd[propertyName];
+        }
+
+        this.emitEvent('transitionEnd', [this]);
+      };
+
+      proto.disableTransition = function () {
+        this.removeTransitionStyles();
+        this.element.removeEventListener(transitionEndEvent, this, false);
+        this.isTransitioning = false;
+      };
+      /**
+       * removes style property from element
+       * @param {Object} style
+      **/
+
+
+      proto._removeStyles = function (style) {
+        // clean up transition styles
+        var cleanStyle = {};
+
+        for (var prop in style) {
+          cleanStyle[prop] = '';
+        }
+
+        this.css(cleanStyle);
+      };
+
+      var cleanTransitionStyle = {
+        transitionProperty: '',
+        transitionDuration: '',
+        transitionDelay: ''
+      };
+
+      proto.removeTransitionStyles = function () {
+        // remove transition
+        this.css(cleanTransitionStyle);
+      }; // ----- stagger ----- //
+
+
+      proto.stagger = function (delay) {
+        delay = isNaN(delay) ? 0 : delay;
+        this.staggerDelay = delay + 'ms';
+      }; // ----- show/hide/remove ----- //
+      // remove element from DOM
+
+
+      proto.removeElem = function () {
+        this.element.parentNode.removeChild(this.element); // remove display: none
+
+        this.css({
+          display: ''
+        });
+        this.emitEvent('remove', [this]);
+      };
+
+      proto.remove = function () {
+        // just remove element if no transition support or no transition
+        if (!transitionProperty || !parseFloat(this.layout.options.transitionDuration)) {
+          this.removeElem();
+          return;
+        } // start transition
+
+
+        this.once('transitionEnd', function () {
+          this.removeElem();
+        });
+        this.hide();
+      };
+
+      proto.reveal = function () {
+        delete this.isHidden; // remove display: none
+
+        this.css({
+          display: ''
+        });
+        var options = this.layout.options;
+        var onTransitionEnd = {};
+        var transitionEndProperty = this.getHideRevealTransitionEndProperty('visibleStyle');
+        onTransitionEnd[transitionEndProperty] = this.onRevealTransitionEnd;
+        this.transition({
+          from: options.hiddenStyle,
+          to: options.visibleStyle,
+          isCleaning: true,
+          onTransitionEnd: onTransitionEnd
+        });
+      };
+
+      proto.onRevealTransitionEnd = function () {
+        // check if still visible
+        // during transition, item may have been hidden
+        if (!this.isHidden) {
+          this.emitEvent('reveal');
+        }
+      };
+      /**
+       * get style property use for hide/reveal transition end
+       * @param {String} styleProperty - hiddenStyle/visibleStyle
+       * @returns {String}
+       */
+
+
+      proto.getHideRevealTransitionEndProperty = function (styleProperty) {
+        var optionStyle = this.layout.options[styleProperty]; // use opacity
+
+        if (optionStyle.opacity) {
+          return 'opacity';
+        } // get first property
+
+
+        for (var prop in optionStyle) {
+          return prop;
+        }
+      };
+
+      proto.hide = function () {
+        // set flag
+        this.isHidden = true; // remove display: none
+
+        this.css({
+          display: ''
+        });
+        var options = this.layout.options;
+        var onTransitionEnd = {};
+        var transitionEndProperty = this.getHideRevealTransitionEndProperty('hiddenStyle');
+        onTransitionEnd[transitionEndProperty] = this.onHideTransitionEnd;
+        this.transition({
+          from: options.visibleStyle,
+          to: options.hiddenStyle,
+          // keep hidden stuff hidden
+          isCleaning: true,
+          onTransitionEnd: onTransitionEnd
+        });
+      };
+
+      proto.onHideTransitionEnd = function () {
+        // check if still hidden
+        // during transition, item may have been un-hidden
+        if (this.isHidden) {
+          this.css({
+            display: 'none'
+          });
+          this.emitEvent('hide');
+        }
+      };
+
+      proto.destroy = function () {
+        this.css({
+          position: '',
+          left: '',
+          right: '',
+          top: '',
+          bottom: '',
+          transition: '',
+          transform: ''
+        });
+      };
+
+      return Item;
+    });
+  });
+  var outlayer = createCommonjsModule(function (module) {
+    /*!
+     * Outlayer v2.1.1
+     * the brains and guts of a layout library
+     * MIT license
+     */
+    (function (window, factory) {
+      // universal module definition
+
+      /* jshint strict: false */
+
+      /* globals define, module, require */
+      if (module.exports) {
+        // CommonJS - Browserify, Webpack
+        module.exports = factory(window, evEmitter, getSize, utils, item$1);
+      } else {
+        // browser global
+        window.Outlayer = factory(window, window.EvEmitter, window.getSize, window.fizzyUIUtils, window.Outlayer.Item);
+      }
+    })(window, function factory(window, EvEmitter, getSize, utils, Item) {
+      // ----- vars ----- //
+      var console = window.console;
+      var jQuery = window.jQuery;
+
+      var noop = function noop() {}; // -------------------------- Outlayer -------------------------- //
+      // globally unique identifiers
+
+
+      var GUID = 0; // internal store of all Outlayer intances
+
+      var instances = {};
+      /**
+       * @param {Element, String} element
+       * @param {Object} options
+       * @constructor
+       */
+
+      function Outlayer(element, options) {
+        var queryElement = utils.getQueryElement(element);
+
+        if (!queryElement) {
+          if (console) {
+            console.error('Bad element for ' + this.constructor.namespace + ': ' + (queryElement || element));
+          }
+
+          return;
+        }
+
+        this.element = queryElement; // add jQuery
+
+        if (jQuery) {
+          this.$element = jQuery(this.element);
+        } // options
+
+
+        this.options = utils.extend({}, this.constructor.defaults);
+        this.option(options); // add id for Outlayer.getFromElement
+
+        var id = ++GUID;
+        this.element.outlayerGUID = id; // expando
+
+        instances[id] = this; // associate via id
+        // kick it off
+
+        this._create();
+
+        var isInitLayout = this._getOption('initLayout');
+
+        if (isInitLayout) {
+          this.layout();
+        }
+      } // settings are for internal use only
+
+
+      Outlayer.namespace = 'outlayer';
+      Outlayer.Item = Item; // default options
+
+      Outlayer.defaults = {
+        containerStyle: {
+          position: 'relative'
+        },
+        initLayout: true,
+        originLeft: true,
+        originTop: true,
+        resize: true,
+        resizeContainer: true,
+        // item options
+        transitionDuration: '0.4s',
+        hiddenStyle: {
+          opacity: 0,
+          transform: 'scale(0.001)'
+        },
+        visibleStyle: {
+          opacity: 1,
+          transform: 'scale(1)'
+        }
+      };
+      var proto = Outlayer.prototype; // inherit EvEmitter
+
+      utils.extend(proto, EvEmitter.prototype);
+      /**
+       * set options
+       * @param {Object} opts
+       */
+
+      proto.option = function (opts) {
+        utils.extend(this.options, opts);
+      };
+      /**
+       * get backwards compatible option value, check old name
+       */
+
+
+      proto._getOption = function (option) {
+        var oldOption = this.constructor.compatOptions[option];
+        return oldOption && this.options[oldOption] !== undefined ? this.options[oldOption] : this.options[option];
+      };
+
+      Outlayer.compatOptions = {
+        // currentName: oldName
+        initLayout: 'isInitLayout',
+        horizontal: 'isHorizontal',
+        layoutInstant: 'isLayoutInstant',
+        originLeft: 'isOriginLeft',
+        originTop: 'isOriginTop',
+        resize: 'isResizeBound',
+        resizeContainer: 'isResizingContainer'
+      };
+
+      proto._create = function () {
+        // get items from children
+        this.reloadItems(); // elements that affect layout, but are not laid out
+
+        this.stamps = [];
+        this.stamp(this.options.stamp); // set container style
+
+        utils.extend(this.element.style, this.options.containerStyle); // bind resize method
+
+        var canBindResize = this._getOption('resize');
+
+        if (canBindResize) {
+          this.bindResize();
+        }
+      }; // goes through all children again and gets bricks in proper order
+
+
+      proto.reloadItems = function () {
+        // collection of item elements
+        this.items = this._itemize(this.element.children);
+      };
+      /**
+       * turn elements into Outlayer.Items to be used in layout
+       * @param {Array or NodeList or HTMLElement} elems
+       * @returns {Array} items - collection of new Outlayer Items
+       */
+
+
+      proto._itemize = function (elems) {
+        var itemElems = this._filterFindItemElements(elems);
+
+        var Item = this.constructor.Item; // create new Outlayer Items for collection
+
+        var items = [];
+
+        for (var i = 0; i < itemElems.length; i++) {
+          var elem = itemElems[i];
+          var item = new Item(elem, this);
+          items.push(item);
+        }
+
+        return items;
+      };
+      /**
+       * get item elements to be used in layout
+       * @param {Array or NodeList or HTMLElement} elems
+       * @returns {Array} items - item elements
+       */
+
+
+      proto._filterFindItemElements = function (elems) {
+        return utils.filterFindElements(elems, this.options.itemSelector);
+      };
+      /**
+       * getter method for getting item elements
+       * @returns {Array} elems - collection of item elements
+       */
+
+
+      proto.getItemElements = function () {
+        return this.items.map(function (item) {
+          return item.element;
+        });
+      }; // ----- init & layout ----- //
+
+      /**
+       * lays out all items
+       */
+
+
+      proto.layout = function () {
+        this._resetLayout();
+
+        this._manageStamps(); // don't animate first layout
+
+
+        var layoutInstant = this._getOption('layoutInstant');
+
+        var isInstant = layoutInstant !== undefined ? layoutInstant : !this._isLayoutInited;
+        this.layoutItems(this.items, isInstant); // flag for initalized
+
+        this._isLayoutInited = true;
+      }; // _init is alias for layout
+
+
+      proto._init = proto.layout;
+      /**
+       * logic before any new layout
+       */
+
+      proto._resetLayout = function () {
+        this.getSize();
+      };
+
+      proto.getSize = function () {
+        this.size = getSize(this.element);
+      };
+      /**
+       * get measurement from option, for columnWidth, rowHeight, gutter
+       * if option is String -> get element from selector string, & get size of element
+       * if option is Element -> get size of element
+       * else use option as a number
+       *
+       * @param {String} measurement
+       * @param {String} size - width or height
+       * @private
+       */
+
+
+      proto._getMeasurement = function (measurement, size) {
+        var option = this.options[measurement];
+        var elem;
+
+        if (!option) {
+          // default to 0
+          this[measurement] = 0;
+        } else {
+          // use option as an element
+          if (typeof option == 'string') {
+            elem = this.element.querySelector(option);
+          } else if (option instanceof HTMLElement) {
+            elem = option;
+          } // use size of element, if element
+
+
+          this[measurement] = elem ? getSize(elem)[size] : option;
+        }
+      };
+      /**
+       * layout a collection of item elements
+       * @api public
+       */
+
+
+      proto.layoutItems = function (items, isInstant) {
+        items = this._getItemsForLayout(items);
+
+        this._layoutItems(items, isInstant);
+
+        this._postLayout();
+      };
+      /**
+       * get the items to be laid out
+       * you may want to skip over some items
+       * @param {Array} items
+       * @returns {Array} items
+       */
+
+
+      proto._getItemsForLayout = function (items) {
+        return items.filter(function (item) {
+          return !item.isIgnored;
+        });
+      };
+      /**
+       * layout items
+       * @param {Array} items
+       * @param {Boolean} isInstant
+       */
+
+
+      proto._layoutItems = function (items, isInstant) {
+        this._emitCompleteOnItems('layout', items);
+
+        if (!items || !items.length) {
+          // no items, emit event with empty array
+          return;
+        }
+
+        var queue = [];
+        items.forEach(function (item) {
+          // get x/y object from method
+          var position = this._getItemLayoutPosition(item); // enqueue
+
+
+          position.item = item;
+          position.isInstant = isInstant || item.isLayoutInstant;
+          queue.push(position);
+        }, this);
+
+        this._processLayoutQueue(queue);
+      };
+      /**
+       * get item layout position
+       * @param {Outlayer.Item} item
+       * @returns {Object} x and y position
+       */
+
+
+      proto._getItemLayoutPosition = function ()
+      /* item */
+      {
+        return {
+          x: 0,
+          y: 0
+        };
+      };
+      /**
+       * iterate over array and position each item
+       * Reason being - separating this logic prevents 'layout invalidation'
+       * thx @paul_irish
+       * @param {Array} queue
+       */
+
+
+      proto._processLayoutQueue = function (queue) {
+        this.updateStagger();
+        queue.forEach(function (obj, i) {
+          this._positionItem(obj.item, obj.x, obj.y, obj.isInstant, i);
+        }, this);
+      }; // set stagger from option in milliseconds number
+
+
+      proto.updateStagger = function () {
+        var stagger = this.options.stagger;
+
+        if (stagger === null || stagger === undefined) {
+          this.stagger = 0;
+          return;
+        }
+
+        this.stagger = getMilliseconds(stagger);
+        return this.stagger;
+      };
+      /**
+       * Sets position of item in DOM
+       * @param {Outlayer.Item} item
+       * @param {Number} x - horizontal position
+       * @param {Number} y - vertical position
+       * @param {Boolean} isInstant - disables transitions
+       */
+
+
+      proto._positionItem = function (item, x, y, isInstant, i) {
+        if (isInstant) {
+          // if not transition, just set CSS
+          item.goTo(x, y);
+        } else {
+          item.stagger(i * this.stagger);
+          item.moveTo(x, y);
+        }
+      };
+      /**
+       * Any logic you want to do after each layout,
+       * i.e. size the container
+       */
+
+
+      proto._postLayout = function () {
+        this.resizeContainer();
+      };
+
+      proto.resizeContainer = function () {
+        var isResizingContainer = this._getOption('resizeContainer');
+
+        if (!isResizingContainer) {
+          return;
+        }
+
+        var size = this._getContainerSize();
+
+        if (size) {
+          this._setContainerMeasure(size.width, true);
+
+          this._setContainerMeasure(size.height, false);
+        }
+      };
+      /**
+       * Sets width or height of container if returned
+       * @returns {Object} size
+       *   @param {Number} width
+       *   @param {Number} height
+       */
+
+
+      proto._getContainerSize = noop;
+      /**
+       * @param {Number} measure - size of width or height
+       * @param {Boolean} isWidth
+       */
+
+      proto._setContainerMeasure = function (measure, isWidth) {
+        if (measure === undefined) {
+          return;
+        }
+
+        var elemSize = this.size; // add padding and border width if border box
+
+        if (elemSize.isBorderBox) {
+          measure += isWidth ? elemSize.paddingLeft + elemSize.paddingRight + elemSize.borderLeftWidth + elemSize.borderRightWidth : elemSize.paddingBottom + elemSize.paddingTop + elemSize.borderTopWidth + elemSize.borderBottomWidth;
+        }
+
+        measure = Math.max(measure, 0);
+        this.element.style[isWidth ? 'width' : 'height'] = measure + 'px';
+      };
+      /**
+       * emit eventComplete on a collection of items events
+       * @param {String} eventName
+       * @param {Array} items - Outlayer.Items
+       */
+
+
+      proto._emitCompleteOnItems = function (eventName, items) {
+        var _this = this;
+
+        function onComplete() {
+          _this.dispatchEvent(eventName + 'Complete', null, [items]);
+        }
+
+        var count = items.length;
+
+        if (!items || !count) {
+          onComplete();
+          return;
+        }
+
+        var doneCount = 0;
+
+        function tick() {
+          doneCount++;
+
+          if (doneCount == count) {
+            onComplete();
+          }
+        } // bind callback
+
+
+        items.forEach(function (item) {
+          item.once(eventName, tick);
+        });
+      };
+      /**
+       * emits events via EvEmitter and jQuery events
+       * @param {String} type - name of event
+       * @param {Event} event - original event
+       * @param {Array} args - extra arguments
+       */
+
+
+      proto.dispatchEvent = function (type, event, args) {
+        // add original event to arguments
+        var emitArgs = event ? [event].concat(args) : args;
+        this.emitEvent(type, emitArgs);
+
+        if (jQuery) {
+          // set this.$element
+          this.$element = this.$element || jQuery(this.element);
+
+          if (event) {
+            // create jQuery event
+            var $event = jQuery.Event(event);
+            $event.type = type;
+            this.$element.trigger($event, args);
+          } else {
+            // just trigger with type if no event available
+            this.$element.trigger(type, args);
+          }
+        }
+      }; // -------------------------- ignore & stamps -------------------------- //
+
+      /**
+       * keep item in collection, but do not lay it out
+       * ignored items do not get skipped in layout
+       * @param {Element} elem
+       */
+
+
+      proto.ignore = function (elem) {
+        var item = this.getItem(elem);
+
+        if (item) {
+          item.isIgnored = true;
+        }
+      };
+      /**
+       * return item to layout collection
+       * @param {Element} elem
+       */
+
+
+      proto.unignore = function (elem) {
+        var item = this.getItem(elem);
+
+        if (item) {
+          delete item.isIgnored;
+        }
+      };
+      /**
+       * adds elements to stamps
+       * @param {NodeList, Array, Element, or String} elems
+       */
+
+
+      proto.stamp = function (elems) {
+        elems = this._find(elems);
+
+        if (!elems) {
+          return;
+        }
+
+        this.stamps = this.stamps.concat(elems); // ignore
+
+        elems.forEach(this.ignore, this);
+      };
+      /**
+       * removes elements to stamps
+       * @param {NodeList, Array, or Element} elems
+       */
+
+
+      proto.unstamp = function (elems) {
+        elems = this._find(elems);
+
+        if (!elems) {
+          return;
+        }
+
+        elems.forEach(function (elem) {
+          // filter out removed stamp elements
+          utils.removeFrom(this.stamps, elem);
+          this.unignore(elem);
+        }, this);
+      };
+      /**
+       * finds child elements
+       * @param {NodeList, Array, Element, or String} elems
+       * @returns {Array} elems
+       */
+
+
+      proto._find = function (elems) {
+        if (!elems) {
+          return;
+        } // if string, use argument as selector string
+
+
+        if (typeof elems == 'string') {
+          elems = this.element.querySelectorAll(elems);
+        }
+
+        elems = utils.makeArray(elems);
+        return elems;
+      };
+
+      proto._manageStamps = function () {
+        if (!this.stamps || !this.stamps.length) {
+          return;
+        }
+
+        this._getBoundingRect();
+
+        this.stamps.forEach(this._manageStamp, this);
+      }; // update boundingLeft / Top
+
+
+      proto._getBoundingRect = function () {
+        // get bounding rect for container element
+        var boundingRect = this.element.getBoundingClientRect();
+        var size = this.size;
+        this._boundingRect = {
+          left: boundingRect.left + size.paddingLeft + size.borderLeftWidth,
+          top: boundingRect.top + size.paddingTop + size.borderTopWidth,
+          right: boundingRect.right - (size.paddingRight + size.borderRightWidth),
+          bottom: boundingRect.bottom - (size.paddingBottom + size.borderBottomWidth)
+        };
+      };
+      /**
+       * @param {Element} stamp
+      **/
+
+
+      proto._manageStamp = noop;
+      /**
+       * get x/y position of element relative to container element
+       * @param {Element} elem
+       * @returns {Object} offset - has left, top, right, bottom
+       */
+
+      proto._getElementOffset = function (elem) {
+        var boundingRect = elem.getBoundingClientRect();
+        var thisRect = this._boundingRect;
+        var size = getSize(elem);
+        var offset = {
+          left: boundingRect.left - thisRect.left - size.marginLeft,
+          top: boundingRect.top - thisRect.top - size.marginTop,
+          right: thisRect.right - boundingRect.right - size.marginRight,
+          bottom: thisRect.bottom - boundingRect.bottom - size.marginBottom
+        };
+        return offset;
+      }; // -------------------------- resize -------------------------- //
+      // enable event handlers for listeners
+      // i.e. resize -> onresize
+
+
+      proto.handleEvent = utils.handleEvent;
+      /**
+       * Bind layout to window resizing
+       */
+
+      proto.bindResize = function () {
+        window.addEventListener('resize', this);
+        this.isResizeBound = true;
+      };
+      /**
+       * Unbind layout to window resizing
+       */
+
+
+      proto.unbindResize = function () {
+        window.removeEventListener('resize', this);
+        this.isResizeBound = false;
+      };
+
+      proto.onresize = function () {
+        this.resize();
+      };
+
+      utils.debounceMethod(Outlayer, 'onresize', 100);
+
+      proto.resize = function () {
+        // don't trigger if size did not change
+        // or if resize was unbound. See #9
+        if (!this.isResizeBound || !this.needsResizeLayout()) {
+          return;
+        }
+
+        this.layout();
+      };
+      /**
+       * check if layout is needed post layout
+       * @returns Boolean
+       */
+
+
+      proto.needsResizeLayout = function () {
+        var size = getSize(this.element); // check that this.size and size are there
+        // IE8 triggers resize on body size change, so they might not be
+
+        var hasSizes = this.size && size;
+        return hasSizes && size.innerWidth !== this.size.innerWidth;
+      }; // -------------------------- methods -------------------------- //
+
+      /**
+       * add items to Outlayer instance
+       * @param {Array or NodeList or Element} elems
+       * @returns {Array} items - Outlayer.Items
+      **/
+
+
+      proto.addItems = function (elems) {
+        var items = this._itemize(elems); // add items to collection
+
+
+        if (items.length) {
+          this.items = this.items.concat(items);
+        }
+
+        return items;
+      };
+      /**
+       * Layout newly-appended item elements
+       * @param {Array or NodeList or Element} elems
+       */
+
+
+      proto.appended = function (elems) {
+        var items = this.addItems(elems);
+
+        if (!items.length) {
+          return;
+        } // layout and reveal just the new items
+
+
+        this.layoutItems(items, true);
+        this.reveal(items);
+      };
+      /**
+       * Layout prepended elements
+       * @param {Array or NodeList or Element} elems
+       */
+
+
+      proto.prepended = function (elems) {
+        var items = this._itemize(elems);
+
+        if (!items.length) {
+          return;
+        } // add items to beginning of collection
+
+
+        var previousItems = this.items.slice(0);
+        this.items = items.concat(previousItems); // start new layout
+
+        this._resetLayout();
+
+        this._manageStamps(); // layout new stuff without transition
+
+
+        this.layoutItems(items, true);
+        this.reveal(items); // layout previous items
+
+        this.layoutItems(previousItems);
+      };
+      /**
+       * reveal a collection of items
+       * @param {Array of Outlayer.Items} items
+       */
+
+
+      proto.reveal = function (items) {
+        this._emitCompleteOnItems('reveal', items);
+
+        if (!items || !items.length) {
+          return;
+        }
+
+        var stagger = this.updateStagger();
+        items.forEach(function (item, i) {
+          item.stagger(i * stagger);
+          item.reveal();
+        });
+      };
+      /**
+       * hide a collection of items
+       * @param {Array of Outlayer.Items} items
+       */
+
+
+      proto.hide = function (items) {
+        this._emitCompleteOnItems('hide', items);
+
+        if (!items || !items.length) {
+          return;
+        }
+
+        var stagger = this.updateStagger();
+        items.forEach(function (item, i) {
+          item.stagger(i * stagger);
+          item.hide();
+        });
+      };
+      /**
+       * reveal item elements
+       * @param {Array}, {Element}, {NodeList} items
+       */
+
+
+      proto.revealItemElements = function (elems) {
+        var items = this.getItems(elems);
+        this.reveal(items);
+      };
+      /**
+       * hide item elements
+       * @param {Array}, {Element}, {NodeList} items
+       */
+
+
+      proto.hideItemElements = function (elems) {
+        var items = this.getItems(elems);
+        this.hide(items);
+      };
+      /**
+       * get Outlayer.Item, given an Element
+       * @param {Element} elem
+       * @param {Function} callback
+       * @returns {Outlayer.Item} item
+       */
+
+
+      proto.getItem = function (elem) {
+        // loop through items to get the one that matches
+        for (var i = 0; i < this.items.length; i++) {
+          var item = this.items[i];
+
+          if (item.element == elem) {
+            // return item
+            return item;
+          }
+        }
+      };
+      /**
+       * get collection of Outlayer.Items, given Elements
+       * @param {Array} elems
+       * @returns {Array} items - Outlayer.Items
+       */
+
+
+      proto.getItems = function (elems) {
+        elems = utils.makeArray(elems);
+        var items = [];
+        elems.forEach(function (elem) {
+          var item = this.getItem(elem);
+
+          if (item) {
+            items.push(item);
+          }
+        }, this);
+        return items;
+      };
+      /**
+       * remove element(s) from instance and DOM
+       * @param {Array or NodeList or Element} elems
+       */
+
+
+      proto.remove = function (elems) {
+        var removeItems = this.getItems(elems);
+
+        this._emitCompleteOnItems('remove', removeItems); // bail if no items to remove
+
+
+        if (!removeItems || !removeItems.length) {
+          return;
+        }
+
+        removeItems.forEach(function (item) {
+          item.remove(); // remove item from collection
+
+          utils.removeFrom(this.items, item);
+        }, this);
+      }; // ----- destroy ----- //
+      // remove and disable Outlayer instance
+
+
+      proto.destroy = function () {
+        // clean up dynamic styles
+        var style = this.element.style;
+        style.height = '';
+        style.position = '';
+        style.width = ''; // destroy items
+
+        this.items.forEach(function (item) {
+          item.destroy();
+        });
+        this.unbindResize();
+        var id = this.element.outlayerGUID;
+        delete instances[id]; // remove reference to instance by id
+
+        delete this.element.outlayerGUID; // remove data for jQuery
+
+        if (jQuery) {
+          jQuery.removeData(this.element, this.constructor.namespace);
+        }
+      }; // -------------------------- data -------------------------- //
+
+      /**
+       * get Outlayer instance from element
+       * @param {Element} elem
+       * @returns {Outlayer}
+       */
+
+
+      Outlayer.data = function (elem) {
+        elem = utils.getQueryElement(elem);
+        var id = elem && elem.outlayerGUID;
+        return id && instances[id];
+      }; // -------------------------- create Outlayer class -------------------------- //
+
+      /**
+       * create a layout class
+       * @param {String} namespace
+       */
+
+
+      Outlayer.create = function (namespace, options) {
+        // sub-class Outlayer
+        var Layout = subclass(Outlayer); // apply new options and compatOptions
+
+        Layout.defaults = utils.extend({}, Outlayer.defaults);
+        utils.extend(Layout.defaults, options);
+        Layout.compatOptions = utils.extend({}, Outlayer.compatOptions);
+        Layout.namespace = namespace;
+        Layout.data = Outlayer.data; // sub-class Item
+
+        Layout.Item = subclass(Item); // -------------------------- declarative -------------------------- //
+
+        utils.htmlInit(Layout, namespace); // -------------------------- jQuery bridge -------------------------- //
+        // make into jQuery plugin
+
+        if (jQuery && jQuery.bridget) {
+          jQuery.bridget(namespace, Layout);
+        }
+
+        return Layout;
+      };
+
+      function subclass(Parent) {
+        function SubClass() {
+          Parent.apply(this, arguments);
+        }
+
+        SubClass.prototype = Object.create(Parent.prototype);
+        SubClass.prototype.constructor = SubClass;
+        return SubClass;
+      } // ----- helpers ----- //
+      // how many milliseconds are in each unit
+
+
+      var msUnits = {
+        ms: 1,
+        s: 1000
+      }; // munge time-like parameter into millisecond number
+      // '0.4s' -> 40
+
+      function getMilliseconds(time) {
+        if (typeof time == 'number') {
+          return time;
+        }
+
+        var matches = time.match(/(^\d*\.?\d*)(\w*)/);
+        var num = matches && matches[1];
+        var unit = matches && matches[2];
+
+        if (!num.length) {
+          return 0;
+        }
+
+        num = parseFloat(num);
+        var mult = msUnits[unit] || 1;
+        return num * mult;
+      } // ----- fin ----- //
+      // back in global
+
+
+      Outlayer.Item = Item;
+      return Outlayer;
+    });
+  });
+  var masonry = createCommonjsModule(function (module) {
+    /*!
+     * Masonry v4.2.2
+     * Cascading grid layout library
+     * https://masonry.desandro.com
+     * MIT License
+     * by David DeSandro
+     */
+    (function (window, factory) {
+      // universal module definition
+
+      /* jshint strict: false */
+
+      /*globals define, module, require */
+      if (module.exports) {
+        // CommonJS
+        module.exports = factory(outlayer, getSize);
+      } else {
+        // browser global
+        window.Masonry = factory(window.Outlayer, window.getSize);
+      }
+    })(window, function factory(Outlayer, getSize) {
+      // -------------------------- masonryDefinition -------------------------- //
+      // create an Outlayer layout class
+      var Masonry = Outlayer.create('masonry'); // isFitWidth -> fitWidth
+
+      Masonry.compatOptions.fitWidth = 'isFitWidth';
+      var proto = Masonry.prototype;
+
+      proto._resetLayout = function () {
+        this.getSize();
+
+        this._getMeasurement('columnWidth', 'outerWidth');
+
+        this._getMeasurement('gutter', 'outerWidth');
+
+        this.measureColumns(); // reset column Y
+
+        this.colYs = [];
+
+        for (var i = 0; i < this.cols; i++) {
+          this.colYs.push(0);
+        }
+
+        this.maxY = 0;
+        this.horizontalColIndex = 0;
+      };
+
+      proto.measureColumns = function () {
+        this.getContainerWidth(); // if columnWidth is 0, default to outerWidth of first item
+
+        if (!this.columnWidth) {
+          var firstItem = this.items[0];
+          var firstItemElem = firstItem && firstItem.element; // columnWidth fall back to item of first element
+
+          this.columnWidth = firstItemElem && getSize(firstItemElem).outerWidth || // if first elem has no width, default to size of container
+          this.containerWidth;
+        }
+
+        var columnWidth = this.columnWidth += this.gutter; // calculate columns
+
+        var containerWidth = this.containerWidth + this.gutter;
+        var cols = containerWidth / columnWidth; // fix rounding errors, typically with gutters
+
+        var excess = columnWidth - containerWidth % columnWidth; // if overshoot is less than a pixel, round up, otherwise floor it
+
+        var mathMethod = excess && excess < 1 ? 'round' : 'floor';
+        cols = Math[mathMethod](cols);
+        this.cols = Math.max(cols, 1);
+      };
+
+      proto.getContainerWidth = function () {
+        // container is parent if fit width
+        var isFitWidth = this._getOption('fitWidth');
+
+        var container = isFitWidth ? this.element.parentNode : this.element; // check that this.size and size are there
+        // IE8 triggers resize on body size change, so they might not be
+
+        var size = getSize(container);
+        this.containerWidth = size && size.innerWidth;
+      };
+
+      proto._getItemLayoutPosition = function (item) {
+        item.getSize(); // how many columns does this brick span
+
+        var remainder = item.size.outerWidth % this.columnWidth;
+        var mathMethod = remainder && remainder < 1 ? 'round' : 'ceil'; // round if off by 1 pixel, otherwise use ceil
+
+        var colSpan = Math[mathMethod](item.size.outerWidth / this.columnWidth);
+        colSpan = Math.min(colSpan, this.cols); // use horizontal or top column position
+
+        var colPosMethod = this.options.horizontalOrder ? '_getHorizontalColPosition' : '_getTopColPosition';
+        var colPosition = this[colPosMethod](colSpan, item); // position the brick
+
+        var position = {
+          x: this.columnWidth * colPosition.col,
+          y: colPosition.y
+        }; // apply setHeight to necessary columns
+
+        var setHeight = colPosition.y + item.size.outerHeight;
+        var setMax = colSpan + colPosition.col;
+
+        for (var i = colPosition.col; i < setMax; i++) {
+          this.colYs[i] = setHeight;
+        }
+
+        return position;
+      };
+
+      proto._getTopColPosition = function (colSpan) {
+        var colGroup = this._getTopColGroup(colSpan); // get the minimum Y value from the columns
+
+
+        var minimumY = Math.min.apply(Math, colGroup);
+        return {
+          col: colGroup.indexOf(minimumY),
+          y: minimumY
+        };
+      };
+      /**
+       * @param {Number} colSpan - number of columns the element spans
+       * @returns {Array} colGroup
+       */
+
+
+      proto._getTopColGroup = function (colSpan) {
+        if (colSpan < 2) {
+          // if brick spans only one column, use all the column Ys
+          return this.colYs;
+        }
+
+        var colGroup = []; // how many different places could this brick fit horizontally
+
+        var groupCount = this.cols + 1 - colSpan; // for each group potential horizontal position
+
+        for (var i = 0; i < groupCount; i++) {
+          colGroup[i] = this._getColGroupY(i, colSpan);
+        }
+
+        return colGroup;
+      };
+
+      proto._getColGroupY = function (col, colSpan) {
+        if (colSpan < 2) {
+          return this.colYs[col];
+        } // make an array of colY values for that one group
+
+
+        var groupColYs = this.colYs.slice(col, col + colSpan); // and get the max value of the array
+
+        return Math.max.apply(Math, groupColYs);
+      }; // get column position based on horizontal index. #873
+
+
+      proto._getHorizontalColPosition = function (colSpan, item) {
+        var col = this.horizontalColIndex % this.cols;
+        var isOver = colSpan > 1 && col + colSpan > this.cols; // shift to next row if item can't fit on current row
+
+        col = isOver ? 0 : col; // don't let zero-size items take up space
+
+        var hasSize = item.size.outerWidth && item.size.outerHeight;
+        this.horizontalColIndex = hasSize ? col + colSpan : this.horizontalColIndex;
+        return {
+          col: col,
+          y: this._getColGroupY(col, colSpan)
+        };
+      };
+
+      proto._manageStamp = function (stamp) {
+        var stampSize = getSize(stamp);
+
+        var offset = this._getElementOffset(stamp); // get the columns that this stamp affects
+
+
+        var isOriginLeft = this._getOption('originLeft');
+
+        var firstX = isOriginLeft ? offset.left : offset.right;
+        var lastX = firstX + stampSize.outerWidth;
+        var firstCol = Math.floor(firstX / this.columnWidth);
+        firstCol = Math.max(0, firstCol);
+        var lastCol = Math.floor(lastX / this.columnWidth); // lastCol should not go over if multiple of columnWidth #425
+
+        lastCol -= lastX % this.columnWidth ? 0 : 1;
+        lastCol = Math.min(this.cols - 1, lastCol); // set colYs to bottom of the stamp
+
+        var isOriginTop = this._getOption('originTop');
+
+        var stampMaxY = (isOriginTop ? offset.top : offset.bottom) + stampSize.outerHeight;
+
+        for (var i = firstCol; i <= lastCol; i++) {
+          this.colYs[i] = Math.max(stampMaxY, this.colYs[i]);
+        }
+      };
+
+      proto._getContainerSize = function () {
+        this.maxY = Math.max.apply(Math, this.colYs);
+        var size = {
+          height: this.maxY
+        };
+
+        if (this._getOption('fitWidth')) {
+          size.width = this._getContainerFitWidth();
+        }
+
+        return size;
+      };
+
+      proto._getContainerFitWidth = function () {
+        var unusedCols = 0; // count unused columns
+
+        var i = this.cols;
+
+        while (--i) {
+          if (this.colYs[i] !== 0) {
+            break;
+          }
+
+          unusedCols++;
+        } // fit container to columns that have been used
+
+
+        return (this.cols - unusedCols) * this.columnWidth - this.gutter;
+      };
+
+      proto.needsResizeLayout = function () {
+        var previousWidth = this.containerWidth;
+        this.getContainerWidth();
+        return previousWidth != this.containerWidth;
+      };
+
+      return Masonry;
+    });
+  });
+  /* src/Masonry.html generated by Svelte v3.20.1 */
+
+  function get_each_context$8(ctx, list, i) {
+    var child_ctx = ctx.slice();
+    child_ctx[10] = list[i];
+    return child_ctx;
+  } // (49:0) {#if items && items.length}
+
+
+  function create_if_block$b(ctx) {
+    var div;
+    var each_value =
+    /*items*/
+    ctx[0];
+    var each_blocks = [];
+
+    for (var i = 0; i < each_value.length; i += 1) {
+      each_blocks[i] = create_each_block$8(get_each_context$8(ctx, each_value, i));
+    }
+
+    return {
+      c: function c() {
+        div = element("div");
+
+        for (var _i40 = 0; _i40 < each_blocks.length; _i40 += 1) {
+          each_blocks[_i40].c();
+        }
+
+        attr(div, "class", "svelte-lo0v8p");
+        toggle_class(div, "hidden",
+        /*loaded*/
+        ctx[3] !==
+        /*items*/
+        ctx[0].length);
+      },
+      m: function m(target, anchor) {
+        insert(target, div, anchor);
+
+        for (var _i41 = 0; _i41 < each_blocks.length; _i41 += 1) {
+          each_blocks[_i41].m(div, null);
+        }
+        /*div_binding*/
+
+
+        ctx[9](div);
+      },
+      p: function p(ctx, dirty) {
+        if (dirty &
+        /*items, captionsOn, loaded*/
+        11) {
+          each_value =
+          /*items*/
+          ctx[0];
+
+          var _i42;
+
+          for (_i42 = 0; _i42 < each_value.length; _i42 += 1) {
+            var child_ctx = get_each_context$8(ctx, each_value, _i42);
+
+            if (each_blocks[_i42]) {
+              each_blocks[_i42].p(child_ctx, dirty);
+            } else {
+              each_blocks[_i42] = create_each_block$8(child_ctx);
+
+              each_blocks[_i42].c();
+
+              each_blocks[_i42].m(div, null);
+            }
+          }
+
+          for (; _i42 < each_blocks.length; _i42 += 1) {
+            each_blocks[_i42].d(1);
+          }
+
+          each_blocks.length = each_value.length;
+        }
+
+        if (dirty &
+        /*loaded, items*/
+        9) {
+          toggle_class(div, "hidden",
+          /*loaded*/
+          ctx[3] !==
+          /*items*/
+          ctx[0].length);
+        }
+      },
+      d: function d(detaching) {
+        if (detaching) detach(div);
+        destroy_each(each_blocks, detaching);
+        /*div_binding*/
+
+        ctx[9](null);
+      }
+    };
+  } // (55:8) {#if captionsOn}
+
+
+  function create_if_block_1$6(ctx) {
+    var figcaption;
+    var t_value =
+    /*item*/
+    ctx[10].name + "";
+    var t;
+    return {
+      c: function c() {
+        figcaption = element("figcaption");
+        t = text(t_value);
+      },
+      m: function m(target, anchor) {
+        insert(target, figcaption, anchor);
+        append(figcaption, t);
+      },
+      p: function p(ctx, dirty) {
+        if (dirty &
+        /*items*/
+        1 && t_value !== (t_value =
+        /*item*/
+        ctx[10].name + "")) set_data(t, t_value);
+      },
+      d: function d(detaching) {
+        if (detaching) detach(figcaption);
+      }
+    };
+  } // (51:4) {#each items as item}
+
+
+  function create_each_block$8(ctx) {
+    var figure;
+    var img;
+    var img_alt_value;
+    var img_src_value;
+    var t0;
+    var t1;
+    var dispose;
+    var if_block =
+    /*captionsOn*/
+    ctx[1] && create_if_block_1$6(ctx);
+    return {
+      c: function c() {
+        figure = element("figure");
+        img = element("img");
+        t0 = space();
+        if (if_block) if_block.c();
+        t1 = space();
+        attr(img, "alt", img_alt_value =
+        /*item*/
+        ctx[10].description);
+        if (img.src !== (img_src_value =
+        /*item*/
+        ctx[10].src)) attr(img, "src", img_src_value);
+        attr(img, "class", "svelte-lo0v8p");
+        attr(figure, "class", "card-image svelte-lo0v8p");
+      },
+      m: function m(target, anchor, remount) {
+        insert(target, figure, anchor);
+        append(figure, img);
+        append(figure, t0);
+        if (if_block) if_block.m(figure, null);
+        append(figure, t1);
+        if (remount) dispose();
+        dispose = listen(img, "load",
+        /*load_handler*/
+        ctx[8]);
+      },
+      p: function p(ctx, dirty) {
+        if (dirty &
+        /*items*/
+        1 && img_alt_value !== (img_alt_value =
+        /*item*/
+        ctx[10].description)) {
+          attr(img, "alt", img_alt_value);
+        }
+
+        if (dirty &
+        /*items*/
+        1 && img.src !== (img_src_value =
+        /*item*/
+        ctx[10].src)) {
+          attr(img, "src", img_src_value);
+        }
+
+        if (
+        /*captionsOn*/
+        ctx[1]) {
+          if (if_block) {
+            if_block.p(ctx, dirty);
+          } else {
+            if_block = create_if_block_1$6(ctx);
+            if_block.c();
+            if_block.m(figure, t1);
+          }
+        } else if (if_block) {
+          if_block.d(1);
+          if_block = null;
+        }
+      },
+      d: function d(detaching) {
+        if (detaching) detach(figure);
+        if (if_block) if_block.d();
+        dispose();
+      }
+    };
+  }
+
+  function create_fragment$p(ctx) {
+    var if_block_anchor;
+    var if_block =
+    /*items*/
+    ctx[0] &&
+    /*items*/
+    ctx[0].length && create_if_block$b(ctx);
+    return {
+      c: function c() {
+        if (if_block) if_block.c();
+        if_block_anchor = empty();
+      },
+      m: function m(target, anchor) {
+        if (if_block) if_block.m(target, anchor);
+        insert(target, if_block_anchor, anchor);
+      },
+      p: function p(ctx, _ref66) {
+        var _ref67 = _slicedToArray(_ref66, 1),
+            dirty = _ref67[0];
+
+        if (
+        /*items*/
+        ctx[0] &&
+        /*items*/
+        ctx[0].length) {
+          if (if_block) {
+            if_block.p(ctx, dirty);
+          } else {
+            if_block = create_if_block$b(ctx);
+            if_block.c();
+            if_block.m(if_block_anchor.parentNode, if_block_anchor);
+          }
+        } else if (if_block) {
+          if_block.d(1);
+          if_block = null;
+        }
+      },
+      i: noop$1,
+      o: noop$1,
+      d: function d(detaching) {
+        if (if_block) if_block.d(detaching);
+        if (detaching) detach(if_block_anchor);
+      }
+    };
+  }
+
+  function instance$p($$self, $$props, $$invalidate) {
+    var items = $$props.items;
+    var _$$props$columnWidth = $$props.columnWidth,
+        columnWidth = _$$props$columnWidth === void 0 ? 300 : _$$props$columnWidth;
+    var _$$props$captionsOn = $$props.captionsOn,
+        captionsOn = _$$props$captionsOn === void 0 ? false : _$$props$captionsOn;
+    var masonry$1;
+    var masonryElm;
+    var mounted = false;
+    var loaded = 0;
+
+    function loadedInc() {
+      $$invalidate(3, loaded++, loaded);
+    }
+
+    onMount(function () {
+      $$invalidate(6, mounted = true);
+    });
+
+    var load_handler = function load_handler(e) {
+      $$invalidate(3, loaded++, loaded);
+    };
+
+    function div_binding($$value) {
+      binding_callbacks[$$value ? "unshift" : "push"](function () {
+        $$invalidate(2, masonryElm = $$value);
+      });
+    }
+
+    $$self.$set = function ($$props) {
+      if ("items" in $$props) $$invalidate(0, items = $$props.items);
+      if ("columnWidth" in $$props) $$invalidate(4, columnWidth = $$props.columnWidth);
+      if ("captionsOn" in $$props) $$invalidate(1, captionsOn = $$props.captionsOn);
+    };
+
+    $$self.$$.update = function () {
+      if ($$self.$$.dirty &
+      /*masonryElm, mounted, items, loaded, columnWidth*/
+      93) {
+        if (masonryElm && mounted && items && loaded === items.length) {
+          masonry$1 = new masonry(masonryElm, {
+            itemSelector: ".card-image",
+            columnWidth: columnWidth,
+            fitWidth: true,
+            resize: true
+          });
+        }
+      }
+    };
+
+    return [items, captionsOn, masonryElm, loaded, columnWidth, masonry$1, mounted, loadedInc, load_handler, div_binding];
+  }
+
+  var Masonry_1 = /*#__PURE__*/function (_SvelteComponent24) {
+    _inherits(Masonry_1, _SvelteComponent24);
+
+    var _super27 = _createSuper(Masonry_1);
+
+    function Masonry_1(options) {
+      var _this28;
+
+      _classCallCheck(this, Masonry_1);
+
+      _this28 = _super27.call(this);
+      init(_assertThisInitialized(_this28), options, instance$p, create_fragment$p, safe_not_equal, {
+        items: 0,
+        columnWidth: 4,
+        captionsOn: 1
+      });
+      return _this28;
+    }
+
+    return Masonry_1;
+  }(SvelteComponent);
+  /* src/Profile.html generated by Svelte v3.20.1 */
+
+
+  function get_each_context$9(ctx, list, i) {
+    var child_ctx = ctx.slice();
+    child_ctx[12] = list[i];
+    return child_ctx;
+  }
+
+  function get_each_context_1$1(ctx, list, i) {
+    var child_ctx = ctx.slice();
+    child_ctx[15] = list[i];
+    return child_ctx;
+  } // (67:0) {#if requests}
+
+
+  function create_if_block$c(ctx) {
+    var await_block_anchor;
+    var promise;
+    var current;
+    var info = {
+      ctx: ctx,
+      current: null,
+      token: null,
+      pending: create_pending_block$9,
+      then: create_then_block$9,
+      "catch": create_catch_block_1$1,
+      value: 9,
+      error: 10,
+      blocks: [,,,]
+    };
+    handle_promise(promise =
+    /*requests*/
+    ctx[2], info);
+    return {
+      c: function c() {
+        await_block_anchor = empty();
+        info.block.c();
+      },
+      m: function m(target, anchor) {
+        insert(target, await_block_anchor, anchor);
+        info.block.m(target, info.anchor = anchor);
+
+        info.mount = function () {
+          return await_block_anchor.parentNode;
+        };
+
+        info.anchor = await_block_anchor;
+        current = true;
+      },
+      p: function p(new_ctx, dirty) {
+        ctx = new_ctx;
+        info.ctx = ctx;
+        if (dirty &
+        /*requests*/
+        4 && promise !== (promise =
+        /*requests*/
+        ctx[2]) && handle_promise(promise, info)) ;else {
+          var child_ctx = ctx.slice();
+          child_ctx[9] = info.resolved;
+          info.block.p(child_ctx, dirty);
+        }
+      },
+      i: function i(local) {
+        if (current) return;
+        transition_in(info.block);
+        current = true;
+      },
+      o: function o(local) {
+        for (var i = 0; i < 3; i += 1) {
+          var _block9 = info.blocks[i];
+          transition_out(_block9);
+        }
+
+        current = false;
+      },
+      d: function d(detaching) {
+        if (detaching) detach(await_block_anchor);
+        info.block.d(detaching);
+        info.token = null;
+        info = null;
+      }
+    };
+  } // (106:0) {:catch err}
+
+
+  function create_catch_block_1$1(ctx) {
+    var div;
+    var t0;
+    var p;
+    var t1;
+    var t2_value =
+    /*err*/
+    ctx[10].message + "";
+    var t2;
+    var current;
+    var alert = new Alert({
+      props: {
+        color: "#F80",
+        size:
+        /*iconSize*/
+        ctx[1]
+      }
+    });
+    return {
+      c: function c() {
+        div = element("div");
+        create_component(alert.$$.fragment);
+        t0 = space();
+        p = element("p");
+        t1 = text("Error: ");
+        t2 = text(t2_value);
+        attr(div, "class", "error svelte-1jplw8y");
+      },
+      m: function m(target, anchor) {
+        insert(target, div, anchor);
+        mount_component(alert, div, null);
+        append(div, t0);
+        append(div, p);
+        append(p, t1);
+        append(p, t2);
+        current = true;
+      },
+      p: function p(ctx, dirty) {
+        var alert_changes = {};
+        if (dirty &
+        /*iconSize*/
+        2) alert_changes.size =
+        /*iconSize*/
+        ctx[1];
+        alert.$set(alert_changes);
+        if ((!current || dirty &
+        /*requests*/
+        4) && t2_value !== (t2_value =
+        /*err*/
+        ctx[10].message + "")) set_data(t2, t2_value);
+      },
+      i: function i(local) {
+        if (current) return;
+        transition_in(alert.$$.fragment, local);
+        current = true;
+      },
+      o: function o(local) {
+        transition_out(alert.$$.fragment, local);
+        current = false;
+      },
+      d: function d(detaching) {
+        if (detaching) detach(div);
+        destroy_component(alert);
+      }
+    };
+  } // (70:0) {:then [galleries,posts]}
+
+
+  function create_then_block$9(ctx) {
+    var _ctx$ = _slicedToArray(ctx[9], 2);
+
+    ctx[7] = _ctx$[0];
+    ctx[8] = _ctx$[1];
+    var div1;
+    var div0;
+    var t0;
+    var t1;
+    var current;
+    var if_block0 =
+    /*galleries*/
+    ctx[7].length > 0 && create_if_block_3$3(ctx);
+    var if_block1 =
+    /*posts*/
+    ctx[8].length > 0 && create_if_block_2$3(ctx);
+    var if_block2 =
+    /*galleryRequest*/
+    ctx[3] && create_if_block_1$7(ctx);
+    return {
+      c: function c() {
+        div1 = element("div");
+        div0 = element("div");
+        if (if_block0) if_block0.c();
+        t0 = space();
+        if (if_block1) if_block1.c();
+        t1 = space();
+        if (if_block2) if_block2.c();
+        attr(div0, "class", "left-sidebar svelte-1jplw8y");
+        attr(div1, "class", "profile-main svelte-1jplw8y");
+      },
+      m: function m(target, anchor) {
+        insert(target, div1, anchor);
+        append(div1, div0);
+        if (if_block0) if_block0.m(div0, null);
+        append(div0, t0);
+        if (if_block1) if_block1.m(div0, null);
+        append(div1, t1);
+        if (if_block2) if_block2.m(div1, null);
+        current = true;
+      },
+      p: function p(ctx, dirty) {
+        if (
+        /*galleries*/
+        ctx[7].length > 0) {
+          if (if_block0) {
+            if_block0.p(ctx, dirty);
+          } else {
+            if_block0 = create_if_block_3$3(ctx);
+            if_block0.c();
+            if_block0.m(div0, t0);
+          }
+        } else if (if_block0) {
+          if_block0.d(1);
+          if_block0 = null;
+        }
+
+        if (
+        /*posts*/
+        ctx[8].length > 0) {
+          if (if_block1) {
+            if_block1.p(ctx, dirty);
+          } else {
+            if_block1 = create_if_block_2$3(ctx);
+            if_block1.c();
+            if_block1.m(div0, null);
+          }
+        } else if (if_block1) {
+          if_block1.d(1);
+          if_block1 = null;
+        }
+
+        if (
+        /*galleryRequest*/
+        ctx[3]) {
+          if (if_block2) {
+            if_block2.p(ctx, dirty);
+            transition_in(if_block2, 1);
+          } else {
+            if_block2 = create_if_block_1$7(ctx);
+            if_block2.c();
+            transition_in(if_block2, 1);
+            if_block2.m(div1, null);
+          }
+        } else if (if_block2) {
+          group_outros();
+          transition_out(if_block2, 1, 1, function () {
+            if_block2 = null;
+          });
+          check_outros();
+        }
+
+        var _ctx$2 = _slicedToArray(ctx[9], 2);
+
+        ctx[7] = _ctx$2[0];
+        ctx[8] = _ctx$2[1];
+      },
+      i: function i(local) {
+        if (current) return;
+        transition_in(if_block2);
+        current = true;
+      },
+      o: function o(local) {
+        transition_out(if_block2);
+        current = false;
+      },
+      d: function d(detaching) {
+        if (detaching) detach(div1);
+        if (if_block0) if_block0.d();
+        if (if_block1) if_block1.d();
+        if (if_block2) if_block2.d();
+      }
+    };
+  } // (73:8) {#if galleries.length > 0}
+
+
+  function create_if_block_3$3(ctx) {
+    var h3;
+    var t1;
+    var ul;
+    var each_value_1 =
+    /*galleries*/
+    ctx[7];
+    var each_blocks = [];
+
+    for (var i = 0; i < each_value_1.length; i += 1) {
+      each_blocks[i] = create_each_block_1$1(get_each_context_1$1(ctx, each_value_1, i));
+    }
+
+    return {
+      c: function c() {
+        h3 = element("h3");
+        h3.textContent = "Galleries";
+        t1 = space();
+        ul = element("ul");
+
+        for (var _i43 = 0; _i43 < each_blocks.length; _i43 += 1) {
+          each_blocks[_i43].c();
+        }
+      },
+      m: function m(target, anchor) {
+        insert(target, h3, anchor);
+        insert(target, t1, anchor);
+        insert(target, ul, anchor);
+
+        for (var _i44 = 0; _i44 < each_blocks.length; _i44 += 1) {
+          each_blocks[_i44].m(ul, null);
+        }
+      },
+      p: function p(ctx, dirty) {
+        if (dirty &
+        /*handle, requests*/
+        5) {
+          each_value_1 =
+          /*galleries*/
+          ctx[7];
+
+          var _i45;
+
+          for (_i45 = 0; _i45 < each_value_1.length; _i45 += 1) {
+            var child_ctx = get_each_context_1$1(ctx, each_value_1, _i45);
+
+            if (each_blocks[_i45]) {
+              each_blocks[_i45].p(child_ctx, dirty);
+            } else {
+              each_blocks[_i45] = create_each_block_1$1(child_ctx);
+
+              each_blocks[_i45].c();
+
+              each_blocks[_i45].m(ul, null);
+            }
+          }
+
+          for (; _i45 < each_blocks.length; _i45 += 1) {
+            each_blocks[_i45].d(1);
+          }
+
+          each_blocks.length = each_value_1.length;
+        }
+      },
+      d: function d(detaching) {
+        if (detaching) detach(h3);
+        if (detaching) detach(t1);
+        if (detaching) detach(ul);
+        destroy_each(each_blocks, detaching);
+      }
+    };
+  } // (76:12) {#each galleries as gallery}
+
+
+  function create_each_block_1$1(ctx) {
+    var li;
+    var a;
+    var t_value =
+    /*gallery*/
+    ctx[15][1].name + "";
+    var t;
+    var a_href_value;
+    return {
+      c: function c() {
+        li = element("li");
+        a = element("a");
+        t = text(t_value);
+        attr(a, "href", a_href_value = "/u/" +
+        /*handle*/
+        ctx[0] + "/galleries/" +
+        /*gallery*/
+        ctx[15][0].url);
+      },
+      m: function m(target, anchor) {
+        insert(target, li, anchor);
+        append(li, a);
+        append(a, t);
+      },
+      p: function p(ctx, dirty) {
+        if (dirty &
+        /*requests*/
+        4 && t_value !== (t_value =
+        /*gallery*/
+        ctx[15][1].name + "")) set_data(t, t_value);
+
+        if (dirty &
+        /*handle, requests*/
+        5 && a_href_value !== (a_href_value = "/u/" +
+        /*handle*/
+        ctx[0] + "/galleries/" +
+        /*gallery*/
+        ctx[15][0].url)) {
+          attr(a, "href", a_href_value);
+        }
+      },
+      d: function d(detaching) {
+        if (detaching) detach(li);
+      }
+    };
+  } // (81:8) {#if posts.length > 0}
+
+
+  function create_if_block_2$3(ctx) {
+    var h3;
+    var t1;
+    var ul;
+    var each_value =
+    /*posts*/
+    ctx[8];
+    var each_blocks = [];
+
+    for (var i = 0; i < each_value.length; i += 1) {
+      each_blocks[i] = create_each_block$9(get_each_context$9(ctx, each_value, i));
+    }
+
+    return {
+      c: function c() {
+        h3 = element("h3");
+        h3.textContent = "Posts";
+        t1 = space();
+        ul = element("ul");
+
+        for (var _i46 = 0; _i46 < each_blocks.length; _i46 += 1) {
+          each_blocks[_i46].c();
+        }
+      },
+      m: function m(target, anchor) {
+        insert(target, h3, anchor);
+        insert(target, t1, anchor);
+        insert(target, ul, anchor);
+
+        for (var _i47 = 0; _i47 < each_blocks.length; _i47 += 1) {
+          each_blocks[_i47].m(ul, null);
+        }
+      },
+      p: function p(ctx, dirty) {
+        if (dirty &
+        /*handle, requests*/
+        5) {
+          each_value =
+          /*posts*/
+          ctx[8];
+
+          var _i48;
+
+          for (_i48 = 0; _i48 < each_value.length; _i48 += 1) {
+            var child_ctx = get_each_context$9(ctx, each_value, _i48);
+
+            if (each_blocks[_i48]) {
+              each_blocks[_i48].p(child_ctx, dirty);
+            } else {
+              each_blocks[_i48] = create_each_block$9(child_ctx);
+
+              each_blocks[_i48].c();
+
+              each_blocks[_i48].m(ul, null);
+            }
+          }
+
+          for (; _i48 < each_blocks.length; _i48 += 1) {
+            each_blocks[_i48].d(1);
+          }
+
+          each_blocks.length = each_value.length;
+        }
+      },
+      d: function d(detaching) {
+        if (detaching) detach(h3);
+        if (detaching) detach(t1);
+        if (detaching) detach(ul);
+        destroy_each(each_blocks, detaching);
+      }
+    };
+  } // (84:12) {#each posts as post}
+
+
+  function create_each_block$9(ctx) {
+    var li;
+    var a;
+    var t_value =
+    /*post*/
+    ctx[12][1].title + "";
+    var t;
+    var a_href_value;
+    return {
+      c: function c() {
+        li = element("li");
+        a = element("a");
+        t = text(t_value);
+        attr(a, "href", a_href_value = "/u/" +
+        /*handle*/
+        ctx[0] + "/posts/" +
+        /*post*/
+        ctx[12][0].url);
+      },
+      m: function m(target, anchor) {
+        insert(target, li, anchor);
+        append(li, a);
+        append(a, t);
+      },
+      p: function p(ctx, dirty) {
+        if (dirty &
+        /*requests*/
+        4 && t_value !== (t_value =
+        /*post*/
+        ctx[12][1].title + "")) set_data(t, t_value);
+
+        if (dirty &
+        /*handle, requests*/
+        5 && a_href_value !== (a_href_value = "/u/" +
+        /*handle*/
+        ctx[0] + "/posts/" +
+        /*post*/
+        ctx[12][0].url)) {
+          attr(a, "href", a_href_value);
+        }
+      },
+      d: function d(detaching) {
+        if (detaching) detach(li);
+      }
+    };
+  } // (90:4) {#if galleryRequest}
+
+
+  function create_if_block_1$7(ctx) {
+    var div;
+    var promise;
+    var current;
+    var info = {
+      ctx: ctx,
+      current: null,
+      token: null,
+      pending: create_pending_block_1$1,
+      then: create_then_block_1$1,
+      "catch": create_catch_block$9,
+      value: 11,
+      error: 10,
+      blocks: [,,,]
+    };
+    handle_promise(promise =
+    /*galleryRequest*/
+    ctx[3], info);
+    return {
+      c: function c() {
+        div = element("div");
+        info.block.c();
+        attr(div, "class", "first-gallery svelte-1jplw8y");
+      },
+      m: function m(target, anchor) {
+        insert(target, div, anchor);
+        info.block.m(div, info.anchor = null);
+
+        info.mount = function () {
+          return div;
+        };
+
+        info.anchor = null;
+        current = true;
+      },
+      p: function p(new_ctx, dirty) {
+        ctx = new_ctx;
+        info.ctx = ctx;
+        if (dirty &
+        /*galleryRequest*/
+        8 && promise !== (promise =
+        /*galleryRequest*/
+        ctx[3]) && handle_promise(promise, info)) ;else {
+          var child_ctx = ctx.slice();
+          child_ctx[11] = info.resolved;
+          info.block.p(child_ctx, dirty);
+        }
+      },
+      i: function i(local) {
+        if (current) return;
+        transition_in(info.block);
+        current = true;
+      },
+      o: function o(local) {
+        for (var i = 0; i < 3; i += 1) {
+          var _block10 = info.blocks[i];
+          transition_out(_block10);
+        }
+
+        current = false;
+      },
+      d: function d(detaching) {
+        if (detaching) detach(div);
+        info.block.d();
+        info.token = null;
+        info = null;
+      }
+    };
+  } // (97:8) {:catch err}
+
+
+  function create_catch_block$9(ctx) {
+    var div;
+    var t0;
+    var p;
+    var t1;
+    var t2_value =
+    /*err*/
+    ctx[10].message + "";
+    var t2;
+    var current;
+    var alert = new Alert({
+      props: {
+        color: "#F80",
+        size:
+        /*iconSize*/
+        ctx[1]
+      }
+    });
+    return {
+      c: function c() {
+        div = element("div");
+        create_component(alert.$$.fragment);
+        t0 = space();
+        p = element("p");
+        t1 = text("Error: ");
+        t2 = text(t2_value);
+        attr(div, "class", "error svelte-1jplw8y");
+      },
+      m: function m(target, anchor) {
+        insert(target, div, anchor);
+        mount_component(alert, div, null);
+        append(div, t0);
+        append(div, p);
+        append(p, t1);
+        append(p, t2);
+        current = true;
+      },
+      p: function p(ctx, dirty) {
+        var alert_changes = {};
+        if (dirty &
+        /*iconSize*/
+        2) alert_changes.size =
+        /*iconSize*/
+        ctx[1];
+        alert.$set(alert_changes);
+        if ((!current || dirty &
+        /*galleryRequest*/
+        8) && t2_value !== (t2_value =
+        /*err*/
+        ctx[10].message + "")) set_data(t2, t2_value);
+      },
+      i: function i(local) {
+        if (current) return;
+        transition_in(alert.$$.fragment, local);
+        current = true;
+      },
+      o: function o(local) {
+        transition_out(alert.$$.fragment, local);
+        current = false;
+      },
+      d: function d(detaching) {
+        if (detaching) detach(div);
+        destroy_component(alert);
+      }
+    };
+  } // (94:8) {:then items}
+
+
+  function create_then_block_1$1(ctx) {
+    var h2;
+    var t0_value =
+    /*firstGallery*/
+    ctx[4][1].name + "";
+    var t0;
+    var t1;
+    var current;
+    var masonry = new Masonry_1({
+      props: {
+        items:
+        /*masonryItems*/
+        ctx[5](
+        /*items*/
+        ctx[11])
+      }
+    });
+    return {
+      c: function c() {
+        h2 = element("h2");
+        t0 = text(t0_value);
+        t1 = space();
+        create_component(masonry.$$.fragment);
+      },
+      m: function m(target, anchor) {
+        insert(target, h2, anchor);
+        append(h2, t0);
+        insert(target, t1, anchor);
+        mount_component(masonry, target, anchor);
+        current = true;
+      },
+      p: function p(ctx, dirty) {
+        if ((!current || dirty &
+        /*firstGallery*/
+        16) && t0_value !== (t0_value =
+        /*firstGallery*/
+        ctx[4][1].name + "")) set_data(t0, t0_value);
+        var masonry_changes = {};
+        if (dirty &
+        /*galleryRequest*/
+        8) masonry_changes.items =
+        /*masonryItems*/
+        ctx[5](
+        /*items*/
+        ctx[11]);
+        masonry.$set(masonry_changes);
+      },
+      i: function i(local) {
+        if (current) return;
+        transition_in(masonry.$$.fragment, local);
+        current = true;
+      },
+      o: function o(local) {
+        transition_out(masonry.$$.fragment, local);
+        current = false;
+      },
+      d: function d(detaching) {
+        if (detaching) detach(h2);
+        if (detaching) detach(t1);
+        destroy_component(masonry, detaching);
+      }
+    };
+  } // (92:31)          <Circle color="var(--accent-color-1)" size={iconSize}
+
+
+  function create_pending_block_1$1(ctx) {
+    var current;
+    var circle = new Circle({
+      props: {
+        color: "var(--accent-color-1)",
+        size:
+        /*iconSize*/
+        ctx[1]
+      }
+    });
+    return {
+      c: function c() {
+        create_component(circle.$$.fragment);
+      },
+      m: function m(target, anchor) {
+        mount_component(circle, target, anchor);
+        current = true;
+      },
+      p: function p(ctx, dirty) {
+        var circle_changes = {};
+        if (dirty &
+        /*iconSize*/
+        2) circle_changes.size =
+        /*iconSize*/
+        ctx[1];
+        circle.$set(circle_changes);
+      },
+      i: function i(local) {
+        if (current) return;
+        transition_in(circle.$$.fragment, local);
+        current = true;
+      },
+      o: function o(local) {
+        transition_out(circle.$$.fragment, local);
+        current = false;
+      },
+      d: function d(detaching) {
+        destroy_component(circle, detaching);
+      }
+    };
+  } // (68:17)  <Circle color="var(--accent-color-1)" size={iconSize}
+
+
+  function create_pending_block$9(ctx) {
+    var current;
+    var circle = new Circle({
+      props: {
+        color: "var(--accent-color-1)",
+        size:
+        /*iconSize*/
+        ctx[1]
+      }
+    });
+    return {
+      c: function c() {
+        create_component(circle.$$.fragment);
+      },
+      m: function m(target, anchor) {
+        mount_component(circle, target, anchor);
+        current = true;
+      },
+      p: function p(ctx, dirty) {
+        var circle_changes = {};
+        if (dirty &
+        /*iconSize*/
+        2) circle_changes.size =
+        /*iconSize*/
+        ctx[1];
+        circle.$set(circle_changes);
+      },
+      i: function i(local) {
+        if (current) return;
+        transition_in(circle.$$.fragment, local);
+        current = true;
+      },
+      o: function o(local) {
+        transition_out(circle.$$.fragment, local);
+        current = false;
+      },
+      d: function d(detaching) {
+        destroy_component(circle, detaching);
+      }
+    };
+  }
+
+  function create_fragment$q(ctx) {
+    var if_block_anchor;
+    var current;
+    var if_block =
+    /*requests*/
+    ctx[2] && create_if_block$c(ctx);
+    return {
+      c: function c() {
+        if (if_block) if_block.c();
+        if_block_anchor = empty();
+      },
+      m: function m(target, anchor) {
+        if (if_block) if_block.m(target, anchor);
+        insert(target, if_block_anchor, anchor);
+        current = true;
+      },
+      p: function p(ctx, _ref68) {
+        var _ref69 = _slicedToArray(_ref68, 1),
+            dirty = _ref69[0];
+
+        if (
+        /*requests*/
+        ctx[2]) {
+          if (if_block) {
+            if_block.p(ctx, dirty);
+            transition_in(if_block, 1);
+          } else {
+            if_block = create_if_block$c(ctx);
+            if_block.c();
+            transition_in(if_block, 1);
+            if_block.m(if_block_anchor.parentNode, if_block_anchor);
+          }
+        } else if (if_block) {
+          group_outros();
+          transition_out(if_block, 1, 1, function () {
+            if_block = null;
+          });
+          check_outros();
+        }
+      },
+      i: function i(local) {
+        if (current) return;
+        transition_in(if_block);
+        current = true;
+      },
+      o: function o(local) {
+        transition_out(if_block);
+        current = false;
+      },
+      d: function d(detaching) {
+        if (if_block) if_block.d(detaching);
+        if (detaching) detach(if_block_anchor);
+      }
+    };
+  }
+
+  var api$6 = "http://localhost:8080/api/v1";
+
+  function instance$q($$self, $$props, $$invalidate) {
+    var handle = $$props.handle;
+    var _$$props$iconSize3 = $$props.iconSize,
+        iconSize = _$$props$iconSize3 === void 0 ? 24 : _$$props$iconSize3;
+    var requests;
+    var galleryRequest;
+    var galleryUrl;
+    var firstGallery;
+
+    function masonryItems(items) {
+      return items.map(function (item) {
+        var name = item[2].name;
+        var description = item[2].name;
+        var src = "/u/".concat(handle, "/galleries/").concat(galleryUrl, "/items/").concat(item[3].url);
+        return {
+          name: name,
+          description: description,
+          src: src
+        };
+      });
+    }
+
+    $$self.$set = function ($$props) {
+      if ("handle" in $$props) $$invalidate(0, handle = $$props.handle);
+      if ("iconSize" in $$props) $$invalidate(1, iconSize = $$props.iconSize);
+    };
+
+    $$self.$$.update = function () {
+      if ($$self.$$.dirty &
+      /*handle, galleryUrl*/
+      65) {
+        if (handle) {
+          $$invalidate(2, requests = Promise.all([fetch("".concat(api$6, "/u/").concat(handle, "/galleries")).then(function (res) {
+            return res.json();
+          }), fetch("".concat(api$6, "/u/").concat(handle, "/posts")).then(function (res) {
+            return res.json();
+          })]).then(function (_ref70) {
+            var _ref71 = _slicedToArray(_ref70, 2),
+                galleries = _ref71[0],
+                posts = _ref71[1];
+
+            var g0s = galleries.filter(function (g0) {
+              return g0[0].url;
+            });
+            var p0s = posts.filter(function (g0) {
+              return g0[0].url;
+            });
+
+            if (g0s.length > 0) {
+              $$invalidate(6, galleryUrl = g0s[0][0].url);
+              $$invalidate(4, firstGallery = g0s[0]);
+              $$invalidate(3, galleryRequest = fetch("".concat(api$6, "/u/").concat(handle, "/galleries/").concat(galleryUrl, "/items")).then(function (res) {
+                return res.json();
+              }));
+            }
+
+            return [g0s, p0s];
+          }));
+        }
+      }
+    };
+
+    return [handle, iconSize, requests, galleryRequest, firstGallery, masonryItems];
+  }
+
+  var Profile = /*#__PURE__*/function (_SvelteComponent25) {
+    _inherits(Profile, _SvelteComponent25);
+
+    var _super28 = _createSuper(Profile);
+
+    function Profile(options) {
+      var _this29;
+
+      _classCallCheck(this, Profile);
+
+      _this29 = _super28.call(this);
+      init(_assertThisInitialized(_this29), options, instance$q, create_fragment$q, safe_not_equal, {
+        handle: 0,
+        iconSize: 1
+      });
+      return _this29;
+    }
+
+    return Profile;
   }(SvelteComponent);
 
   var main = {
@@ -26257,6 +29884,12 @@ var basicweb_gallery_app_client = function () {
     },
     tags: function tags(target, props) {
       return new Tags({
+        target: target,
+        props: props
+      });
+    },
+    profile: function profile(target, props) {
+      return new Profile({
         target: target,
         props: props
       });

@@ -1,0 +1,11 @@
+{{~#*inline "content"~}}
+<div class="fill-main" id="profile"></div>
+<script type="text/javascript" src="/js/basicweb_gallery_app_client.min.js"></script>
+<script type="text/javascript">
+    basicweb_gallery_app_client
+    .profile( document.getElementById("profile"), {
+        handle : {{{handle}}}
+    });
+</script>
+{{~/inline~}}
+{{~> (parent)~}}

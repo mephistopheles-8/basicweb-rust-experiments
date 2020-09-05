@@ -1,0 +1,112 @@
+<script>
+    import Alert from "svelte-material-icons/Alert.svelte";
+    import { Circle } from 'svelte-loading-spinners';
+    import Masonry from "./Masonry.html";
+
+    const api = "http://localhost:8080/api/v1";
+
+    export let handle;
+    export let iconSize = 24;
+    
+    let requests;
+    let galleryRequest;
+    let galleryUrl;
+    let firstGallery;
+
+    $: if(handle) {
+        requests = Promise.all([
+            fetch(`${api}/u/${handle}/galleries`)
+            .then( res => res.json() )
+          , fetch(`${api}/u/${handle}/posts`)
+            .then( res => res.json() )
+        ]).then(([galleries,posts]) => {
+            let g0s = galleries.filter( g0 => g0[0].url );
+            let p0s = posts.filter( g0 => g0[0].url );
+
+            if( g0s.length > 0 ) {
+                galleryUrl = g0s[0][0].url;
+                firstGallery = g0s[0];
+                galleryRequest 
+                  = fetch(`${api}/u/${handle}/galleries/${galleryUrl}/items`)
+                    .then( res => res.json() );
+            }
+
+            return [g0s, p0s];
+        });
+    }
+    function masonryItems(items) {
+        return items.map( item => {
+            let name = item[2].name;
+            let description = item[2].name;
+            let src = `/u/${handle}/galleries/${galleryUrl}/items/${item[3].url}`;
+            return {name,description,src};
+        });
+    }
+</script>
+<style>
+    .error {
+        display:flex;
+        color:#800;
+    }
+    .profile-main {
+        display: flex;
+    }
+    .first-gallery, .left-sidebar {
+        padding: 0.5rem 1rem;
+    }
+    .first-gallery{
+        flex-grow: 1;
+        background: var(--bg-color-1);
+        color: var(--fg-color-1);
+        min-height: 80vh;
+    }
+    .left-sidebar {
+        width: 16rem;
+    }
+</style>
+{#if requests}
+{#await requests}
+<Circle color="var(--accent-color-1)" size={iconSize} />
+{:then [galleries,posts]}
+<div class="profile-main">
+    <div class="left-sidebar">
+        {#if galleries.length > 0}
+        <h3>Galleries</h3>
+        <ul>
+            {#each galleries as gallery}
+            <li><a href="/u/{handle}/galleries/{gallery[0].url}">{gallery[1].name}</a></li>
+            {/each}
+        </ul>
+        {/if}
+        {#if posts.length > 0}
+        <h3>Posts</h3>
+        <ul>
+            {#each posts as post}
+            <li><a href="/u/{handle}/posts/{post[0].url}">{post[1].title}</a></li>
+            {/each}
+        </ul>
+        {/if}
+    </div>
+    {#if galleryRequest}
+    <div class="first-gallery">
+        {#await galleryRequest}
+        <Circle color="var(--accent-color-1)" size={iconSize} />
+        {:then items}
+        <h2>{firstGallery[1].name}</h2>
+        <Masonry items={masonryItems(items)} />
+        {:catch err}
+        <div class="error">
+            <Alert color="#F80" size={iconSize} />
+            <p>Error: {err.message}</p>
+        </div>
+        {/await}
+    </div>
+{/if}
+</div>
+{:catch err}
+<div class="error">
+    <Alert color="#F80" size={iconSize} />
+    <p>Error: {err.message}</p>
+</div>
+{/await}
+{/if}

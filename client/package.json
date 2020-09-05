@@ -18,6 +18,7 @@
     "@rollup/plugin-node-resolve": "^7.1.1",
     "babel-plugin-transform-remove-console": "^6.9.4",
     "commonmark": "^0.29.1",
+    "masonry-layout": "^4.2.2",
     "promise-polyfill": "^8.1.0",
     "rollup": "^2.1.0",
     "rollup-plugin-polyfill": "^2.0.1",

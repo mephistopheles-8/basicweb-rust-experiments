@@ -3,16 +3,18 @@ extern crate diesel;
 #[macro_use]
 extern crate serde_json;
 
-use handlebars::Handlebars;
-use actix_web::{web,HttpResponse};
-use actix_identity::Identity;
-
 pub mod db;
 pub mod schema;
 pub mod models;
 pub mod util;
 pub mod actions;
 pub mod routes;
+
+use handlebars::Handlebars;
+use actix_web::{web,HttpResponse};
+use actix_identity::Identity;
+use db::DbPool;
+
 
 pub async fn index(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse {
     let data = json!({
@@ -23,6 +25,36 @@ pub async fn index(id: Identity, hb: web::Data<Handlebars<'_>>) -> HttpResponse 
     let body = hb.render("content/index", &data).unwrap();
 
     HttpResponse::Ok().body(body)
+}
+
+pub async fn profile(
+    id: Identity,
+    path: web::Path<String>,
+    hb: web::Data<Handlebars<'_>>,
+    pool: web::Data<DbPool>,
+) -> Result<HttpResponse, actix_web::Error> {
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let user = web::block(move || {
+        actions::user::user_by_handle(&path,&conn)
+    }).await
+      .map_err(|e| {
+        eprintln!("{}", e);
+        HttpResponse::InternalServerError().finish()
+      })?;
+   
+    if let Some(user) = user {
+        let data = json!({
+            "title": "Welcome"
+          , "parent" : "main"
+          , "logged_in": id.identity().is_some()
+          , "handle" : serde_json::ser::to_string(&user.handle)?
+        });
+        let body = hb.render("content/profile", &data).unwrap();
+
+        Ok(HttpResponse::Ok().body(body))
+    }else{
+        Ok(HttpResponse::NotFound().finish())
+    }
 }
 
 pub fn min_api( cfg: &mut web::ServiceConfig ) {
@@ -117,6 +149,9 @@ pub fn min_api( cfg: &mut web::ServiceConfig ) {
       )
       .service(web::resource("/user/posts/{uuid}")
           .route(web::get().to(routes::user_post::user_post_update_form))
+      )
+      .service(web::resource("/u/{handle}")
+          .route(web::get().to(profile))
       )
       .service(web::resource("/u/{handle}/galleries/{galleryUrl}/items/{itemUrl}")
           .route(web::get().to(routes::user_gallery_item::user_gallery_item_serve_by_url))

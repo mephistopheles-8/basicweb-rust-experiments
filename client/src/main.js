@@ -9,6 +9,7 @@ import PostMarkdown from "./PostMarkdown.html"
 import UserPost from "./UserPost.html"
 import UserPostList from "./UserPostList.html"
 import Tags from "./Tags.html"
+import Profile from "./Profile.html"
 
 export default {
     gallery( target, props ){ 
@@ -43,5 +44,8 @@ export default {
     },
     tags( target, props ){ 
         return  new Tags({target,props});
+    },
+    profile( target, props ){ 
+        return  new Profile({target,props});
     }
 }
