@@ -1,6 +1,7 @@
 
 use actix_identity::Identity;
 use actix_web::{web, HttpResponse};
+use actix_rt::Arbiter;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
 
@@ -8,6 +9,7 @@ use handlebars::Handlebars;
 use serde::{Deserialize, Serialize};
 use chrono::NaiveDateTime;
 use uuid::Uuid;
+use futures::future::FutureExt; 
 
 use crate::models;
 use crate::db::DbPool;
@@ -235,7 +237,6 @@ pub async fn register_form(
     Ok(HttpResponse::Ok().body(body))
 }
 
-
 pub async fn register_action(
     id: Identity
   , pool: web::Data<DbPool>
@@ -266,14 +267,18 @@ pub async fn register_action(
 
         let sess = UserSession::Partial(uuid);
 
-        // FIXME: protect against timing attacks
-        web::block(move || {
-            send_validation_email(user,hb,VerificationEmailType::VerifyAccount)
-        }).await
-          .map_err(|e| {
-                eprintln!("{}", e);
-                HttpResponse::InternalServerError().finish()
-           })?;
+        // This masks the request time, but it does not 
+        // report errors!
+        Arbiter::spawn_fn(|| {
+            web::block(move || {
+                send_validation_email(user,hb,VerificationEmailType::VerifyAccount)
+            }).map(|res| {
+                match res {
+                   Err(e) => eprintln!("{}", e),
+                   _ => (),
+                }
+            })
+        });
 
         id.remember(serde_json::to_string(&sess)?);
 
@@ -769,40 +774,45 @@ pub async fn recover_password_action(
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
-    if email_is_valid( &data.email ) { 
-        web::block(move || {
-            let is_acct = 
-                user_update_code_by_email(
-                    &data.email, &conn
-                  ).map_err(|e| {
-                      eprintln!("{}", e);
-                      RecoverPasswordError::DbError
-                  })?;
-        
-            // Watch out for timing attacks.  They could know
-            // when they found a user by request duration
-            // ALSO: this blocks a long time before erroring out!
-            if is_acct {
-                let user 
-                    = user_by_email( &data.email, &conn )
-                       .map_err(|e| {
-                           eprintln!("{}", e);
-                           RecoverPasswordError::DbError
-                       })?.unwrap();
+    if email_is_valid( &data.email ) {
 
-                send_validation_email(user,hb,VerificationEmailType::ForgotPassword)
-                    .map_err(|e| {
-                        eprintln!("{}", e);
-                        RecoverPasswordError::EmailError
-                    })?;
-            }
-            Ok::<(),RecoverPasswordError>(()) 
-        }).await
-            .map_err(|e| {
-                eprintln!("{}", e);
-                HttpResponse::InternalServerError().finish()
-            })?;
+        // This masks the request time, but it does not 
+        // report errors!
+        Arbiter::spawn_fn(|| {
+            web::block(move || {
+                let is_acct = 
+                    user_update_code_by_email(
+                        &data.email, &conn
+                      ).map_err(|e| {
+                          eprintln!("{}", e);
+                          RecoverPasswordError::DbError
+                      })?;
+            
+                // Watch out for timing attacks.  They could know
+                // when they found a user by request duration
+                // ALSO: this blocks a long time before erroring out!
+                if is_acct {
+                    let user 
+                        = user_by_email( &data.email, &conn )
+                           .map_err(|e| {
+                               eprintln!("{}", e);
+                               RecoverPasswordError::DbError
+                           })?.unwrap();
 
+                    send_validation_email(user,hb,VerificationEmailType::ForgotPassword)
+                        .map_err(|e| {
+                            eprintln!("{}", e);
+                            RecoverPasswordError::EmailError
+                        })?;
+                }
+                Ok::<(),RecoverPasswordError>(()) 
+            }).map(|res| {
+                match res {
+                   Err(e) => eprintln!("{}", e),
+                   _ => (),
+                }
+            })
+        });
 
         Ok(HttpResponse::Found().header("location", "/recover-password").finish())
     } else {
