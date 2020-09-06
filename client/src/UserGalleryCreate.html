@@ -38,7 +38,7 @@
       , permissions : 0
       , ord : 0
     };
- 
+
     let tags = [];
     let fileInputElm;
 
@@ -60,6 +60,8 @@
                 }).then( res => res.json() )
                   .then( id => {
                       galleryId = id;
+                      // Set a default permissions scheme once the gallery is added
+                      userItemInfo.permissions = userGalleryInfo.permissions;
                       return fetch(
                         `${api}/galleries/${id}/tags`, {
                             method : "POST"
@@ -166,6 +168,9 @@
             itemInfo.name = "";
             itemInfo.description = "";
             userItemInfo.url = "";
+            /// If they change permissions, it will persist to other images.
+            /// Uncomment this line to change this behaviour
+            // userItemInfo.permissions = userGalleryInfo.permissions;
             itemInfo.files = [];
             fileInputElm.value = "";
             itemInfo.kind = 0;
@@ -246,6 +251,10 @@
         <div>
             <label for="gallery-item-url-{uniqueId}">URL</label> 
             <input id="gallery-item-url-{uniqueId}" type="text" bind:value={userItemInfo.url}>
+        </div>
+        <div>
+            <label for="gallery-item-permissions-{uniqueId}">Permissions</label>
+            <Permissions id="gallery-item-permissions-{uniqueId}" bind:value={userItemInfo.permissions} />
         </div>
         <div>
             <label for="gallery-item-file-{uniqueId}">File</label> 

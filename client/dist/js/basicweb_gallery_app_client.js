@@ -3535,16 +3535,16 @@ var basicweb_gallery_app_client = function () {
 
   function get_each_context$2(ctx, list, i) {
     var child_ctx = ctx.slice();
-    child_ctx[24] = list[i];
+    child_ctx[25] = list[i];
     return child_ctx;
-  } // (209:8) {:catch err}
+  } // (214:8) {:catch err}
 
 
   function create_catch_block$1(ctx) {
     var p;
     var t_value =
     /*err*/
-    ctx[27].message + "";
+    ctx[28].message + "";
     var t;
     return {
       c: function c() {
@@ -3560,7 +3560,7 @@ var basicweb_gallery_app_client = function () {
         /*galleryResult*/
         4 && t_value !== (t_value =
         /*err*/
-        ctx[27].message + "")) set_data(t, t_value);
+        ctx[28].message + "")) set_data(t, t_value);
       },
       i: noop$1,
       o: noop$1,
@@ -3568,7 +3568,7 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(p);
       }
     };
-  } // (183:8) {:then}
+  } // (188:8) {:then}
 
 
   function create_then_block$1(ctx) {
@@ -3622,7 +3622,7 @@ var basicweb_gallery_app_client = function () {
     var tags_1_props = {
       id: "gallery-tags-" +
       /*uniqueId*/
-      ctx[23]
+      ctx[24]
     };
 
     if (
@@ -3648,7 +3648,7 @@ var basicweb_gallery_app_client = function () {
     var permissions_props = {
       id: "gallery-permissions-" +
       /*uniqueId*/
-      ctx[23]
+      ctx[24]
     };
 
     if (
@@ -3711,31 +3711,31 @@ var basicweb_gallery_app_client = function () {
         if_block_anchor = empty();
         attr(label0, "for", label0_for_value = "gallery-name-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input0, "id", input0_id_value = "gallery-name-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input0, "type", "text");
         attr(label1, "for", label1_for_value = "gallery-description-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input1, "id", input1_id_value = "gallery-description-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input1, "type", "text");
         attr(label2, "for", label2_for_value = "gallery-url-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input2, "id", input2_id_value = "gallery-url-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input2, "type", "text");
         attr(label3, "for", label3_for_value = "gallery-tags-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(label4, "for", label4_for_value = "gallery-permissions-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
       },
       m: function m(target, anchor, remount) {
         insert(target, div0, anchor);
@@ -3792,17 +3792,17 @@ var basicweb_gallery_app_client = function () {
       p: function p(ctx, dirty) {
         if (!current || dirty &
         /*uniqueId*/
-        8388608 && label0_for_value !== (label0_for_value = "gallery-name-" +
+        16777216 && label0_for_value !== (label0_for_value = "gallery-name-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(label0, "for", label0_for_value);
         }
 
         if (!current || dirty &
         /*uniqueId*/
-        8388608 && input0_id_value !== (input0_id_value = "gallery-name-" +
+        16777216 && input0_id_value !== (input0_id_value = "gallery-name-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(input0, "id", input0_id_value);
         }
 
@@ -3818,17 +3818,17 @@ var basicweb_gallery_app_client = function () {
 
         if (!current || dirty &
         /*uniqueId*/
-        8388608 && label1_for_value !== (label1_for_value = "gallery-description-" +
+        16777216 && label1_for_value !== (label1_for_value = "gallery-description-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(label1, "for", label1_for_value);
         }
 
         if (!current || dirty &
         /*uniqueId*/
-        8388608 && input1_id_value !== (input1_id_value = "gallery-description-" +
+        16777216 && input1_id_value !== (input1_id_value = "gallery-description-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(input1, "id", input1_id_value);
         }
 
@@ -3844,17 +3844,17 @@ var basicweb_gallery_app_client = function () {
 
         if (!current || dirty &
         /*uniqueId*/
-        8388608 && label2_for_value !== (label2_for_value = "gallery-url-" +
+        16777216 && label2_for_value !== (label2_for_value = "gallery-url-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(label2, "for", label2_for_value);
         }
 
         if (!current || dirty &
         /*uniqueId*/
-        8388608 && input2_id_value !== (input2_id_value = "gallery-url-" +
+        16777216 && input2_id_value !== (input2_id_value = "gallery-url-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(input2, "id", input2_id_value);
         }
 
@@ -3870,18 +3870,18 @@ var basicweb_gallery_app_client = function () {
 
         if (!current || dirty &
         /*uniqueId*/
-        8388608 && label3_for_value !== (label3_for_value = "gallery-tags-" +
+        16777216 && label3_for_value !== (label3_for_value = "gallery-tags-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(label3, "for", label3_for_value);
         }
 
         var tags_1_changes = {};
         if (dirty &
         /*uniqueId*/
-        8388608) tags_1_changes.id = "gallery-tags-" +
+        16777216) tags_1_changes.id = "gallery-tags-" +
         /*uniqueId*/
-        ctx[23];
+        ctx[24];
 
         if (!updating_tags && dirty &
         /*tags*/
@@ -3899,18 +3899,18 @@ var basicweb_gallery_app_client = function () {
 
         if (!current || dirty &
         /*uniqueId*/
-        8388608 && label4_for_value !== (label4_for_value = "gallery-permissions-" +
+        16777216 && label4_for_value !== (label4_for_value = "gallery-permissions-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(label4, "for", label4_for_value);
         }
 
         var permissions_changes = {};
         if (dirty &
         /*uniqueId*/
-        8388608) permissions_changes.id = "gallery-permissions-" +
+        16777216) permissions_changes.id = "gallery-permissions-" +
         /*uniqueId*/
-        ctx[23];
+        ctx[24];
 
         if (!updating_value && dirty &
         /*userGalleryInfo*/
@@ -3967,7 +3967,7 @@ var basicweb_gallery_app_client = function () {
         run_all(dispose);
       }
     };
-  } // (206:8) {:else}
+  } // (211:8) {:else}
 
 
   function create_else_block_1$1(ctx) {
@@ -4006,7 +4006,7 @@ var basicweb_gallery_app_client = function () {
         dispose();
       }
     };
-  } // (204:8) {#if galleryId}
+  } // (209:8) {#if galleryId}
 
 
   function create_if_block_5$1(ctx) {
@@ -4045,7 +4045,7 @@ var basicweb_gallery_app_client = function () {
         dispose();
       }
     };
-  } // (181:30)          <p>Submitting...</p>         {:then}
+  } // (186:30)          <p>Submitting...</p>         {:then}
 
 
   function create_pending_block$1(ctx) {
@@ -4065,7 +4065,7 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(p);
       }
     };
-  } // (213:4) {#if galleryId}
+  } // (218:4) {#if galleryId}
 
 
   function create_if_block$1(ctx) {
@@ -4102,18 +4102,52 @@ var basicweb_gallery_app_client = function () {
     var t12;
     var label3_for_value;
     var t13;
+    var updating_value;
+    var t14;
+    var div4;
+    var label4;
+    var t15;
+    var label4_for_value;
+    var t16;
     var input3;
     var input3_id_value;
-    var t14;
+    var t17;
     var button;
-    var t15;
+    var t18;
     var button_disabled_value;
+    var current;
     var dispose;
     var if_block =
     /*items*/
     ctx[1] &&
     /*items*/
     ctx[1].length > 0 && create_if_block_1$1(ctx);
+
+    function permissions_value_binding_1(value) {
+      /*permissions_value_binding_1*/
+      ctx[21].call(null, value);
+    }
+
+    var permissions_props = {
+      id: "gallery-item-permissions-" +
+      /*uniqueId*/
+      ctx[24]
+    };
+
+    if (
+    /*userItemInfo*/
+    ctx[6].permissions !== void 0) {
+      permissions_props.value =
+      /*userItemInfo*/
+      ctx[6].permissions;
+    }
+
+    var permissions = new Permissions({
+      props: permissions_props
+    });
+    binding_callbacks.push(function () {
+      return bind$1(permissions, "value", permissions_value_binding_1);
+    });
     return {
       c: function c() {
         if (if_block) if_block.c();
@@ -4142,39 +4176,48 @@ var basicweb_gallery_app_client = function () {
         t11 = space();
         div3 = element("div");
         label3 = element("label");
-        t12 = text("File");
+        t12 = text("Permissions");
         t13 = space();
-        input3 = element("input");
+        create_component(permissions.$$.fragment);
         t14 = space();
+        div4 = element("div");
+        label4 = element("label");
+        t15 = text("File");
+        t16 = space();
+        input3 = element("input");
+        t17 = space();
         button = element("button");
-        t15 = text("Add Item");
+        t18 = text("Add Item");
         attr(label0, "for", label0_for_value = "gallery-item-name-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input0, "id", input0_id_value = "gallery-item-name-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input0, "type", "text");
         attr(label1, "for", label1_for_value = "gallery-item-description-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input1, "id", input1_id_value = "gallery-item-description-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input1, "type", "text");
         attr(label2, "for", label2_for_value = "gallery-item-url-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input2, "id", input2_id_value = "gallery-item-url-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input2, "type", "text");
-        attr(label3, "for", label3_for_value = "gallery-item-file-" +
+        attr(label3, "for", label3_for_value = "gallery-item-permissions-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
+        attr(label4, "for", label4_for_value = "gallery-item-file-" +
+        /*uniqueId*/
+        ctx[24]);
         attr(input3, "id", input3_id_value = "gallery-item-file-" +
         /*uniqueId*/
-        ctx[23]);
+        ctx[24]);
         attr(input3, "type", "file");
         attr(button, "type", "button");
         button.disabled = button_disabled_value = !
@@ -4220,13 +4263,20 @@ var basicweb_gallery_app_client = function () {
         append(div3, label3);
         append(label3, t12);
         append(div3, t13);
-        append(div3, input3);
+        mount_component(permissions, div3, null);
+        append(fieldset, t14);
+        append(fieldset, div4);
+        append(div4, label4);
+        append(label4, t15);
+        append(div4, t16);
+        append(div4, input3);
         /*input3_binding*/
 
-        ctx[21](input3);
-        append(fieldset, t14);
+        ctx[22](input3);
+        append(fieldset, t17);
         append(fieldset, button);
-        append(button, t15);
+        append(button, t18);
+        current = true;
         if (remount) run_all(dispose);
         dispose = [listen(input0, "input",
         /*input0_input_handler_1*/
@@ -4236,7 +4286,7 @@ var basicweb_gallery_app_client = function () {
         /*input2_input_handler_1*/
         ctx[20]), listen(input3, "change",
         /*input3_change_handler*/
-        ctx[22]), listen(button, "click",
+        ctx[23]), listen(button, "click",
         /*addItem*/
         ctx[12])];
       },
@@ -4258,19 +4308,19 @@ var basicweb_gallery_app_client = function () {
           if_block = null;
         }
 
-        if (dirty &
+        if (!current || dirty &
         /*uniqueId*/
-        8388608 && label0_for_value !== (label0_for_value = "gallery-item-name-" +
+        16777216 && label0_for_value !== (label0_for_value = "gallery-item-name-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(label0, "for", label0_for_value);
         }
 
-        if (dirty &
+        if (!current || dirty &
         /*uniqueId*/
-        8388608 && input0_id_value !== (input0_id_value = "gallery-item-name-" +
+        16777216 && input0_id_value !== (input0_id_value = "gallery-item-name-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(input0, "id", input0_id_value);
         }
 
@@ -4284,19 +4334,19 @@ var basicweb_gallery_app_client = function () {
           ctx[5].name);
         }
 
-        if (dirty &
+        if (!current || dirty &
         /*uniqueId*/
-        8388608 && label1_for_value !== (label1_for_value = "gallery-item-description-" +
+        16777216 && label1_for_value !== (label1_for_value = "gallery-item-description-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(label1, "for", label1_for_value);
         }
 
-        if (dirty &
+        if (!current || dirty &
         /*uniqueId*/
-        8388608 && input1_id_value !== (input1_id_value = "gallery-item-description-" +
+        16777216 && input1_id_value !== (input1_id_value = "gallery-item-description-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(input1, "id", input1_id_value);
         }
 
@@ -4310,19 +4360,19 @@ var basicweb_gallery_app_client = function () {
           ctx[5].description);
         }
 
-        if (dirty &
+        if (!current || dirty &
         /*uniqueId*/
-        8388608 && label2_for_value !== (label2_for_value = "gallery-item-url-" +
+        16777216 && label2_for_value !== (label2_for_value = "gallery-item-url-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(label2, "for", label2_for_value);
         }
 
-        if (dirty &
+        if (!current || dirty &
         /*uniqueId*/
-        8388608 && input2_id_value !== (input2_id_value = "gallery-item-url-" +
+        16777216 && input2_id_value !== (input2_id_value = "gallery-item-url-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(input2, "id", input2_id_value);
         }
 
@@ -4336,23 +4386,52 @@ var basicweb_gallery_app_client = function () {
           ctx[6].url);
         }
 
-        if (dirty &
+        if (!current || dirty &
         /*uniqueId*/
-        8388608 && label3_for_value !== (label3_for_value = "gallery-item-file-" +
+        16777216 && label3_for_value !== (label3_for_value = "gallery-item-permissions-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24])) {
           attr(label3, "for", label3_for_value);
         }
 
+        var permissions_changes = {};
         if (dirty &
         /*uniqueId*/
-        8388608 && input3_id_value !== (input3_id_value = "gallery-item-file-" +
+        16777216) permissions_changes.id = "gallery-item-permissions-" +
         /*uniqueId*/
-        ctx[23])) {
+        ctx[24];
+
+        if (!updating_value && dirty &
+        /*userItemInfo*/
+        64) {
+          updating_value = true;
+          permissions_changes.value =
+          /*userItemInfo*/
+          ctx[6].permissions;
+          add_flush_callback(function () {
+            return updating_value = false;
+          });
+        }
+
+        permissions.$set(permissions_changes);
+
+        if (!current || dirty &
+        /*uniqueId*/
+        16777216 && label4_for_value !== (label4_for_value = "gallery-item-file-" +
+        /*uniqueId*/
+        ctx[24])) {
+          attr(label4, "for", label4_for_value);
+        }
+
+        if (!current || dirty &
+        /*uniqueId*/
+        16777216 && input3_id_value !== (input3_id_value = "gallery-item-file-" +
+        /*uniqueId*/
+        ctx[24])) {
           attr(input3, "id", input3_id_value);
         }
 
-        if (dirty &
+        if (!current || dirty &
         /*itemInfo*/
         32 && button_disabled_value !== (button_disabled_value = !
         /*itemIsValid*/
@@ -4362,17 +4441,27 @@ var basicweb_gallery_app_client = function () {
           button.disabled = button_disabled_value;
         }
       },
+      i: function i(local) {
+        if (current) return;
+        transition_in(permissions.$$.fragment, local);
+        current = true;
+      },
+      o: function o(local) {
+        transition_out(permissions.$$.fragment, local);
+        current = false;
+      },
       d: function d(detaching) {
         if (if_block) if_block.d(detaching);
         if (detaching) detach(t0);
         if (detaching) detach(fieldset);
+        destroy_component(permissions);
         /*input3_binding*/
 
-        ctx[21](null);
+        ctx[22](null);
         run_all(dispose);
       }
     };
-  } // (214:4) {#if items && items.length > 0}
+  } // (219:4) {#if items && items.length > 0}
 
 
   function create_if_block_1$1(ctx) {
@@ -4447,7 +4536,7 @@ var basicweb_gallery_app_client = function () {
         destroy_each(each_blocks, detaching);
       }
     };
-  } // (227:16) {:else}
+  } // (232:16) {:else}
 
 
   function create_else_block$1(ctx) {
@@ -4464,7 +4553,7 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(progress);
       }
     };
-  } // (225:16) {#if item.file.total > 0}
+  } // (230:16) {#if item.file.total > 0}
 
 
   function create_if_block_4$1(ctx) {
@@ -4476,10 +4565,10 @@ var basicweb_gallery_app_client = function () {
         progress = element("progress");
         attr(progress, "max", progress_max_value =
         /*item*/
-        ctx[24].file.total);
+        ctx[25].file.total);
         progress.value = progress_value_value =
         /*item*/
-        ctx[24].file.loaded;
+        ctx[25].file.loaded;
       },
       m: function m(target, anchor) {
         insert(target, progress, anchor);
@@ -4489,7 +4578,7 @@ var basicweb_gallery_app_client = function () {
         /*items*/
         2 && progress_max_value !== (progress_max_value =
         /*item*/
-        ctx[24].file.total)) {
+        ctx[25].file.total)) {
           attr(progress, "max", progress_max_value);
         }
 
@@ -4497,7 +4586,7 @@ var basicweb_gallery_app_client = function () {
         /*items*/
         2 && progress_value_value !== (progress_value_value =
         /*item*/
-        ctx[24].file.loaded)) {
+        ctx[25].file.loaded)) {
           progress.value = progress_value_value;
         }
       },
@@ -4505,7 +4594,7 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(progress);
       }
     };
-  } // (222:53) 
+  } // (227:53) 
 
 
   function create_if_block_3$1(ctx) {
@@ -4513,7 +4602,7 @@ var basicweb_gallery_app_client = function () {
     var t0;
     var t1_value =
     /*item*/
-    ctx[24].file.response + "";
+    ctx[25].file.response + "";
     var t1;
     return {
       c: function c() {
@@ -4532,13 +4621,13 @@ var basicweb_gallery_app_client = function () {
         /*items*/
         2 && t1_value !== (t1_value =
         /*item*/
-        ctx[24].file.response + "")) set_data(t1, t1_value);
+        ctx[25].file.response + "")) set_data(t1, t1_value);
       },
       d: function d(detaching) {
         if (detaching) detach(span);
       }
     };
-  } // (220:16) {#if item.file.status === Success}
+  } // (225:16) {#if item.file.status === Success}
 
 
   function create_if_block_2$1(ctx) {
@@ -4557,14 +4646,14 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(span);
       }
     };
-  } // (218:8) {#each items as item}
+  } // (223:8) {#each items as item}
 
 
   function create_each_block$2(ctx) {
     var li;
     var t0_value =
     /*item*/
-    ctx[24].name + "";
+    ctx[25].name + "";
     var t0;
     var t1;
     var t2;
@@ -4572,13 +4661,13 @@ var basicweb_gallery_app_client = function () {
     function select_block_type_1(ctx, dirty) {
       if (
       /*item*/
-      ctx[24].file.status === Success$1) return create_if_block_2$1;
+      ctx[25].file.status === Success$1) return create_if_block_2$1;
       if (
       /*item*/
-      ctx[24].file.status === Error$2) return create_if_block_3$1;
+      ctx[25].file.status === Error$2) return create_if_block_3$1;
       if (
       /*item*/
-      ctx[24].file.total > 0) return create_if_block_4$1;
+      ctx[25].file.total > 0) return create_if_block_4$1;
       return create_else_block$1;
     }
 
@@ -4604,7 +4693,7 @@ var basicweb_gallery_app_client = function () {
         /*items*/
         2 && t0_value !== (t0_value =
         /*item*/
-        ctx[24].name + "")) set_data(t0, t0_value);
+        ctx[25].name + "")) set_data(t0, t0_value);
 
         if (current_block_type === (current_block_type = select_block_type_1(ctx)) && if_block) {
           if_block.p(ctx, dirty);
@@ -4623,7 +4712,7 @@ var basicweb_gallery_app_client = function () {
         if_block.d();
       }
     };
-  } // (177:0) <Unique let:uniqueId={uniqueId}>
+  } // (182:0) <Unique let:uniqueId={uniqueId}>
 
 
   function create_default_slot$1(ctx) {
@@ -4641,7 +4730,7 @@ var basicweb_gallery_app_client = function () {
       pending: create_pending_block$1,
       then: create_then_block$1,
       "catch": create_catch_block$1,
-      error: 27,
+      error: 28,
       blocks: [,,,]
     };
     handle_promise(promise =
@@ -4694,19 +4783,25 @@ var basicweb_gallery_app_client = function () {
         ctx[0]) {
           if (if_block) {
             if_block.p(ctx, dirty);
+            transition_in(if_block, 1);
           } else {
             if_block = create_if_block$1(ctx);
             if_block.c();
+            transition_in(if_block, 1);
             if_block.m(form, null);
           }
         } else if (if_block) {
-          if_block.d(1);
-          if_block = null;
+          group_outros();
+          transition_out(if_block, 1, 1, function () {
+            if_block = null;
+          });
+          check_outros();
         }
       },
       i: function i(local) {
         if (current) return;
         transition_in(info.block);
+        transition_in(if_block);
         current = true;
       },
       o: function o(local) {
@@ -4715,6 +4810,7 @@ var basicweb_gallery_app_client = function () {
           transition_out(_block2);
         }
 
+        transition_out(if_block);
         current = false;
       },
       d: function d(detaching) {
@@ -4735,11 +4831,11 @@ var basicweb_gallery_app_client = function () {
           "default": [create_default_slot$1, function (_ref12) {
             var uniqueId = _ref12.uniqueId;
             return {
-              23: uniqueId
+              24: uniqueId
             };
           }, function (_ref13) {
             var uniqueId = _ref13.uniqueId;
-            return uniqueId ? 8388608 : 0;
+            return uniqueId ? 16777216 : 0;
           }]
         },
         $$scope: {
@@ -4763,7 +4859,7 @@ var basicweb_gallery_app_client = function () {
 
         if (dirty &
         /*$$scope, itemInfo, uniqueId, fileInputElm, userItemInfo, items, galleryId, galleryResult, galleryInfo, userGalleryInfo, tags*/
-        276824575) {
+        553648639) {
           unique_changes.$$scope = {
             dirty: dirty,
             ctx: ctx
@@ -4836,7 +4932,9 @@ var basicweb_gallery_app_client = function () {
         }).then(function (res) {
           return res.json();
         }).then(function (id) {
-          $$invalidate(0, galleryId = id);
+          $$invalidate(0, galleryId = id); // Set a default permissions scheme once the gallery is added
+
+          $$invalidate(6, userItemInfo.permissions = userGalleryInfo.permissions, userItemInfo);
           return fetch("".concat(api, "/galleries/").concat(id, "/tags"), {
             method: "POST",
             headers: {
@@ -4925,7 +5023,10 @@ var basicweb_gallery_app_client = function () {
         });
         $$invalidate(5, itemInfo.name = "", itemInfo);
         $$invalidate(5, itemInfo.description = "", itemInfo);
-        $$invalidate(6, userItemInfo.url = "", userItemInfo);
+        $$invalidate(6, userItemInfo.url = "", userItemInfo); /// If they change permissions, it will persist to other images.
+        /// Uncomment this line to change this behaviour
+        // userItemInfo.permissions = userGalleryInfo.permissions;
+
         $$invalidate(5, itemInfo.files = [], itemInfo);
         $$invalidate(8, fileInputElm.value = "", fileInputElm);
         $$invalidate(5, itemInfo.kind = 0, itemInfo);
@@ -4973,6 +5074,11 @@ var basicweb_gallery_app_client = function () {
       $$invalidate(6, userItemInfo);
     }
 
+    function permissions_value_binding_1(value) {
+      userItemInfo.permissions = value;
+      $$invalidate(6, userItemInfo);
+    }
+
     function input3_binding($$value) {
       binding_callbacks[$$value ? "unshift" : "push"](function () {
         $$invalidate(8, fileInputElm = $$value);
@@ -4988,7 +5094,7 @@ var basicweb_gallery_app_client = function () {
       if ("galleryId" in $$props) $$invalidate(0, galleryId = $$props.galleryId);
     };
 
-    return [galleryId, items, galleryResult, galleryInfo, userGalleryInfo, itemInfo, userItemInfo, tags, fileInputElm, addGallery, updateGallery, itemIsValid, addItem, input0_input_handler, input1_input_handler, input2_input_handler, tags_1_tags_binding, permissions_value_binding, input0_input_handler_1, input1_input_handler_1, input2_input_handler_1, input3_binding, input3_change_handler];
+    return [galleryId, items, galleryResult, galleryInfo, userGalleryInfo, itemInfo, userItemInfo, tags, fileInputElm, addGallery, updateGallery, itemIsValid, addItem, input0_input_handler, input1_input_handler, input2_input_handler, tags_1_tags_binding, permissions_value_binding, input0_input_handler_1, input1_input_handler_1, input2_input_handler_1, permissions_value_binding_1, input3_binding, input3_change_handler];
   }
 
   var UserGalleryCreate = /*#__PURE__*/function (_SvelteComponent5) {
@@ -28887,7 +28993,7 @@ var basicweb_gallery_app_client = function () {
     var child_ctx = ctx.slice();
     child_ctx[15] = list[i];
     return child_ctx;
-  } // (67:0) {#if requests}
+  } // (66:0) {#if requests}
 
 
   function create_if_block$c(ctx) {
@@ -28957,7 +29063,7 @@ var basicweb_gallery_app_client = function () {
         info = null;
       }
     };
-  } // (106:0) {:catch err}
+  } // (105:0) {:catch err}
 
 
   function create_catch_block_1$1(ctx) {
@@ -28986,7 +29092,7 @@ var basicweb_gallery_app_client = function () {
         p = element("p");
         t1 = text("Error: ");
         t2 = text(t2_value);
-        attr(div, "class", "error svelte-1jplw8y");
+        attr(div, "class", "error svelte-14w7hiz");
       },
       m: function m(target, anchor) {
         insert(target, div, anchor);
@@ -29025,7 +29131,7 @@ var basicweb_gallery_app_client = function () {
         destroy_component(alert);
       }
     };
-  } // (70:0) {:then [galleries,posts]}
+  } // (69:0) {:then [galleries,posts]}
 
 
   function create_then_block$9(ctx) {
@@ -29056,8 +29162,8 @@ var basicweb_gallery_app_client = function () {
         if (if_block1) if_block1.c();
         t1 = space();
         if (if_block2) if_block2.c();
-        attr(div0, "class", "left-sidebar svelte-1jplw8y");
-        attr(div1, "class", "profile-main svelte-1jplw8y");
+        attr(div0, "class", "left-sidebar svelte-14w7hiz");
+        attr(div1, "class", "profile-main svelte-14w7hiz");
       },
       m: function m(target, anchor) {
         insert(target, div1, anchor);
@@ -29141,7 +29247,7 @@ var basicweb_gallery_app_client = function () {
         if (if_block2) if_block2.d();
       }
     };
-  } // (73:8) {#if galleries.length > 0}
+  } // (72:8) {#if galleries.length > 0}
 
 
   function create_if_block_3$3(ctx) {
@@ -29215,7 +29321,7 @@ var basicweb_gallery_app_client = function () {
         destroy_each(each_blocks, detaching);
       }
     };
-  } // (76:12) {#each galleries as gallery}
+  } // (75:12) {#each galleries as gallery}
 
 
   function create_each_block_1$1(ctx) {
@@ -29263,7 +29369,7 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(li);
       }
     };
-  } // (81:8) {#if posts.length > 0}
+  } // (80:8) {#if posts.length > 0}
 
 
   function create_if_block_2$3(ctx) {
@@ -29337,7 +29443,7 @@ var basicweb_gallery_app_client = function () {
         destroy_each(each_blocks, detaching);
       }
     };
-  } // (84:12) {#each posts as post}
+  } // (83:12) {#each posts as post}
 
 
   function create_each_block$9(ctx) {
@@ -29385,7 +29491,7 @@ var basicweb_gallery_app_client = function () {
         if (detaching) detach(li);
       }
     };
-  } // (90:4) {#if galleryRequest}
+  } // (89:4) {#if galleryRequest}
 
 
   function create_if_block_1$7(ctx) {
@@ -29410,7 +29516,7 @@ var basicweb_gallery_app_client = function () {
       c: function c() {
         div = element("div");
         info.block.c();
-        attr(div, "class", "first-gallery svelte-1jplw8y");
+        attr(div, "class", "first-gallery svelte-14w7hiz");
       },
       m: function m(target, anchor) {
         insert(target, div, anchor);
@@ -29456,7 +29562,7 @@ var basicweb_gallery_app_client = function () {
         info = null;
       }
     };
-  } // (97:8) {:catch err}
+  } // (96:8) {:catch err}
 
 
   function create_catch_block$9(ctx) {
@@ -29485,7 +29591,7 @@ var basicweb_gallery_app_client = function () {
         p = element("p");
         t1 = text("Error: ");
         t2 = text(t2_value);
-        attr(div, "class", "error svelte-1jplw8y");
+        attr(div, "class", "error svelte-14w7hiz");
       },
       m: function m(target, anchor) {
         insert(target, div, anchor);
@@ -29524,7 +29630,7 @@ var basicweb_gallery_app_client = function () {
         destroy_component(alert);
       }
     };
-  } // (94:8) {:then items}
+  } // (93:8) {:then items}
 
 
   function create_then_block_1$1(ctx) {
@@ -29589,7 +29695,7 @@ var basicweb_gallery_app_client = function () {
         destroy_component(masonry, detaching);
       }
     };
-  } // (92:31)          <Circle color="var(--accent-color-1)" size={iconSize}
+  } // (91:31)          <Circle color="var(--accent-color-1)" size={iconSize}
 
 
   function create_pending_block_1$1(ctx) {
@@ -29632,7 +29738,7 @@ var basicweb_gallery_app_client = function () {
         destroy_component(circle, detaching);
       }
     };
-  } // (68:17)  <Circle color="var(--accent-color-1)" size={iconSize}
+  } // (67:17)  <Circle color="var(--accent-color-1)" size={iconSize}
 
 
   function create_pending_block$9(ctx) {
