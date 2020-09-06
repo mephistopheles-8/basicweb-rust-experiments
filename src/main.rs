@@ -29,6 +29,7 @@ async fn main() -> std::io::Result<()> {
     let connspec = std::env::var("DATABASE_URL").expect("DATABASE_URL");
     let manager = ConnectionManager::<SqliteConnection>::new(connspec);
     let pool = r2d2::Pool::builder()
+        .connection_customizer(Box::new(app_gallery::db::ConnectionOptions::default()))
         .build(manager)
         .expect("Failed to create pool.");
 

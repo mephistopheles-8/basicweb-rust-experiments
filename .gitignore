@@ -2,6 +2,8 @@
 result
 .env
 *.sqlite
+*.sqlite-wal
+*.sqlite-shm
 *.tar.gz
 *.orig
 /tmp
