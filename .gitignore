@@ -1,4 +1,5 @@
 /target
+result
 .env
 *.sqlite
 *.tar.gz

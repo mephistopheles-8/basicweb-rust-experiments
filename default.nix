@@ -9,7 +9,7 @@ rustPlatform.buildRustPackage rec {
   buildInputs = [ openssl sqlite ];
 
   checkPhase = "";
-  cargoSha256 = "sha256:1bg00s7m6misn3shgj805dn5ly94ikfd2qyd86kpw3qhmx7lih0i";
+  cargoSha256 = "sha256:0wnw9q8iqh92d8zpr70cq5zn5vm6rhjc5i0hpvm0a4zpzwf8d766";
 
   meta = with stdenv.lib; {
     description = "Basic actix deployment";
