@@ -2,7 +2,7 @@
     import PostThread from "./PostThread.html";
     export let postId;
     let postsRequest = new Promise(() => {});
-    const uri = "http://localhost:8080/api/v1";
+    const uri = "/api/v1";
 
     // sync posts to only allow one reply at a time.
     let replyId;

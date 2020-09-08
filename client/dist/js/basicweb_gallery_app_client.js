@@ -862,9 +862,7 @@ var basicweb_gallery_app_client = function () {
   };
 
   Promise$1._unhandledRejectionFn = function _unhandledRejectionFn(err) {
-    if (typeof console !== 'undefined' && console) {
-      console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
-    }
+    if (typeof console !== 'undefined' && console) {}
   };
 
   function noop$1() {}
@@ -4883,7 +4881,7 @@ var basicweb_gallery_app_client = function () {
     };
   }
 
-  var api = "http://localhost:8080/api/v1";
+  var api = "/api/v1";
   var Loading$1 = 0;
   var Success$1 = 1;
   var Error$2 = 2;
@@ -7066,7 +7064,7 @@ var basicweb_gallery_app_client = function () {
     };
   }
 
-  var api$1 = "http://localhost:8080/api/v1";
+  var api$1 = "/api/v1";
 
   function instance$6($$self, $$props, $$invalidate) {
     var galleryId = $$props.galleryId;
@@ -8720,7 +8718,7 @@ var basicweb_gallery_app_client = function () {
     };
   }
 
-  var api$2 = "http://localhost:8080/api/v1";
+  var api$2 = "/api/v1";
 
   function instance$c($$self, $$props, $$invalidate) {
     var dispatch = createEventDispatcher();
@@ -9353,7 +9351,6 @@ var basicweb_gallery_app_client = function () {
       }
 
       if (isElementOffDocument(draggedEl)) {
-        console.debug("off document");
         dispatchDraggedLeftDocument(draggedEl);
         return;
       }
@@ -9415,7 +9412,6 @@ var basicweb_gallery_app_client = function () {
 
 
   function unobserve() {
-    console.debug("unobserving");
     clearTimeout(next);
     resetScrolling();
   }
@@ -9455,7 +9451,6 @@ var basicweb_gallery_app_client = function () {
 
 
   function armWindowScroller() {
-    console.debug('arming window scroller');
     window.addEventListener('mousemove', updateMousePosition);
     window.addEventListener('touchmove', updateMousePosition);
     loop$2();
@@ -9466,7 +9461,6 @@ var basicweb_gallery_app_client = function () {
 
 
   function disarmWindowScroller() {
-    console.debug('disarming window scroller');
     window.removeEventListener('mousemove', updateMousePosition);
     window.removeEventListener('touchmove', updateMousePosition);
     mousePosition = undefined;
@@ -9662,8 +9656,6 @@ var basicweb_gallery_app_client = function () {
   /* drop-zones registration management */
 
   function registerDropZone(dropZoneEl, type) {
-    console.debug('registering drop-zone if absent');
-
     if (!typeToDropZones.has(type)) {
       typeToDropZones.set(type, new Set());
     }
@@ -9684,7 +9676,6 @@ var basicweb_gallery_app_client = function () {
 
 
   function watchDraggedElement() {
-    console.debug('watching dragged element');
     armWindowScroller();
     var dropZones = typeToDropZones.get(draggedElType);
 
@@ -9713,7 +9704,6 @@ var basicweb_gallery_app_client = function () {
   }
 
   function unWatchDraggedElement() {
-    console.debug('unwatching dragged element');
     disarmWindowScroller();
     var dropZones = typeToDropZones.get(draggedElType);
 
@@ -9740,14 +9730,11 @@ var basicweb_gallery_app_client = function () {
 
 
   function handleDraggedEntered(e) {
-    console.debug('dragged entered', e.currentTarget, e.detail);
-
     var _dzToConfig$get = dzToConfig.get(e.currentTarget),
         items = _dzToConfig$get.items,
         dropFromOthersDisabled = _dzToConfig$get.dropFromOthersDisabled;
 
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
-      console.debug('drop is currently disabled');
       return;
     } // this deals with another svelte related race condition. in rare occasions (super rapid operations) the list hasn't updated yet
 
@@ -9755,7 +9742,6 @@ var basicweb_gallery_app_client = function () {
     items = items.filter(function (i) {
       return i.id !== shadowElData.id;
     });
-    console.debug("dragged entered items ".concat(toString(items)));
     var _e$detail$indexObj = e.detail.indexObj,
         index = _e$detail$indexObj.index,
         isProximityBased = _e$detail$indexObj.isProximityBased;
@@ -9766,14 +9752,11 @@ var basicweb_gallery_app_client = function () {
   }
 
   function handleDraggedLeft(e) {
-    console.debug('dragged left', e.currentTarget, e.detail);
-
     var _dzToConfig$get2 = dzToConfig.get(e.currentTarget),
         items = _dzToConfig$get2.items,
         dropFromOthersDisabled = _dzToConfig$get2.dropFromOthersDisabled;
 
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
-      console.debug('drop is currently disabled');
       return;
     }
 
@@ -9784,14 +9767,11 @@ var basicweb_gallery_app_client = function () {
   }
 
   function handleDraggedIsOverIndex(e) {
-    console.debug('dragged is over index', e.currentTarget, e.detail);
-
     var _dzToConfig$get3 = dzToConfig.get(e.currentTarget),
         items = _dzToConfig$get3.items,
         dropFromOthersDisabled = _dzToConfig$get3.dropFromOthersDisabled;
 
     if (dropFromOthersDisabled && e.currentTarget !== originDropZone) {
-      console.debug('drop is currently disabled');
       return;
     }
 
@@ -9815,7 +9795,6 @@ var basicweb_gallery_app_client = function () {
   }
 
   function handleDrop() {
-    console.debug('dropped');
     finalizingPreviousDrag = true; // cleanup
 
     window.removeEventListener('mousemove', handleMouseMove);
@@ -9839,8 +9818,6 @@ var basicweb_gallery_app_client = function () {
       };
 
       // it was dropped in a drop-zone
-      console.debug('dropped in dz', shadowElDropZone);
-
       var _dzToConfig$get4 = dzToConfig.get(shadowElDropZone),
           items = _dzToConfig$get4.items,
           type = _dzToConfig$get4.type;
@@ -9862,8 +9839,6 @@ var basicweb_gallery_app_client = function () {
       };
 
       // it needs to return to its place
-      console.debug('no dz available');
-
       var _dzToConfig$get5 = dzToConfig.get(originDropZone),
           _items = _dzToConfig$get5.items,
           _type = _dzToConfig$get5.type;
@@ -9944,9 +9919,6 @@ var basicweb_gallery_app_client = function () {
       dropTargetStyle: DEFAULT_DROP_TARGET_STYLE,
       transformDraggedElement: function transformDraggedElement() {}
     };
-    console.debug("dndzone good to go options: ".concat(toString(options), ", config: ").concat(toString(config)), {
-      node: node
-    });
     var elToIdx = new Map();
 
     function addMaybeListeners() {
@@ -9996,12 +9968,10 @@ var basicweb_gallery_app_client = function () {
     function handleMouseDown(e) {
       // prevents responding to any button but left click which equals 0 (which is falsy)
       if (e.button) {
-        console.debug("ignoring none left click button: ".concat(e.button));
         return;
       }
 
       if (isWorkingOnPreviousDrag) {
-        console.debug('cannot start a new drag before finalizing previous one');
         return;
       }
 
@@ -10017,7 +9987,6 @@ var basicweb_gallery_app_client = function () {
     }
 
     function handleDragStart() {
-      console.debug("drag start config: ".concat(toString(config)), originalDragTarget);
       isWorkingOnPreviousDrag = true; // initialising globals
 
       var currentIdx = elToIdx.get(originalDragTarget);
@@ -10088,9 +10057,7 @@ var basicweb_gallery_app_client = function () {
           transformDraggedElement = _ref39$transformDragg === void 0 ? function () {} : _ref39$transformDragg,
           rest = _objectWithoutProperties(_ref39, ["items", "flipDurationMs", "type", "dragDisabled", "dropFromOthersDisabled", "dropTargetStyle", "transformDraggedElement"]);
 
-      if (Object.keys(rest).length > 0) {
-        console.warn("dndzone will ignore unknown options", rest);
-      }
+      if (Object.keys(rest).length > 0) {}
 
       config.dropAnimationDurationMs = dropAnimationDurationMs;
 
@@ -10165,11 +10132,9 @@ var basicweb_gallery_app_client = function () {
     configure(options);
     return {
       update: function update(newOptions) {
-        console.debug("dndzone will update newOptions: ".concat(toString(newOptions)));
         configure(newOptions);
       },
       destroy: function destroy() {
-        console.debug("dndzone will destroy");
         unregisterDropZone(node, config.type);
         dzToConfig["delete"](node);
       }
@@ -11749,7 +11714,7 @@ var basicweb_gallery_app_client = function () {
     };
   }
 
-  var api$3 = "http://localhost:8080/api/v1";
+  var api$3 = "/api/v1";
 
   function instance$g($$self, $$props, $$invalidate) {
     var dispatch = createEventDispatcher();
@@ -12516,7 +12481,7 @@ var basicweb_gallery_app_client = function () {
     };
   }
 
-  var api$4 = "http://localhost:8080/api/v1";
+  var api$4 = "/api/v1";
 
   function instance$i($$self, $$props, $$invalidate) {
     var galleryId = $$props.galleryId;
@@ -23241,9 +23206,7 @@ var basicweb_gallery_app_client = function () {
     this.lastMatchedContainer = this.doc;
     this.currentLine = "";
 
-    if (this.options.time) {
-      console.time("preparing input");
-    }
+    if (this.options.time) {}
 
     var lines = input.split(reLineEnding);
     var len = lines.length;
@@ -23253,13 +23216,9 @@ var basicweb_gallery_app_client = function () {
       len -= 1;
     }
 
-    if (this.options.time) {
-      console.timeEnd("preparing input");
-    }
+    if (this.options.time) {}
 
-    if (this.options.time) {
-      console.time("block parsing");
-    }
+    if (this.options.time) {}
 
     for (var i = 0; i < len; i++) {
       this.incorporateLine(lines[i]);
@@ -23269,19 +23228,13 @@ var basicweb_gallery_app_client = function () {
       this.finalize(this.tip, len);
     }
 
-    if (this.options.time) {
-      console.timeEnd("block parsing");
-    }
+    if (this.options.time) {}
 
-    if (this.options.time) {
-      console.time("inline parsing");
-    }
+    if (this.options.time) {}
 
     this.processInlines(this.doc);
 
-    if (this.options.time) {
-      console.timeEnd("inline parsing");
-    }
+    if (this.options.time) {}
 
     return this.doc;
   }; // The Parser object.
@@ -23732,9 +23685,7 @@ var basicweb_gallery_app_client = function () {
     var nodetype;
     var options = this.options;
 
-    if (options.time) {
-      console.time("rendering");
-    }
+    if (options.time) {}
 
     this.buffer += '<?xml version="1.0" encoding="UTF-8"?>\n';
     this.buffer += '<!DOCTYPE document SYSTEM "CommonMark.dtd">\n';
@@ -23837,9 +23788,7 @@ var basicweb_gallery_app_client = function () {
       }
     }
 
-    if (options.time) {
-      console.timeEnd("rendering");
-    }
+    if (options.time) {}
 
     this.buffer += '\n';
     return this.buffer;
@@ -24568,7 +24517,7 @@ var basicweb_gallery_app_client = function () {
     };
   }
 
-  var uri = "http://localhost:8080/api/v1";
+  var uri = "/api/v1";
 
   function splitLines(body) {
     return body.split(/\n+/);
@@ -24601,7 +24550,6 @@ var basicweb_gallery_app_client = function () {
         }).then(function (res) {
           return res.json();
         }).then(function (res) {
-          console.log(res);
           $$invalidate(2, replyValue = "");
           dispatch("reply", post);
           $$invalidate(0, replyId = false);
@@ -25082,7 +25030,7 @@ var basicweb_gallery_app_client = function () {
     };
   }
 
-  var uri$1 = "http://localhost:8080/api/v1";
+  var uri$1 = "/api/v1";
 
   function instance$l($$self, $$props, $$invalidate) {
     var postId = $$props.postId;
@@ -26091,7 +26039,7 @@ var basicweb_gallery_app_client = function () {
     };
   }
 
-  var api$5 = "http://localhost:8080/api/v1";
+  var api$5 = "/api/v1";
 
   function instance$n($$self, $$props, $$invalidate) {
     var postId = $$props.postId;
@@ -26510,9 +26458,7 @@ var basicweb_gallery_app_client = function () {
 
       function noop() {}
 
-      var logError = typeof console == 'undefined' ? noop : function (message) {
-        console.error(message);
-      }; // -------------------------- measurements -------------------------- //
+      var logError = typeof console == 'undefined' ? noop : function (message) {}; // -------------------------- measurements -------------------------- //
 
       var measurements = ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom', 'marginLeft', 'marginRight', 'marginTop', 'marginBottom', 'borderLeftWidth', 'borderRightWidth', 'borderTopWidth', 'borderBottomWidth'];
       var measurementsLength = measurements.length;
@@ -29839,7 +29785,7 @@ var basicweb_gallery_app_client = function () {
     };
   }
 
-  var api$6 = "http://localhost:8080/api/v1";
+  var api$6 = "/api/v1";
 
   function instance$q($$self, $$props, $$invalidate) {
     var handle = $$props.handle;

@@ -16,7 +16,7 @@ const debug_js_path = "dist/js";
 const install_css_path = "../static/root/css";
 const debug_css_path = "dist/css";
 
-const removeConsoleLog = false;
+const removeConsoleLog = true;
 
 const js_dest_path 
       = install 
