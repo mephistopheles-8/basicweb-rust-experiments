@@ -35,6 +35,11 @@ in pkgs.dockerTools.buildImage {
   contents = [ app-gallery (nonRootShadowSetup {uid = 999; user="webapp";}) ];
   runAsRoot = ''
       #!${pkgs.stdenv.shell}
+      mkdir -m 1777 /tmp
+      mkdir -p /tmp/basicweb-app-gallery
+      chown -R webapp:webapp /tmp/basicweb-app-gallery
+      chmod -R 770 /tmp/basicweb-app-gallery
+
       chown -R webapp:webapp /data
       chmod -R 775 /data
       chmod 660 /data/database.sqlite 
@@ -46,6 +51,12 @@ in pkgs.dockerTools.buildImage {
     Env = [
       "DATABASE_URL=/data/database.sqlite"
       "STATIC_DIR=/static"
+      "TMP_DIR=/tmp/basicweb-app-gallery"
+      "DATA_DIR=/data"
+      "USER_ASSET_DIR=/data/assets"
     ];
+    Volumes = {
+      "/data" = {};
+    };
   };
 }

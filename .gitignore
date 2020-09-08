@@ -7,4 +7,5 @@ result
 *.tar.gz
 *.orig
 /tmp
+/data
 *.swp

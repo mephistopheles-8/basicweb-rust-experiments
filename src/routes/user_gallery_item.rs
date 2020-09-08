@@ -116,6 +116,8 @@ pub async fn user_gallery_item_multipart(
 ) -> Result<HttpResponse, actix_web::Error> {
 
    let conn = pool.get().expect("couldn't get db connection from pool");
+   let tmp_dir = std::env::var("TMP_DIR").expect("TMP_DIR");
+   let data_dir = std::env::var("USER_ASSET_DIR").expect("USER_ASSET_DIR");
 
     if let Some(sess) = id.identity() {
        let sess : UserSession = serde_json::from_str(&sess)?;
@@ -144,8 +146,9 @@ pub async fn user_gallery_item_multipart(
                 let resid = Uuid::new_v4();
                 let mut resid_buf = [b'!'; 40];
 
-                let filepath = format!("./tmp/{}", resid.to_hyphenated().encode_lower(&mut resid_buf));
-                let mut f = async_std::fs::File::create(&filepath).await?;
+                let tmp_filepath = format!("{}/{}", tmp_dir, resid.to_hyphenated().encode_lower(&mut resid_buf));
+                let final_filepath = format!("{}/{}", data_dir, resid.to_hyphenated().encode_lower(&mut resid_buf));
+                let mut f = async_std::fs::File::create(&tmp_filepath).await?;
 
                 // Field in turn is stream of *Bytes* object
                 while let Some(chunk) = field.next().await {
@@ -153,10 +156,11 @@ pub async fn user_gallery_item_multipart(
                     f.write_all(&data).await?;
                 }
                 f.flush().await?;
-                let fp0 = filepath.clone();
+                let fp0 = tmp_filepath.clone();
+                let fp1 = final_filepath.clone();
                 // use web::block to offload blocking Diesel code without blocking server thread
                 let uuid = web::block(move || {
-                    let p0: &Path = Path::new(&filepath);
+                    let p0: &Path = Path::new(&tmp_filepath);
                     let mime = tree_magic::from_filepath(p0);
                     let rkind = permitted.iter().find_map(|&(kind,mime0)| {
                         if mime0 == mime {
@@ -173,7 +177,7 @@ pub async fn user_gallery_item_multipart(
                                 , &item.0.description
                                 , (item.0.kind
                                 ,rkind)
-                                , &filepath
+                                , &final_filepath
                                 , &mime
                                 , *path
                                 , &item.1
@@ -193,6 +197,8 @@ pub async fn user_gallery_item_multipart(
                 if uuid.is_none() {
                     err = Some(GalleryUploadError::InvalidMimeType);
                     async_std::fs::remove_file(&fp0).await?;
+                }else{
+                    async_std::fs::rename(&fp0,&fp1).await?;
                 }
            }
            if err.is_none() {
