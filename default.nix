@@ -5,9 +5,9 @@ rustPlatform.buildRustPackage rec {
   name = "basicweb-app-gallery-${version}";
   version = "0.0.1";
   src = builtins.fetchGit {
-      url = ./.;
-      ref = "master";
-    };
+     url = ./.;
+     ref = "master";
+   };
   nativeBuildInputs = [ diesel-cli ]; 
   buildInputs = [ openssl sqlite ];
 

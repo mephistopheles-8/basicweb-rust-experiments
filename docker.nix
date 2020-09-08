@@ -38,11 +38,13 @@ in pkgs.dockerTools.buildImage {
       mkdir -m 1777 /tmp
       mkdir -p /tmp/basicweb-app-gallery
       chown -R webapp:webapp /tmp/basicweb-app-gallery
-      chmod -R 770 /tmp/basicweb-app-gallery
+      chmod -R 775 /tmp/basicweb-app-gallery
 
       chown -R webapp:webapp /data
       chmod -R 775 /data
       chmod 660 /data/database.sqlite 
+      chown -R webapp:webapp /data/assets
+      chmod -R 775 /data/assets
   '';
   config = {
     User = "webapp:webapp";

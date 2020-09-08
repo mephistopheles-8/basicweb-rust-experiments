@@ -198,7 +198,15 @@ pub async fn user_gallery_item_multipart(
                     err = Some(GalleryUploadError::InvalidMimeType);
                     async_std::fs::remove_file(&fp0).await?;
                 }else{
-                    async_std::fs::rename(&fp0,&fp1).await?;
+                    // NOTE: It's important to copy + remove here, since the 
+                    // files may be on different filesystems.
+                    async_std::fs::copy(&fp0,&fp1).await
+                      .map_err(|e| {
+                            eprintln!("{}", e);
+                            HttpResponse::InternalServerError().finish()
+                      })?;
+                    async_std::fs::remove_file(&fp0).await?;
+                    println!("Success?");
                 }
            }
            if err.is_none() {
