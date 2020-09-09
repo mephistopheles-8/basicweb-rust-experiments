@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 actix-web = "2.0"
 actix-identity = "0.2.0"
+actix-rt = "1.0"
 
 diesel = { version = "^1.1.0", features = ["sqlite", "r2d2","chrono"] }
 chrono = { version = "0.4.13", features = ["serde"] }
@@ -30,7 +31,6 @@ rust-argon2 = "0.8"
 # bcrypt = "0.8"
 
 [dev-dependencies]
-actix-rt = "1.0"
 actix-files = "0.2.1"
 actix-http = "1.0.1"
 env_logger = "0.7"
