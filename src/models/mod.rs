@@ -7,7 +7,7 @@ pub mod user_gallery;
 pub mod gallery_post;
 pub mod user_post;
 pub use item::{Item,ItemUpd,ItemNew};
-pub use user::{LoginParams,SecretQuestion,User,UserSecrets,RegisterParams,UserNew};
+pub use user::{LoginParams,SecretQuestion,User,UserSecrets,RegisterParams,RegisterParamsError,UserNew};
 pub use gallery::{Gallery,GalleryUpd,GalleryNew};
 pub use gallery::{GalleryItem,GalleryItemUpd,GalleryItemNew};
 pub use gallery::{Resource,ResourceNew};
