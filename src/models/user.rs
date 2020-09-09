@@ -1,5 +1,5 @@
 
-use crate::schema::*;
+use crate::schema::{users,secret_questions};
 use chrono::NaiveDateTime;
 use serde::{Serialize,Deserialize};
 
