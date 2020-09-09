@@ -209,11 +209,13 @@ pub async fn simulate_user(
     }
 }
 
-pub async fn register_form(
+pub async fn register_form_body(
     id: Identity
   , hb: web::Data<Handlebars<'_>>
   , pool: web::Data<DbPool>
- ) -> Result<HttpResponse,actix_web::Error> {
+  , values : Option<&models::RegisterParams>
+  , errors : Option<&models::RegisterParamsError<'_>>
+ ) -> Result<String,actix_web::Error> {
 
     let conn = pool.get().expect("couldn't get db connection from pool");
 
@@ -231,9 +233,19 @@ pub async fn register_form(
       , "parent" : "main"
       , "logged_in" : id.identity().is_some()
       , "questions" : questions
+      , "values" : values
+      , "errors" : errors
     });
     let body = hb.render("content/register", &data).unwrap();
+   Ok( body )
+}
 
+pub async fn register_form(
+    id: Identity
+  , hb: web::Data<Handlebars<'_>>
+  , pool: web::Data<DbPool>
+ ) -> Result<HttpResponse,actix_web::Error> {
+    let body = register_form_body(id,hb,pool,None, None).await?;
     Ok(HttpResponse::Ok().body(body))
 }
 
@@ -249,43 +261,76 @@ pub async fn register_action(
     let conn = pool.get().expect("couldn't get db connection from pool");
     
     if data.is_valid() {
+        enum RegResponse {
+            UniqueDup(bool,bool),
+            Registered(Uuid,models::User)
+        };
+        // Make sure performance doesn't blow up here
+        let data0 = data.clone();
+        let resp = web::block(move || {
+            let email_exists = 
+                user_email_exists(&data.email,&conn)?;
+            let handle_exists =
+                data.handle.as_ref().map(|h0|
+                    user_handle_exists(h0, &conn))
+                    .unwrap_or(Ok(false))?;
 
-        let (uuid,user) = web::block(move || {
-            let uuid = 
-                user_register(
-                    &data, &conn
-                  )?;
-            // Must set code before sending email!
-            user_update_code_by_uuid(uuid, &conn)?;
-            let user = user_by_uuid(uuid, &conn)?.unwrap();
-            Ok::<_,diesel::result::Error>((uuid,user))
+            if email_exists || handle_exists {
+                Ok(RegResponse::UniqueDup(email_exists,handle_exists))
+            }else{
+                let uuid = 
+                    user_register(
+                        &data, &conn
+                      )?;
+                // Must set code before sending email!
+                user_update_code_by_uuid(uuid, &conn)?;
+                let user = user_by_uuid(uuid, &conn)?.unwrap();
+                Ok::<_,diesel::result::Error>(RegResponse::Registered(uuid,user))
+
+            }
         }).await
           .map_err(|e| {
                 eprintln!("{}", e);
                 HttpResponse::InternalServerError().finish()
            })?;
 
-        let sess = UserSession::Partial(uuid);
+        match resp {
+         RegResponse::Registered(uuid,user) => {
+                let sess = UserSession::Partial(uuid);
 
-        // This masks the request time, but it does not 
-        // report errors!
-        Arbiter::spawn_fn(|| {
-            web::block(move || {
-                send_validation_email(user,hb,VerificationEmailType::VerifyAccount)
-            }).map(|res| {
-                match res {
-                   Err(e) => eprintln!("{}", e),
-                   _ => (),
+                // This masks the request time, but it does not 
+                // report errors!
+                Arbiter::spawn_fn(|| {
+                    web::block(move || {
+                        send_validation_email(user,hb,VerificationEmailType::VerifyAccount)
+                    }).map(|res| {
+                        match res {
+                           Err(e) => eprintln!("[register_action: ARBITER] {}", e),
+                           _ => (),
+                        }
+                    })
+                });
+
+                id.remember(serde_json::to_string(&sess)?);
+
+                Ok(HttpResponse::Found().header("location", "/verify-account").finish())
+            },
+        RegResponse::UniqueDup(email_exists,handle_exists) => {
+                let mut errs = models::RegisterParamsError::empty();
+                if email_exists {
+                    errs.email = Some("Email already exists in the system");
                 }
-            })
-        });
-
-        id.remember(serde_json::to_string(&sess)?);
-
-        Ok(HttpResponse::Found().header("location", "/verify-account").finish())
+                if handle_exists {
+                    errs.handle = Some("Handle already exists in the system");
+                }
+                let body = register_form_body(id,hb,pool,Some(&data0), Some(&errs)).await?;
+                Ok(HttpResponse::BadRequest().body(body))
+        },
+        }
 
     }else{
-        Ok(HttpResponse::Found().header("location", "/register").finish())
+        let body = register_form_body(id,hb,pool,Some(&data), Some(&data.errors())).await?;
+        Ok(HttpResponse::BadRequest().body(body))
     }
 }
 
@@ -311,7 +356,7 @@ pub async fn register_action_json(
         Ok(HttpResponse::NoContent().finish())
 
     }else{
-        Ok(HttpResponse::BadRequest().finish())
+        Ok(HttpResponse::BadRequest().json(data.errors()))
     }
     
 }
@@ -351,7 +396,7 @@ pub async fn reset_password_action(
        let sess : UserSession = serde_json::from_str(&sess)?;
 
        if sess.is_authorized() || sess.must_reset_password() {
-           if data.password.len() > 8 &&
+           if crate::util::password::password_is_valid(&data.password) && 
               data.password == data.confirm_password {
                   let uuid = *sess.uuid();
                   web::block(move || 
@@ -808,7 +853,7 @@ pub async fn recover_password_action(
                 Ok::<(),RecoverPasswordError>(()) 
             }).map(|res| {
                 match res {
-                   Err(e) => eprintln!("{}", e),
+                   Err(e) => eprintln!("[recover_password_action: ARBITER] {}", e),
                    _ => (),
                 }
             })
@@ -818,6 +863,42 @@ pub async fn recover_password_action(
     } else {
         Ok(HttpResponse::Found().header("location", "/recover-password").finish())
     }
+}
+
+pub async fn user_handle_exists_json(
+    data: web::Json<String>,
+    pool: web::Data<DbPool>,
+) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    let exists = web::block(move || {
+        user_handle_exists(&data, &conn)
+    }).await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(exists))
+}
+
+pub async fn user_handle_exists_json_path(
+    data: web::Path<String>,
+    pool: web::Data<DbPool>,
+) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+
+    let exists = web::block(move || {
+        user_handle_exists(&data, &conn)
+    }).await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(exists))
 }
 
 pub async fn recover_password_action_json(
@@ -886,7 +967,7 @@ pub async fn user_update_password_json(
     if let Some(sess) = id.identity() {
        let sess : UserSession = serde_json::from_str(&sess)?;
        if sess.is_authorized() {
-           if data.len() > 8 {
+           if crate::util::password::password_is_valid(&data) {
                   let uuid0 = *sess.uuid(); 
                   web::block(move || 
                     user_update_password_by_uuid(
@@ -1136,6 +1217,12 @@ pub fn users_api_json( cfg: &mut web::ServiceConfig ) {
     )
     .service(web::resource("/user")
         .route(web::get().to(user_by_login_json))
+    )
+    .service(web::resource("/user/handle-exists")
+        .route(web::post().to(user_handle_exists_json))
+    )
+    .service(web::resource("/user/handle-exists/{handle}")
+        .route(web::get().to(user_handle_exists_json_path))
     )
     .service(web::resource("/user/name")
         .route(web::get().to(user_name_by_login_json))

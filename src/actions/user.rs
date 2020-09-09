@@ -277,3 +277,43 @@ pub fn user_register(
 
     Ok(uuid0)
 }
+
+pub fn user_handle_exists( 
+    handle0 : &str,
+    conn: &Connection, 
+) -> Result<bool, diesel::result::Error> {
+
+    use crate::schema::users::dsl::*;
+    let exists 
+        = diesel::select(diesel::dsl::exists(users.filter(handle.eq(handle0))))
+          .first(conn)?;
+    Ok(exists)
+}
+
+pub fn user_email_exists( 
+    email0 : &str,
+    conn: &Connection, 
+) -> Result<bool, diesel::result::Error> {
+
+    use crate::schema::users::dsl::*;
+    let exists 
+        = diesel::select(diesel::dsl::exists(users.filter(email.eq(email0))))
+          .first(conn)?;
+    Ok(exists)
+}
+
+pub fn user_handles_like(
+    like: &str, 
+    conn: &Connection, 
+) -> Result<Vec<String>, diesel::result::Error> {
+
+    use crate::schema::users::dsl::*;
+    let handles
+        = users.filter(handle.like(like).and(handle.is_not_null()))
+          .order_by(handle.asc())
+          .select(handle)
+          .load::<Option<String>>(conn)?;
+
+    // FIXME: This shouldn't be necessary
+    Ok(handles.into_iter().map(|x| x.unwrap()).collect())
+}
