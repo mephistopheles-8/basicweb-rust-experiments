@@ -15,3 +15,4 @@ pub mod gallery_tag;
 pub mod gallery_item_tag;
 pub mod post_tag;
 pub mod user_post;
+pub mod user_tag;

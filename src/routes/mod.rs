@@ -1,6 +1,4 @@
 
-
-
 pub mod item;
 pub mod user;
 pub mod gallery;
@@ -16,6 +14,7 @@ pub mod gallery_item_tag;
 pub mod post_tag;
 pub mod user_post;
 pub mod user_gallery_post;
+pub mod user_tag;
 
 pub mod gallery_apis {
     use actix_web::web;

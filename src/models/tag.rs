@@ -3,7 +3,8 @@ use chrono::NaiveDateTime;
 use serde::{Serialize,Deserialize};
 
 
-#[derive(Queryable,Identifiable,Serialize,Deserialize)]
+#[derive(Queryable,QueryableByName,Identifiable,Serialize,Deserialize)]
+#[table_name="tags"]
 pub struct Tag {
     pub id: i32,
     pub name: String,
