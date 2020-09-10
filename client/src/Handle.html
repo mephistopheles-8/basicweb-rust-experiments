@@ -1,0 +1,78 @@
+<script>
+    import Alert from "svelte-material-icons/Alert.svelte";
+    import CheckBold from "svelte-material-icons/CheckBold.svelte";
+    import { Circle } from 'svelte-loading-spinners';
+
+    export let id;
+    export let itemUrl;
+    export let input = "";
+    export let value = "";
+    
+    export let iconSize = 12;
+    export let alertColor = "#f80";
+    export let checkColor = "#080";
+
+    const api = "/api/v1";
+    const maxInterval = 500;
+
+    let initialValue = value;
+    let timer;
+    let changed = value.length > 0; 
+    let exists = Promise.resolve(false);
+
+    $: if (!changed) {
+        value
+        = processInput( input )
+        . replace(/(^[-]+|[-]+$)/g, "");
+    }
+
+    function processInput( txt ) {
+        let v0
+         = txt.toLowerCase()
+         .replace(/[^a-z0-9_-]/g, "-")
+         .replace(/[-]+/g, "-");
+
+        if( v0 && v0.length > 0 ) {
+            exists 
+             = new Promise( (resolve,reject) => {
+                 if (timer) {
+                    clearTimeout(timer);
+                 }
+                 timer = setTimeout(() => {
+                     fetch(`${api}/${itemUrl}/exists/${v0}`)
+                     .then( res => resolve(res.ok) );
+                 }, maxInterval);
+             });
+        }
+        return v0;
+    }
+
+    function keyupHandler (e) {
+        changed = true;
+        value = processInput( value );
+    }
+
+</script>
+<style>
+span {
+    display: inline-flex;
+}
+</style>
+<input id={id} type="text" pattern="[a-z0-9_-]+" bind:value={value} on:keyup={keyupHandler}>
+{#if value && value.length > 0 && value !== initialValue}
+{#await exists}
+<span title="Checking if handle is unique...">
+    <Circle color="var(--accent-color-1)" size={iconSize} />
+</span>
+{:then does_exist} 
+{#if does_exist}
+<span title="This handle already exists in the system">
+    <Alert size={iconSize} color={alertColor} />
+</span>
+{:else}
+<span title="This handle is unique">
+    <CheckBold size={iconSize} color={checkColor} />
+</span>
+{/if}
+{/await}
+{/if}

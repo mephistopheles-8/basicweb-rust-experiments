@@ -343,3 +343,21 @@ pub fn user_owns_gallery_item(
 }
 
 
+pub fn user_gallery_item_url_exists(
+     user0: Uuid
+   , url0 : &str
+   , conn: &Connection0
+) -> Result<bool, diesel::result::Error> {
+
+    use diesel::dsl::*; 
+    use crate::schema::*;
+
+    select(exists(user_gallery_items::table
+        .inner_join(users::table)
+        .filter(
+            users::uuid.eq(user0.as_bytes().as_ref())
+            .and(user_gallery_items::url.eq(url0))
+        ))
+    ).first(conn)
+
+}

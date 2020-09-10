@@ -8,7 +8,7 @@
     const api = "/api/v1";
 
     export let itemId;
-    export let itemNamePlural;
+    export let itemUrl;
     export let itemNameSingular;
     export let legend = `Update ${itemNameSingular}`;
     export let submitText = "Save";
@@ -20,7 +20,7 @@
            
         itemRequest =
           fetch(
-              `${api}/${itemNamePlural}/${itemId}`, {
+              `${api}/${itemUrl}/${itemId}`, {
                 method : "POST"
              ,  headers : {
                     "Content-Type" : "application/json"
@@ -30,7 +30,7 @@
             }).then( res => res.json() )
               .then( _ => 
                   fetch(
-                    `${api}/${itemNamePlural}/${itemId}/tags`, {
+                    `${api}/${itemUrl}/${itemId}/tags`, {
                         method : "POST"
                      ,  headers : {
                             "Content-Type" : "application/json"
@@ -65,9 +65,9 @@
     $: if(itemId) {
         itemRequest =
             Promise.all([
-              fetch(`${api}/${itemNamePlural}/${itemId}`)
+              fetch(`${api}/${itemUrl}/${itemId}`)
                 .then( res => res.json() )
-            , fetch(`${api}/${itemNamePlural}/${itemId}/tags`)
+            , fetch(`${api}/${itemUrl}/${itemId}/tags`)
                 .then( res => res.json() )
             ]).then( res => {
                 let [i0,t0] = res;

@@ -430,3 +430,34 @@ pub async fn user_gallery_item_serve_by_login(
 
 
 
+pub async fn user_gallery_item_url_exists_by_login_json (
+    id: Identity
+  , path: web::Path<String>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let uuid = *sess.uuid();
+            let conn = pool.get().expect("couldn't get db connection from pool");
+            let exists = web::block(move || user_gallery_item_url_exists(uuid,&path,&conn))
+                .await
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+           
+            // Eh, make idiomatic http
+            if exists {
+                Ok(HttpResponse::NoContent().finish())
+            }else{
+                Ok(HttpResponse::NotFound().finish())
+            }
+
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else{
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}

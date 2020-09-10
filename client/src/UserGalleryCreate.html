@@ -1,9 +1,16 @@
 <script>
+    import Alert from "svelte-material-icons/Alert.svelte";
+    import CheckBold from "svelte-material-icons/CheckBold.svelte";
     import Tags from "./Tags.html";
     import Unique from "./Unique.html";
     import Permissions from "./Permissions.html";
+    import Handle from "./Handle.html";
 
     export let galleryId;
+
+    export let iconSize = 12;
+    export let alertColor = "#f80";
+    export let checkColor = "#080";
 
     let items = [];
     let galleryResult = Promise.resolve(true);
@@ -32,7 +39,12 @@
       , description : ""
       , files : null
     };
-    
+   
+    $: if(itemInfo.files && itemInfo.files.length > 0 && itemInfo.name.length === 0) {
+        itemInfo.name =  itemInfo.files[0].name.replace(/\.[^.]+$/,""); 
+    }
+
+
     const userItemInfo = {
         handle : ""
       , permissions : 0
@@ -196,7 +208,7 @@
         </div>
         <div>
             <label for="gallery-url-{uniqueId}">Url</label>
-            <input id="gallery-url-{uniqueId}" type="text" bind:value={userGalleryInfo.url}>
+            <Handle id="gallery-url-{uniqueId}" bind:input={galleryInfo.name} bind:value={userGalleryInfo.url} itemUrl="galleries" />
         </div>
         <div>
             <label for="gallery-tags-{uniqueId}">Tags</label>
@@ -223,8 +235,10 @@
         {#each items as item}
             <li>{item.name}
                 {#if item.file.status === Success}
-                <span class="success">Success</span>
+                <progress max="100" value="100"></progress>
+                <CheckBold size={iconSize} color={checkColor} />
                 {:else if item.file.status === Error}
+                <Alert size={iconSize} color={alertColor} />
                 <span class="error">Upload Failed: {item.file.response}</span>
                 {:else}
                 {#if item.file.total > 0}
@@ -250,7 +264,7 @@
         </div>
         <div>
             <label for="gallery-item-url-{uniqueId}">URL</label> 
-            <input id="gallery-item-url-{uniqueId}" type="text" bind:value={userItemInfo.url}>
+            <Handle id="gallery-item-url-{uniqueId}" bind:input={itemInfo.name} bind:value={userItemInfo.url} itemUrl="galleries/items" />
         </div>
         <div>
             <label for="gallery-item-permissions-{uniqueId}">Permissions</label>

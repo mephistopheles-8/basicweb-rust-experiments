@@ -318,5 +318,22 @@ pub fn user_owns_post(
     ).get_result(conn)
 }
 
+pub fn user_post_url_exists(
+     user0: Uuid
+   , url0 : &str
+   , conn: &Conn
+) -> Result<bool, diesel::result::Error> {
 
+    use diesel::dsl::*; 
+    use crate::schema::*;
+
+    select(exists(user_posts::table
+        .inner_join(users::table)
+        .filter(
+            users::uuid.eq(user0.as_bytes().as_ref())
+            .and(user_posts::url.eq(url0))
+        ))
+    ).first(conn)
+
+}
 

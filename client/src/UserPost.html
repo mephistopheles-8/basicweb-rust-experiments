@@ -3,6 +3,7 @@
     import Tags from "./Tags.html";
     import Unique from "./Unique.html";
     import Permissions from "./Permissions.html";
+    import Handle from "./Handle.html";
 
     export let postId;
     export let title = "";
@@ -95,7 +96,7 @@
         </div>
         <div>
             <label for="post-url-{uniqueId}">URL</label>
-            <input id="post-url-{uniqueId}" bind:value={url} type="text">
+            <Handle id="post-url-{uniqueId}" bind:input={title} bind:value={url} itemUrl="posts" />
         </div>
         <div>
             <label for="post-tags-{uniqueId}">Tags</label>

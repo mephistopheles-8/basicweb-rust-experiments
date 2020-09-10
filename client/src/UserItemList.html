@@ -13,10 +13,11 @@
     const api = "/api/v1";
 	const dispatch = createEventDispatcher();
 
+    export let itemUrl;
     export let itemNamePlural;
     export let itemNameSingular;
 
-    export let listingEndpoint = itemNamePlural;
+    export let listingEndpoint = itemUrl;
     export let processItems = (g) => {
        let g1 = g[1];
        g1.ord = g[0].ord;
@@ -28,7 +29,7 @@
     export let deleteHandler = (item)  => {
         itemsReq 
           = fetch(
-          `${api}/${itemNamePlural}/${item.uuid}`, {
+          `${api}/${itemUrl}/${item.uuid}`, {
                 method : "DELETE"
              ,  headers : {
                     "Content-Type" : "application/json"
@@ -88,7 +89,7 @@
 
         itemsReq 
           = fetch(
-          `${api}/${itemNamePlural}/reorder`, {
+          `${api}/${itemUrl}/reorder`, {
                 method : "POST"
              ,  headers : {
                     "Content-Type" : "application/json"
@@ -151,13 +152,14 @@
 {#await itemsReq}
 <Circle color="var(--accent-color-1)" size={iconSize} />
 {:then _}
+{#if items && items.length}
 <DndListSort bind:items={items} let:item={item} on:finalize={orderChanged}>
     <div class="item-list-item">
         <button>
             <ReorderHorizontal color="var(--accent-color-1)" size={iconSize} />
         </button>
         <slot {item}>
-            <a href="/user/{itemNamePlural}/{item.uuid}">
+            <a href="/user/{itemUrl}/{item.uuid}">
                 <div class="item-list-info">
                     <h6>{item.name}</h6>
                     <p>{item.description}</p>
@@ -168,6 +170,11 @@
         <button class="delete-button" type="button" on:click={e => {deleteItem = item;}}><Delete size={iconSize} /></button>
     </div>
 </DndListSort>
+{:else}
+<div class="empty">
+    <p>No {itemNamePlural} found.</p>
+</div>
+{/if}
 {#if orderHasChanged}
 <button type="button" on:click={submitOrder}>Save Order</button>
 {/if}
@@ -187,7 +194,7 @@
 
 <Modal shown={editItem !== null} >
 <UserItemForm 
-    {itemNamePlural} 
+    {itemUrl} 
     {itemNameSingular} 
     {itemInfoExtractCallback} 
     {processItemCallback} 

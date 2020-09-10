@@ -337,3 +337,22 @@ pub fn user_owns_gallery(
 }
 
 
+pub fn user_gallery_url_exists(
+     user0: Uuid
+   , url0 : &str
+   , conn: &Connection0
+) -> Result<bool, diesel::result::Error> {
+
+    use diesel::dsl::*; 
+    use crate::schema::*;
+
+    select(exists(user_galleries::table
+        .inner_join(users::table)
+        .filter(
+            users::uuid.eq(user0.as_bytes().as_ref())
+            .and(user_galleries::url.eq(url0))
+        ))
+    ).first(conn)
+
+}
+
