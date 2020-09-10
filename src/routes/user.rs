@@ -879,8 +879,14 @@ pub async fn user_handle_exists_json(
             eprintln!("{}", e);
             HttpResponse::InternalServerError().finish()
         })?;
-    
-    Ok(HttpResponse::Ok().json(exists))
+   
+    // Idiomatic http
+    if exists {
+        Ok(HttpResponse::NoContent().finish())
+    }else{
+
+        Ok(HttpResponse::NotFound().finish())
+    }
 }
 
 pub async fn user_handle_exists_json_path(
