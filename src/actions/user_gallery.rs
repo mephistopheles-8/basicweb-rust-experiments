@@ -356,3 +356,82 @@ pub fn user_gallery_url_exists(
 
 }
 
+pub fn user_galleries_public_by_tag(
+      tag0 : &str
+    , conn: &Connection0
+  ) -> Result<Vec<(models::UserGallery,models::Gallery)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    user_galleries::table
+        .inner_join(
+            galleries::table
+            .inner_join(
+                gallery_tags::table
+                .inner_join(tags::table)
+            )
+        )
+        .filter(
+            user_galleries::permissions.eq(1)
+            .and(tags::name.eq(tag0))
+         )
+        .select((user_galleries::all_columns, galleries::all_columns))
+        .order_by(galleries::created.desc())
+        .load(conn)
+}
+
+pub fn user_galleries_public_by_handle_tag(
+      handle0 : &str
+    , tag0 : &str
+    , conn: &Connection0
+  ) -> Result<Vec<(models::UserGallery,models::Gallery)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    user_galleries::table
+        .inner_join(users::table)
+        .inner_join(
+            galleries::table
+            .inner_join(
+                gallery_tags::table
+                .inner_join(tags::table)
+            )
+        )
+        .filter(
+            user_galleries::permissions.eq(1)
+            .and(tags::name.eq(tag0))
+            .and(users::handle.eq(handle0))
+         )
+        .select((user_galleries::all_columns, galleries::all_columns))
+        .order_by((user_galleries::ord,galleries::created.desc()))
+        .load(conn)
+}
+
+
+
+pub fn user_galleries_all_by_tag(
+      user0: Uuid
+    , tag0 : &str
+    , conn: &Connection0
+  ) -> Result<Vec<(models::UserGallery,models::Gallery)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    user_galleries::table
+        .inner_join(users::table)
+        .inner_join(
+            galleries::table
+            .inner_join(
+                gallery_tags::table
+                .inner_join(tags::table)
+            )
+        )
+        .filter(
+            tags::name.eq(tag0)
+            .and(users::uuid.eq(user0.as_bytes().as_ref()))
+         )
+        .select((user_galleries::all_columns, galleries::all_columns))
+        .order_by((user_galleries::ord,galleries::created.desc()))
+        .load(conn)
+}
+

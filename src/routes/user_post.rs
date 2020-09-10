@@ -383,3 +383,63 @@ pub async fn user_post_url_exists_by_login_json (
         Ok(HttpResponse::Unauthorized().finish())
     }
 }
+
+pub async fn user_posts_all_by_tag_login_json (
+    id: Identity
+  , tag0 : web::Path<String>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+    if let Some(sess) = id.identity() {
+        let sess : UserSession = serde_json::from_str(&sess)?;
+        if sess.is_authorized() {
+            let uuid = *sess.uuid();
+            let conn = pool.get().expect("couldn't get db connection from pool");
+            let posts = web::block(move || user_posts_all_by_tag(uuid,&tag0,&conn))
+                .await
+                .map_err(|e| {
+                    eprintln!("{}", e);
+                    HttpResponse::InternalServerError().finish()
+                })?;
+            
+            Ok(HttpResponse::Ok().json(posts))
+
+
+        }else{
+            Ok(HttpResponse::Forbidden().finish())
+        }
+    }else{
+        Ok(HttpResponse::Unauthorized().finish())
+    }
+}
+
+pub async fn user_posts_public_by_tag_json (
+    tag0 : web::Path<String>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || user_posts_public_by_tag(&tag0,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(posts))
+}
+
+pub async fn user_posts_public_by_handle_tag_json (
+    path : web::Path<(String,String)>
+  , pool: web::Data<DbPool>
+  ) -> Result<HttpResponse,actix_web::Error> {
+
+    let conn = pool.get().expect("couldn't get db connection from pool");
+    let posts = web::block(move || user_posts_public_by_handle_tag(&path.0,&path.1,&conn))
+        .await
+        .map_err(|e| {
+            eprintln!("{}", e);
+            HttpResponse::InternalServerError().finish()
+        })?;
+    
+    Ok(HttpResponse::Ok().json(posts))
+}

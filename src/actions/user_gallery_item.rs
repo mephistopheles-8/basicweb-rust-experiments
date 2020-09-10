@@ -361,3 +361,89 @@ pub fn user_gallery_item_url_exists(
     ).first(conn)
 
 }
+
+pub fn user_gallery_items_public_by_tag(
+      tag0 : &str
+    , conn: &Connection0
+  ) -> Result<Vec<(models::UserGalleryItem,models::GalleryItem)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    user_gallery_items::table
+        .inner_join(
+            gallery_items::table
+            .inner_join(user_galleries::table.on(
+                user_galleries::gallery.eq(gallery_items::gallery)
+                .and(user_galleries::permissions.eq(1))
+            ))
+            .inner_join(
+                gallery_item_tags::table
+                .inner_join(tags::table)
+            )
+        )
+        .filter(
+            user_gallery_items::permissions.eq(1)
+            .and(tags::name.eq(tag0))
+         )
+        .select((user_gallery_items::all_columns, gallery_items::all_columns))
+        .order_by(gallery_items::created.desc())
+        .load(conn)
+}
+
+pub fn user_gallery_items_public_by_handle_tag(
+      handle0 : &str
+    , tag0 : &str
+    , conn: &Connection0
+  ) -> Result<Vec<(models::UserGalleryItem,models::GalleryItem)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    user_gallery_items::table
+        .inner_join(users::table)
+        .inner_join(
+            gallery_items::table
+            .inner_join(user_galleries::table.on(
+                user_galleries::gallery.eq(gallery_items::gallery)
+                .and(user_galleries::permissions.eq(1))
+            ))
+            .inner_join(
+                gallery_item_tags::table
+                .inner_join(tags::table)
+            )
+        )
+        .filter(
+            user_gallery_items::permissions.eq(1)
+            .and(tags::name.eq(tag0))
+            .and(users::handle.eq(handle0))
+         )
+        .select((user_gallery_items::all_columns, gallery_items::all_columns))
+        .order_by((user_gallery_items::ord,gallery_items::created.desc()))
+        .load(conn)
+}
+
+pub fn user_gallery_items_all_by_tag(
+      user0: Uuid
+    , tag0 : &str
+    , conn: &Connection0
+  ) -> Result<Vec<(models::UserGalleryItem,models::GalleryItem)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+    user_gallery_items::table
+        .inner_join(users::table)
+        .inner_join(
+            gallery_items::table
+            .inner_join(
+                gallery_item_tags::table
+                .inner_join(tags::table)
+            )
+        )
+        .filter(
+            tags::name.eq(tag0)
+            .and(users::uuid.eq(user0.as_bytes().as_ref()))
+         )
+        .select((user_gallery_items::all_columns, gallery_items::all_columns))
+        .order_by((user_gallery_items::ord,gallery_items::created.desc()))
+        .load(conn)
+
+}
+

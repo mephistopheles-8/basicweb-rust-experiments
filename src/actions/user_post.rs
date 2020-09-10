@@ -337,3 +337,81 @@ pub fn user_post_url_exists(
 
 }
 
+pub fn user_posts_public_by_tag(
+      tag0 : &str
+    , conn: &Conn
+  ) -> Result<Vec<(models::UserPost,models::Post)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    user_posts::table
+        .inner_join(
+            posts::table
+            .inner_join(
+                post_tags::table
+                .inner_join(tags::table)
+            )
+        )
+        .filter(
+            user_posts::permissions.eq(1)
+            .and(tags::name.eq(tag0))
+         )
+        .select((user_posts::all_columns, posts::all_columns))
+        .order_by(posts::created.desc())
+        .load(conn)
+}
+
+pub fn user_posts_public_by_handle_tag(
+      handle0 : &str
+    , tag0 : &str
+    , conn: &Conn
+  ) -> Result<Vec<(models::UserPost,models::Post)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    user_posts::table
+        .inner_join(users::table)
+        .inner_join(
+            posts::table
+            .inner_join(
+                post_tags::table
+                .inner_join(tags::table)
+            )
+        )
+        .filter(
+            user_posts::permissions.eq(1)
+            .and(tags::name.eq(tag0))
+            .and(users::handle.eq(handle0))
+         )
+        .select((user_posts::all_columns, posts::all_columns))
+        .order_by((user_posts::ord,posts::created.desc()))
+        .load(conn)
+}
+
+
+pub fn user_posts_all_by_tag(
+      user0: Uuid
+    , tag0 : &str
+    , conn: &Conn
+  ) -> Result<Vec<(models::UserPost,models::Post)>, diesel::result::Error> {
+    
+    use crate::schema::*;
+
+    user_posts::table
+        .inner_join(users::table)
+        .inner_join(
+            posts::table
+            .inner_join(
+                post_tags::table
+                .inner_join(tags::table)
+            )
+        )
+        .filter(
+            tags::name.eq(tag0)
+            .and(users::uuid.eq(user0.as_bytes().as_ref()))
+         )
+        .select((user_posts::all_columns, posts::all_columns))
+        .order_by((user_posts::ord,posts::created.desc()))
+        .load(conn)
+}
+
