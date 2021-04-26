@@ -1,0 +1,7 @@
+/target
+.env
+*.sqlite
+*.tar.gz
+*.orig
+/tmp
+*.swp
