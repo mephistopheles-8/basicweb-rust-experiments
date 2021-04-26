@@ -1,0 +1,17 @@
+{{#*inline "content"}}
+<form method="POST" action="/login">
+    <div>
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" title="Email Address" required> 
+    </div>
+    <div>
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" title="Password" required> 
+    </div>
+    <div>
+        <a href="/recover-password">Forgot Password</a>
+    </div>
+    <input type="submit" value="Login" title="Login">
+</form>
+{{/inline}}
+{{~> (parent)~}}

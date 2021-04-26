@@ -1,0 +1,107 @@
+{{#*inline "content"}}
+<form method="POST" action="/register">
+    <fieldset>
+        <legend>Your Information</legend>
+        <div {{#if errors.name}} class="error-field" {{/if}}>
+            <label for="name">Name (first and last)</label>
+            <input type="text" name="name" id="name" title="Name" value="{{values.name}}" required>
+            {{#if errors.name}}
+            <span class="error">{{errors.name}}</span>
+            {{/if}} 
+        </div>
+        <div {{#if errors.email}} class="error-field" {{/if}}>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" title="Email Address" value="{{values.email}}" required> 
+            {{#if errors.email}}
+            <span class="error">{{errors.email}}</span>
+            {{/if}} 
+        </div>
+        <div {{#if errors}} class="error-field" {{/if}}>
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" title="Password" required> 
+            {{#if errors.password}}
+            <span class="error">{{errors.password}}</span>
+            {{/if}} 
+        </div>
+        <div {{#if errors}} class="error-field" {{/if}}>
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" name="confirm_password" id="confirm_password" title="Confirm Password" required> 
+            {{#if errors.confirm_password}}
+            <span class="error">{{errors.confirm_password}}</span>
+            {{/if}} 
+        </div>
+        <div {{#if errors.handle}} class="error-field" {{/if}}>
+            <label for="handle">Handle</label>
+            <input type="text" name="handle" pattern="[a-z0-9_-]+" id="handle" title="Handle" value="{{values.handle}}" required> 
+            {{#if errors.handle}}
+            <span class="error">{{errors.handle}}</span>
+            {{/if}} 
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Question 1</legend>
+        <div {{#if errors.secret0_question}} class="error-field" {{/if}}>
+            <label for="secret0_question">Question</label>
+            <select name="secret0_question" id="secret0_question">
+                {{#each questions}}
+                <option value="{{this.id}}" {{#if (eq ../values.secret0_question this.id)}}selected{{/if}}>{{this.question}}</option>
+                {{/each}}
+            </select>
+            {{#if errors.secret0_question}}
+            <span class="error">{{errors.secret0_question}}</span>
+            {{/if}} 
+        </div>
+        <div {{#if errors.secret0_answer}} class="error-field" {{/if}}>
+            <label for="secret0_answer">Answer</label>
+            <input type="text" name="secret0_answer" id="secret0_answer" title="Question 1 Answer" value="{{values.secret0_answer}}" required> 
+            {{#if errors.secret0_answer}}
+            <span class="error">{{errors.secret0_answer}}</span>
+            {{/if}} 
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Question 2</legend>
+        <div {{#if errors.secret1_question}} class="error-field" {{/if}}>
+            <label for="secret1_question">Question</label>
+            <select name="secret1_question" id="secret1_question">
+                {{#each questions}}
+                <option value="{{this.id}}" {{#if (eq ../values.secret1_question this.id)}}selected{{/if}}>{{this.question}}</option>
+                {{/each}}
+            </select>
+            {{#if errors.secret1_question}}
+            <span class="error">{{errors.secret1_question}}</span>
+            {{/if}} 
+        </div>
+        <div {{#if errors.secret1_answer}} class="error-field" {{/if}}>
+            <label for="secret1_answer">Answer</label>
+            <input type="text" name="secret1_answer" id="secret1_answer" title="Question 2 Answer" value="{{values.secret1_answer}}" required> 
+            {{#if errors.secret1_answer}}
+            <span class="error">{{errors.secret1_answer}}</span>
+            {{/if}} 
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Question 3</legend>
+        <div {{#if errors.secret2_question}} class="error-field" {{/if}}>
+            <label for="secret2_question">Question</label>
+            <select name="secret2_question" id="secret2_question">
+                {{#each questions}}
+                <option value="{{this.id}}" {{#if (eq ../values.secret2_question this.id)}}selected{{/if}}>{{this.question}}</option>
+                {{/each}}
+            </select>
+            {{#if errors.secret2_question}}
+            <span class="error">{{errors.secret2_question}}</span>
+            {{/if}} 
+        </div>
+        <div {{#if errors.secret2_answer}} class="error-field" {{/if}}>
+            <label for="secret2_answer">Answer</label>
+            <input type="text" name="secret2_answer" id="secret2_answer" title="Question 3 Answer" value="{{values.secret2_answer}}" required> 
+            {{#if errors.secret2_answer}}
+            <span class="error">{{errors.secret2_answer}}</span>
+            {{/if}} 
+        </div>
+    </fieldset>
+    <input type="submit" value="Register" title="Register">
+</form>
+{{/inline}}
+{{~> (parent)~}}
