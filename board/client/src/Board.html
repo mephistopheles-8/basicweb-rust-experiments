@@ -1,0 +1,43 @@
+<script>
+    import PostThread from "./PostThread.html";
+    export let postId;
+    let postsRequest = new Promise(() => {});
+    const uri = "http://localhost:8080/api/v1";
+
+    // sync posts to only allow one reply at a time.
+    let replyId;
+
+    $: if (postId) {
+        postsRequest 
+            = fetch(`${uri}/posts/${postId}/thread`)
+            . then(res => res.json());
+    }else {
+        postsRequest 
+            = fetch(`${uri}/posts`)
+            . then(res => res.json());
+    }
+    function selectPost(id) {
+        postId = id;
+    }
+    function refreshThread() {
+        postsRequest 
+            = fetch(`${uri}/posts/${postId}/thread`)
+            . then(res => res.json());
+    }
+</script>
+
+{#await postsRequest}
+<p>...</p>
+{:then posts}
+{#if postId}
+<PostThread post={posts} bind:replyId={replyId} on:reply={refreshThread} />
+{:else}
+<ul>
+    {#each posts as post}
+    <li on:click={() => selectPost(post.id)}>{post.title} {post.created}</li> 
+    {/each}
+</ul>
+{/if}
+{:catch err}
+<p>Error: {err.message}</p>
+{/await}

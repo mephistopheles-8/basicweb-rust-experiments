@@ -1,0 +1,5 @@
+/target
+database.sqlite
+.env
+*.swp
+*.tar.gz

@@ -1,0 +1,89 @@
+<script>
+    import { createEventDispatcher } from 'svelte';
+    import commonmark from "commonmark";
+
+    export let post;
+    const uri = "http://localhost:8080/api/v1";
+	const dispatch = createEventDispatcher();
+
+    // sync posts to only allow one reply at a time.
+    export let replyId;
+
+    const reader = new commonmark.Parser({smart: true});
+    const writer = new commonmark.HtmlRenderer({safe: true});
+
+    let replyValue;
+    let replyResponse = Promise.resolve(true);
+
+    function replySubmit() {
+        if( replyValue && replyValue.length ) {
+            replyResponse
+                = fetch(`${uri}/posts/${post.id}/replies`,{
+                        method : "POST"
+                     ,  headers : {
+                            "Content-Type" : "application/json"
+                       }
+                     , credentials: "same-origin"
+                     , body : JSON.stringify({
+                           body : replyValue
+                        }) 
+                 })
+                . then(res => res.json())
+                . then(res => {
+                        console.log( res );
+                        replyValue = ""; 
+                        dispatch("reply",post);
+                        replyId = false;
+                  });
+        } // end [if]
+    }// end [replySubmit]
+    
+    function replyBegin() {
+        replyId = post.id;
+    }
+    function keyHandler(e) {
+        if( e.keyCode === 13 && !e.shiftKey ){
+           replySubmit(); 
+        }// end [if]
+    }// end [keyHandler]
+
+    function splitLines( body ) {
+        return body.split(/\n+/);
+    }
+
+    // TODO: check security
+    function renderMarkdown( body ) {
+        let parsed = reader.parse( body );
+        return writer.render( parsed );
+    }
+</script>
+
+<div class="post">
+    {#if post.title}
+    <h2>{post.title}</h2>
+    {/if}
+    {#if post.description}
+    <p>{post.description}<p>
+    {/if}
+    {#if post.format === 1}
+    {@html renderMarkdown(post.body)}
+    {:else}
+        {#each splitLines(post.body) as line}
+        <p>{line}</p>
+        {/each}
+    {/if}
+    {#await replyResponse}
+    <p>...</p>
+    {:then _}
+    {#if replyId === post.id}
+    <textarea bind:value={replyValue} on:keydown={keyHandler}></textarea>
+    {:else}
+    <button on:click={replyBegin}>Reply</button>
+    {/if}
+    {:catch err}
+    <p>Error: {err.message}</p>
+    {/await} 
+    {#each post.replies as reply}
+    <svelte:self bind:replyId={replyId} post={reply} on:reply />
+    {/each}
+</div>
