@@ -1,0 +1,12 @@
+{
+  "version": 3,
+  "file": "basicweb_tags_client.css",
+  "sources": [
+    "../../Tags.html"
+  ],
+  "sourcesContent": [
+    "<script>\n    export let tags = [];\n    let value = \"\";\n\n    function clearTag(ind) {\n        tags.splice(ind,1);\n        tags = tags;\n    }\n    function keyHandler(e) {\n        let trimmed = value.trim();\n        // Confirm a tag on enter or comma\n        if( trimmed.length > 0 && (e.keyCode === 13 || e.key === \",\") ){\n            tags.push(trimmed);\n            value = \"\";\n            tags = tags;\n            e.preventDefault();\n\n        // Delete a tag with backspace\n        }else if (e.keyCode === 8 && value.length === 0){\n            tags.pop();\n            tags = tags;\n\n        // Make commas invalid from within tags\n        }else if ( e.key === \",\" ){\n            e.preventDefault();\n        }\n    }\n</script>\n<style>\n    .tags-editor {\n        border: solid 1px #ccc; \n    }\n    input {\n        -moz-appearance:none;\n        -webkit-appearance:none;\n        appearance:none;\n        border-style: none;\n        box-sizing: border-box;\n        padding: 0.5em;\n        flex-grow: 1;\n    }\n    .tags-editor, ul {\n        display: flex;\n    }\n    ul {\n        list-style-type: none;\n        margin: 0; padding: 0;\n    }\n    li {\n        background: #ddd;\n        margin: 0.1em;\n        padding: 0.3em;\n        transition: background 0.5s;\n        border-radius:0.4em;\n        cursor: pointer;\n    }\n    li:hover {\n        background: #efefef;\n    }\n</style>\n<div class=\"tags-editor\">\n    <ul class=\"tags-listing\">\n        {#each tags as tag,i}\n        <li on:click={(e) => clearTag(i)}>{tag}</li>\n        {/each}\n    </ul>\n    <input bind:value={value} on:keydown={keyHandler} type=\"text\">\n</div>\n"
+  ],
+  "names": [],
+  "mappings": "AA6BI,YAAY,eAAC,CAAC,AACV,MAAM,CAAE,KAAK,CAAC,GAAG,CAAC,IAAI,AAC1B,CAAC,AACD,KAAK,eAAC,CAAC,AACH,gBAAgB,IAAI,CACpB,mBAAmB,IAAI,CACvB,WAAW,IAAI,CACf,YAAY,CAAE,IAAI,CAClB,UAAU,CAAE,UAAU,CACtB,OAAO,CAAE,KAAK,CACd,SAAS,CAAE,CAAC,AAChB,CAAC,AACD,2BAAY,CAAE,EAAE,eAAC,CAAC,AACd,OAAO,CAAE,IAAI,AACjB,CAAC,AACD,EAAE,eAAC,CAAC,AACA,eAAe,CAAE,IAAI,CACrB,MAAM,CAAE,CAAC,CAAE,OAAO,CAAE,CAAC,AACzB,CAAC,AACD,EAAE,eAAC,CAAC,AACA,UAAU,CAAE,IAAI,CAChB,MAAM,CAAE,KAAK,CACb,OAAO,CAAE,KAAK,CACd,UAAU,CAAE,UAAU,CAAC,IAAI,CAC3B,cAAc,KAAK,CACnB,MAAM,CAAE,OAAO,AACnB,CAAC,AACD,iBAAE,MAAM,AAAC,CAAC,AACN,UAAU,CAAE,OAAO,AACvB,CAAC"
+}
