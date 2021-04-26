@@ -1,0 +1,8 @@
+{{#*inline "content"}}
+<ul>
+    {{#each galleries}}
+     <li><a href="/galleries/show/{{this.uuid}}">{{this.name}}</a></li>
+    {{/each}}
+</ul>
+{{/inline}}
+{{~> (parent)~}}
