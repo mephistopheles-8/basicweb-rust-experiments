@@ -1,0 +1,63 @@
+<script>
+    import MapSearch  from "./MapSearch.html";
+    import ts from "@mapbox/timespace";
+
+    export let mapType = "OpenStreetMap";
+    export let marker;
+
+    let currentDate = new Date();
+    let dateValue = dateYmd( currentDate ); 
+    let timeValue = dateTime( currentDate );
+    let lnglat;
+    let tz;
+
+    $: if (lnglat) {
+        // Moment: timezone
+        tz = ts.getFuzzyLocalTimeFromPoint(currentDate.getTime(), lnglat);
+    }
+
+    function dateTime( dateObj ) {
+        return [
+              String(dateObj.getHours())
+            , String(dateObj.getMinutes()).padStart(2,'0')
+        ].join(":");
+    }
+
+    function dateYmd( dateObj ) {
+        return [
+              String(dateObj.getFullYear())
+            , String(dateObj.getMonth() + 1).padStart(2,'0')
+            , String(dateObj.getDate()).padStart(2,'0')
+        ].join("-");
+    }
+
+    function dateUpdate () {
+        if( dateValue && dateValue.length ) {
+            let [y,m,d] = dateValue.split("-").map((x) => parseInt(x));
+            currentDate = new Date(y, m-1, d, currentDate.getHours(),currentDate.getMinutes(),0);
+        }
+    }
+    function timeUpdate () {
+        if( timeValue && timeValue.length ) {
+            let [h,m] = timeValue.split(":").map( (x) => parseInt(x) );
+            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), h, m, 0 );
+        }
+    }
+
+    function mapSelected( evt ) {
+        let {lat,lon} = evt.detail;
+        // Lat / Lon are reversed...
+        lnglat = [lon,lat];
+    }
+
+</script>
+
+<label>Date <input bind:value={dateValue} on:change={dateUpdate} type="date" required></label>
+<label>Time <input bind:value={timeValue} on:change={timeUpdate} type="time" required></label>
+<MapSearch 
+           mapType={mapType} 
+           marker={marker}
+           on:selected={mapSelected} />
+{#if tz}
+<p>{tz.format()}</p>
+{/if}

@@ -1,0 +1,12 @@
+{{#*inline "content"}}
+    <div id="location-create"></div>
+    <script type="text/javascript" src="/js/basicweb_events_client.min.js"></script>
+    <script type="text/javascript">
+        basicweb_events_client
+            .iconDefaultImagePath("/images/");
+        basicweb_events_client
+            .locationCreate( document.getElementById("location-create") );
+    </script>
+
+{{/inline}}
+{{~> (parent)~}}
