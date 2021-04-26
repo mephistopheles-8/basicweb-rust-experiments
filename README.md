@@ -1,6 +1,6 @@
 # Basicweb: Microsite experiments with Rust, Actix-Web, Diesel, Svelte and SQLite.
 
-*Note: this is no longer under active development.*
+*Note: this is not currently under active development.*
 
 This is a set of experiments with a variation of "microsites," small,
 self-contained front-end and back-end "sites" that are intended to be
