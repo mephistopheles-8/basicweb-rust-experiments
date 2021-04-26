@@ -1,0 +1,25 @@
+{
+  "name": "basicweb-locations-client",
+  "version": "0.0.1",
+  "description": "Client for basicweb/locations",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "build:min": "TARGET=min rollup -c",
+    "build:install": "TARGET=install rollup -c && cp ./node_modules/leaflet/dist/leaflet.css ../static/root/css"
+  },
+  "author": "M. Bellaire",
+  "devDependencies": {
+    "@rollup/plugin-buble": "^0.21.1",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "leaflet": "^1.6.0",
+    "promise-polyfill": "^8.1.0",
+    "rollup": "^2.1.0",
+    "rollup-plugin-polyfill": "^2.0.1",
+    "rollup-plugin-svelte": "^5.1.1",
+    "rollup-plugin-terser": "^5.3.0",
+    "svelte": "^3.20.1",
+    "whatwg-fetch": "^3.0.0"
+  }
+}

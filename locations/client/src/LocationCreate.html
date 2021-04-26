@@ -1,0 +1,88 @@
+<script>
+    import MapSearch  from "./MapSearch.html"
+
+    let submitted = false;
+    let selectedLocation;
+    let result;
+
+    function mapSelected( evt ) {
+        selectedLocation = evt.detail;
+    }
+
+    function submitLocation() {
+        let loc = selectedLocation;
+        let lat = parseFloat(loc.lat);
+        let lng = parseFloat(loc.lon);
+
+        let name 
+            = loc.namedetails && loc.namedetails.name 
+            ? loc.namedetails.name
+            : loc.display_name;
+
+        let address 
+            = (loc.address && 
+                loc.address.house_number && 
+                loc.address.road 
+              )
+            ? `${loc.address.house_number} ${loc.address.road}` 
+            : null;
+        
+        let city 
+            = (loc.address && loc.address.city)
+            ? loc.address.city
+            : null;
+        
+        let region 
+            = (loc.address && loc.address.state)
+            ? loc.address.state
+            : null;
+        
+        let postal 
+            = (loc.address && loc.address.postcode)
+            ? loc.address.postcode
+            : null;
+        
+        let country
+            = (loc.address && loc.address.country)
+            ? loc.address.country
+            : null;
+
+        result = fetch(
+            "http://localhost:8080/locations/create", {
+                method : "POST"
+             ,  headers : {
+                    "Content-Type" : "application/json"
+               }
+             , credentials: "same-origin"
+             , body : JSON.stringify({
+                  name
+                , address
+                , city
+                , region
+                , postal
+                , country
+                , lat
+                , lng
+              })
+            }).then( res => res.json() );
+            submitted = true;
+    }
+    function reset () {
+        selectedLocation = null;
+        result = null;
+        submitted = false;
+    }
+</script>
+{#if !submitted}
+<MapSearch on:selected={mapSelected} on:change={reset} />
+<button on:click={submitLocation} disabled={!selectedLocation}>Add Location</button>
+{:else}
+{#await result}
+<p>Submitting request..</p>
+{:then res}
+<p>The location has been added!</p>
+<button on:click={reset}>Add Another Location</button>
+{:catch err}
+<p>An error occured: {err.message}</p>
+{/await}
+{/if}
