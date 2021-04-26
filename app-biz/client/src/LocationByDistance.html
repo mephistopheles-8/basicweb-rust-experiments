@@ -1,0 +1,99 @@
+<script>
+    import MapSearch  from "./MapSearch.html"
+    import L from "leaflet";
+
+
+    export let mapType = "OpenStreetMap";
+    export let marker;
+
+    const api = "http://localhost:8080"
+    let distance = 1; //km
+    let sliderDistance = 1;
+
+    let locationSearch = Promise.resolve([]);
+
+    let selectedLocation;
+    let mapSearch;
+    let timer;
+    let map;
+    let circle;
+
+    $: if(map) {
+        // Disable various features
+        map.touchZoom.disable();
+        map.doubleClickZoom.disable();
+        map.scrollWheelZoom.disable();
+        map.boxZoom.disable();
+        map.keyboard.disable();
+        map.dragging.disable();
+        map.zoomControl.remove();
+    }
+
+    $: if(selectedLocation) {
+        locationSearch 
+            = fetch(`${api}/locations/by_distance/${selectedLocation.lat}/${selectedLocation.lon}/${distance}`)
+            .then( res => res.json() )
+            .then( locations => { 
+                mapSearch.setLocations(locations.map(x => x[1])) 
+
+            });
+
+        if (map) {
+            if( circle ) 
+                circle.removeFrom(map);
+
+            circle = L.circle([selectedLocation.lat,selectedLocation.lon], {
+                radius: distance*1000
+              , color: '#55f'
+              , weight: 1
+              , fillColor: '#55f'
+              , fillOpacity: 0.3
+            });
+            circle.addTo(map);
+            map.fitBounds( circle.getBounds() );
+        }
+    }
+
+    function mapSelected( evt ) {
+        selectedLocation = evt.detail;
+    }
+
+    function setDistance(e) {
+        if( timer ) {
+            clearTimeout(timer);
+        }
+        setTimeout(() => {
+            distance = sliderDistance;
+        }, 250);
+    }
+</script>
+
+<MapSearch 
+           bind:this={mapSearch}
+           bind:map={map}
+           mapType={mapType} 
+           marker={marker}
+           fitBounds={false}
+           on:selected={mapSelected} />
+{#if selectedLocation}
+<label>Distance: 
+    <input bind:value={sliderDistance}
+           on:change={setDistance}
+           type="range" 
+           min="0.1" 
+           max="10" 
+           step="0.001">
+</label>
+{#if sliderDistance}
+{sliderDistance} km
+{/if}
+{/if}
+{#await locationSearch}
+<p>...</p>
+{:then locations}
+{#if selectedLocation}
+<p>({selectedLocation.lat},{selectedLocation.lon}) {distance} km</p>
+{/if}
+{:catch err}
+<p>Error: {err.message}</p>
+{/await}

@@ -1,0 +1,34 @@
+<script>
+    import { onMount, createEventDispatcher } from 'svelte';
+    export let elements;
+
+	const dispatch = createEventDispatcher();
+
+    export let kind;
+    export let showLabel = true;
+    export let label;
+    export let options;
+
+    export let element;
+    export let domNode;
+    onMount(() => {
+        if(!elements) throw "Stripe Elements is not set.";
+        element = elements.create(kind, options);
+        element.on("change", (e) => dispatch("change", e));
+        element.on("ready", (e) => dispatch("ready", e));
+        element.on("focus", (e) => dispatch("focus", e));
+        element.on("blur", (e) => dispatch("blur", e));
+        element.on("escape", (e) => dispatch("escape", e));
+        element.on("click", (e) => dispatch("click", e));
+        element.mount(domNode);
+    });
+
+</script>
+{#if showLabel}
+<label>
+    {label}
+    <div bind:this={domNode}></div>
+</label> 
+{:else}
+<div bind:this={domNode}></div>
+{/if}

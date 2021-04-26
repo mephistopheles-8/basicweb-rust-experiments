@@ -1,0 +1,13 @@
+<a href="/">Home</a>
+{{#if logged_in}}
+<a href="/user/home">Your Account</a>
+<a href="/logout">Logout</a>
+{{else}}
+<a href="/register">Register</a>
+<a href="/login">Login</a>
+{{/if}}
+<a href="/galleries/show">Gallery Listing</a>
+<a href="/galleries/create">New Gallery</a>
+<a href="/locations/show">All Locations</a>
+<a href="/locations/by_distance">By Distance</a>
+<a href="/locations/create">Add Location</a>

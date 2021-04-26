@@ -1,0 +1,109 @@
+<script>
+    import { fade } from "svelte/transition";
+    import Lazy from "svelte-lazy";
+    export let galleryId;
+
+    let displayItem;
+    let galleryRequest;
+
+    $: if (galleryId) {
+        galleryRequest = Promise.all([
+             fetch(`http://localhost:8080/galleries/${galleryId}`)
+             .then(res => res.json())
+           ,  fetch(`http://localhost:8080/galleries/${galleryId}/items`)
+             .then(res => res.json())
+            ]);
+        }
+
+    function showModal( item ) {
+        displayItem = item;
+    }
+    function hideModal() {
+        displayItem = null;
+    }
+</script>
+<style>
+    figure {
+         overflow: hidden;
+         margin:0;
+         cursor: pointer;
+    }
+    .card-image img {
+        margin: 0 auto;
+        display: block;
+        height: 400px;
+        width: 600px;
+        object-fit: cover;
+    }
+    .shadow-box {
+        position:fixed;
+        top:0;
+        bottom:0;
+        left:0;
+        right:0;
+        background: rgba(30,30,30,0.8);
+        padding: 50px;
+    }
+    .fullscreen-image {
+        width: 100%;
+        height: 100%;
+    }
+    .fullscreen-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .info-panel {
+        background: #000;
+        color: #FFF;
+    }
+    .gallery-img {
+        height:0;
+        padding-top: 56.25%;
+        background-repeat:no-repeat;
+        background-size:cover;
+        overflow:hidden;
+    }
+    .gallery-img-card {
+        width: 250px;
+    }
+    .gallery {
+        display: flex;
+        flex-wrap: wrap;
+    }
+</style>
+{#await galleryRequest}
+<p>...</p>
+{:then info}
+<h3>{info[0].name}</h3>
+{#if info[0].description}
+<p>{info[0].description}</p>
+{/if}
+<div class="gallery">
+    {#each info[1] as item}
+        <figure class="card-image" on:click={(e) => showModal(item[2])}>
+            <Lazy height={400}>
+                 <img alt={item[2].description} src="/assets/{item[2].uuid}">
+            </Lazy>
+            <figcaption>{item[2].name}</figcaption>
+        </figure>
+    <!-- NOTE: still need to check compatibility of object-fit; otherwise we can use this -->
+    <!--
+    <div class="gallery-img-card">
+        <div class="gallery-img" style="background-image: url(/assets/{item[2].uuid});"></div>
+        <p>{item[2].name}</p>
+    </div>
+    -->
+    {/each}
+</div>
+{:catch err}
+<p>Error: {err.message}</p>
+{/await}
+
+{#if displayItem}
+<div transition:fade="{{ duration: 200 }}" class="shadow-box" on:click={hideModal}>
+    <div class="fullscreen-image">
+        <img src="/assets/{displayItem.uuid}" alt="{displayItem.description}">
+    </div>
+</div>
+{/if}

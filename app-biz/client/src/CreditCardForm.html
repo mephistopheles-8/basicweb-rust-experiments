@@ -1,0 +1,20 @@
+<script>
+    import Stripe from "./Stripe.html";
+    import Card from "./elements/Card.html";
+    import PaymentRequestButton from "./elements/PaymentRequestButton.html";
+
+    export let clientKey;
+
+    let elements;
+    let stripe;
+
+</script>
+<Stripe 
+    bind:stripe={stripe}
+    bind:elements={elements} 
+    clientKey={clientKey} />
+{#if elements}
+<form>
+    <Card elements={elements} />
+</form>
+{/if}
