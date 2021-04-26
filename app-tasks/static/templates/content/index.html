@@ -1,0 +1,11 @@
+{{#*inline "content"}}
+<ul class="post-listing">
+    {{#each posts}}
+    <li>
+        <a href="/posts/{{id}}">{{title}}</a>
+        <time>{{created}}</time>
+    </li>
+    {{/each}}
+</ul>
+{{/inline}}
+{{~> (parent)~}}

@@ -1,0 +1,24 @@
+-- Your SQL goes here
+
+CREATE TABLE posts (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    parent INTEGER,
+    depth INTEGER NOT NULL,
+    title TEXT,
+    description TEXT,
+    body TEXT NOT NULL,
+    format INTEGER NOT NULL,
+    status INTEGER NOT NULL,
+    flagged BOOLEAN NOT NULL DEFAULT 0,
+    uuid BLOB NOT NULL UNIQUE,
+    created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(parent) REFERENCES posts(id)
+);
+
+CREATE TRIGGER trigger_posts_update
+AFTER UPDATE On posts
+BEGIN
+   UPDATE posts SET updated = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+

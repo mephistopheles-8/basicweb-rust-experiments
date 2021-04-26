@@ -1,0 +1,22 @@
+{{#*inline "content"}}
+<form method="POST" action="/manage-account">
+    <div>
+        <label for="name">Name (first and last)</label>
+        <input type="text" name="name" id="name" title="Email Address" value="{{name}}" required> 
+    </div>
+    <div>
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" title="Email Address" value="{{email}}" required> 
+    </div>
+    <div>
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" title="Password" value="{{password}}" required> 
+    </div>
+    <div>
+        <label for="confirm-password">Confirm Password</label>
+        <input type="password" name="confirm-password" id="confirm-password" title="Confirm Password" value="{{password}}" required> 
+    </div>
+    <input type="submit" value="Update" title="Update">
+</form>
+{{/inline}}
+{{~> (parent)~}}
