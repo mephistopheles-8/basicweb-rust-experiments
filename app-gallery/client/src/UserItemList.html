@@ -1,0 +1,205 @@
+<script>
+    import { createEventDispatcher } from 'svelte';
+    import Alert from "svelte-material-icons/Alert.svelte";
+    import Delete from "svelte-material-icons/Delete.svelte";
+    import ReorderHorizontal from "svelte-material-icons/ReorderHorizontal.svelte";
+    import PencilOutline from "svelte-material-icons/PencilOutline.svelte";
+    import { Circle } from 'svelte-loading-spinners';
+    import UserItemForm from "./UserItemForm.html";
+    import DndListSort from "./DndListSort.html";
+    import AlertConfirm from "./AlertConfirm.html";
+    import Modal from "./Modal.html";
+
+    const api = "/api/v1";
+	const dispatch = createEventDispatcher();
+
+    export let itemUrl;
+    export let itemNamePlural;
+    export let itemNameSingular;
+
+    export let listingEndpoint = itemUrl;
+    export let processItems = (g) => {
+       let g1 = g[1];
+       g1.ord = g[0].ord;
+       return g1; 
+    };
+
+    export let iconSize = 24;
+
+    export let deleteHandler = (item)  => {
+        itemsReq 
+          = fetch(
+          `${api}/${itemUrl}/${item.uuid}`, {
+                method : "DELETE"
+             ,  headers : {
+                    "Content-Type" : "application/json"
+               }
+             , credentials: "same-origin"
+            }).then( res => { 
+                if (!res.ok)
+                    throw `Server responded with status ${res.status}`;
+                return fetchItems();
+            });
+    }
+    export let processItemCallback;
+
+    export let itemInfoExtractCallback;
+
+    let items = [];
+
+    let itemsReq 
+        = fetchItems(); 
+
+    let deleteItem = null;
+    let editItem = null;
+    let orderHasChanged = false;
+
+    function orderChanged () {
+        orderHasChanged = true;
+        dispatch("orderChanged");
+    }
+
+    function fetchItems() {
+        return fetch( `${api}/${listingEndpoint}` )
+           .then( res => res.json() )
+           .then( g0s => {
+                items = g0s.map(processItems);
+                return items;
+            });
+    }
+
+
+    function handleSortConsider(e) {
+        items = e.detail.items;
+    }
+
+    function handleSortFinalize(e) {
+        items = e.detail.items;
+    }
+
+
+    function submitOrder(e) {
+        let orders 
+            = items
+            . reduce((g0s,g0,i) => {
+                if(g0.ord !== i)
+                    g0s.push({ uuid : g0.uuid, ord : i });
+                return g0s;
+             }, []);
+
+        itemsReq 
+          = fetch(
+          `${api}/${itemUrl}/reorder`, {
+                method : "POST"
+             ,  headers : {
+                    "Content-Type" : "application/json"
+               }
+             , credentials: "same-origin"
+             , body : JSON.stringify(orders)
+            }).then( res => { 
+                if (!res.ok)
+                    throw `Server responded with status ${res.status}`;
+                let r0 = fetchItems();
+                dispatch("orderSubmitted");
+                return r0;
+            });
+    }
+    function deleteConfirm( ) {
+        deleteHandler(deleteItem);
+        deleteItem = null;
+    }
+    function deleteCancel( ) {
+        deleteItem = null;
+    }
+</script>
+<style>
+    .item-list-item button {
+        -moz-appearance:none;
+        -webkit-appearance:none;
+        appearance:none;
+        cursor:pointer;
+        border-style:none;
+        background:transparent;
+    }
+    .item-list-item {
+        background: var(--bg-color-3);
+        display: flex;
+        font-size: 1rem;
+        border: dotted 1px var(--accent-color-0);
+        border-left: solid 0.25rem var(--accent-color-1);
+        transition: all 0.25s;
+        max-width: 350px;
+    }
+    .item-list-item:hover {
+        background: var(--fg-color-1);
+        border-left-color: var(--accent-color-2);
+    }
+    .item-list-item > * {
+        font-size: 1rem;
+    }
+    .item-list-info > * {
+        padding: 0 0.5rem;
+    }
+    .item-list-item a {
+        flex-grow: 1;
+        color: var(--fg-color-3);
+    }
+    .error {
+        display: flex;
+        color:#800;
+    }
+</style>
+{#await itemsReq}
+<Circle color="var(--accent-color-1)" size={iconSize} />
+{:then _}
+{#if items && items.length}
+<DndListSort bind:items={items} let:item={item} on:finalize={orderChanged}>
+    <div class="item-list-item">
+        <button>
+            <ReorderHorizontal color="var(--accent-color-1)" size={iconSize} />
+        </button>
+        <slot {item}>
+            <a href="/user/{itemUrl}/{item.uuid}">
+                <div class="item-list-info">
+                    <h6>{item.name}</h6>
+                    <p>{item.description}</p>
+                </div>
+            </a>
+        </slot>
+        <button class="edit-button" type="button" on:click={e => {editItem = item;}}><PencilOutline size={iconSize} /></button>
+        <button class="delete-button" type="button" on:click={e => {deleteItem = item;}}><Delete size={iconSize} /></button>
+    </div>
+</DndListSort>
+{:else}
+<div class="empty">
+    <p>No {itemNamePlural} found.</p>
+</div>
+{/if}
+{#if orderHasChanged}
+<button type="button" on:click={submitOrder}>Save Order</button>
+{/if}
+{:catch err}
+<div class="error">
+    <Alert color="#F80" size={iconSize} />
+    <p>Error: {err.message}</p>
+</div>
+{/await}
+
+<AlertConfirm 
+    shown={deleteItem !== null} 
+    message="Are you sure you want to delete this {itemNameSingular}? This action cannot be undone." 
+    on:confirm={deleteConfirm} 
+    on:cancel={deleteCancel} />
+
+
+<Modal shown={editItem !== null} >
+<UserItemForm 
+    {itemUrl} 
+    {itemNameSingular} 
+    {itemInfoExtractCallback} 
+    {processItemCallback} 
+    itemId={editItem.uuid} 
+    on:cancel={e => {editItem = null;}} />
+</Modal>
+
+

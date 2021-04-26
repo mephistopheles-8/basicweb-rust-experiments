@@ -1,0 +1,145 @@
+<script>
+    import { createEventDispatcher } from 'svelte';
+    import Unique from "./Unique.html";
+    import Tags from "./Tags.html";
+    import Permissions from "./Permissions.html";
+
+	const dispatch = createEventDispatcher();
+    const api = "/api/v1";
+
+    export let itemId;
+    export let itemUrl;
+    export let itemNameSingular;
+    export let legend = `Update ${itemNameSingular}`;
+    export let submitText = "Save";
+    export let cancelText = "Cancel";
+
+    export let itemRequest;
+    export let submitHandler = (item,dispatch) => {
+        let [itemInfo,userItemInfo] = itemInfoExtract(item); 
+           
+        itemRequest =
+          fetch(
+              `${api}/${itemUrl}/${itemId}`, {
+                method : "POST"
+             ,  headers : {
+                    "Content-Type" : "application/json"
+               }
+             , credentials: "same-origin"
+             , body : JSON.stringify([itemInfo,userItemInfo])
+            }).then( res => res.json() )
+              .then( _ => 
+                  fetch(
+                    `${api}/${itemUrl}/${itemId}/tags`, {
+                        method : "POST"
+                     ,  headers : {
+                            "Content-Type" : "application/json"
+                       }
+                     , credentials: "same-origin"
+                     , body : JSON.stringify(tags)
+                    }).then( res => res.json() )
+               );
+    };
+    export let itemIsValid = (item) => {
+        return item[1].name.length > 0; 
+    };
+    export let processItemCallback = (item) => item;
+
+    export let itemInfoExtractCallback = (item) => {
+        let itemInfo = {
+            kind : item[1].kind
+          , name : item[1].name
+          , description : item[1].description
+        };
+        let userItemInfo = {
+            permissions : item[0].permissions
+          , ord : item[0].ord
+          , url : item[0].url
+        };
+        return [itemInfo,userItemInfo];
+    };
+
+    let item;
+    let tags = [];
+
+    $: if(itemId) {
+        itemRequest =
+            Promise.all([
+              fetch(`${api}/${itemUrl}/${itemId}`)
+                .then( res => res.json() )
+            , fetch(`${api}/${itemUrl}/${itemId}/tags`)
+                .then( res => res.json() )
+            ]).then( res => {
+                let [i0,t0] = res;
+                item = processItem(i0);
+                tags = t0.map(tag => tag.name);
+                return res;
+            });
+    }
+    function processItem(item) {
+        return processItemCallback(item);
+    } 
+    function itemInfoExtract(item) {
+        return itemInfoExtractCallback(item);
+    } 
+    function submitChanges () {
+        if( itemIsValid(item) ) {
+            submitHandler(item,dispatch);
+        }
+    }
+    function cancelChanges () {
+        dispatch("cancel");
+    }
+
+</script>
+<style>
+    form {
+        margin: 0;
+    }
+    .form-controls {
+        padding: 1rem;
+        padding-top: 0;
+        text-align:center;
+    }
+</style>
+<form>
+    {#if itemRequest}
+    {#await itemRequest}
+    <p>...</p>
+    {:then}
+    <fieldset>
+        <legend>{legend}</legend>
+        <Unique let:uniqueId={uniqueId}>
+            <slot {item} {uniqueId}>
+                <div>
+                    <label for="item-name-{uniqueId}">Name</label>
+                    <input id="item-name-{uniqueId}" type="text" bind:value={item[1].name}>
+                </div>
+                <div>
+                    <label for="item-description-{uniqueId}">Description</label>
+                    <input id="item-description-{uniqueId}" type="text" bind:value={item[1].description}>
+                </div>
+                <div>
+                    <label for="item-url-{uniqueId}">Url</label>
+                    <input id="item-url-{uniqueId}" type="text" bind:value={item[0].url}>
+                </div>
+                <div>
+                    <label for="item-tags-{uniqueId}">Tags</label>
+                    <Tags id="item-tags-{uniqueId}" bind:tags />
+                </div>
+                <div>
+                    <label for="item-permissions-{uniqueId}">Permissions</label>
+                    <Permissions id="item-permissions-{uniqueId}" bind:value={item[0].permissions} />
+                </div>
+            </slot>
+        </Unique>
+    </fieldset>
+    <div class="form-controls">
+        <button type="button" on:click={submitChanges}>{submitText}</button> 
+        <button type="button" on:click={cancelChanges}>{cancelText}</button>
+    </div>
+    {:catch err}
+    <p>Error: {err.message}</p>
+    {/await}
+    {/if}
+</form>

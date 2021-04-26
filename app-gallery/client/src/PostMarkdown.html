@@ -1,0 +1,45 @@
+<script>
+    import commonmark from "commonmark";
+
+    export let id;
+    export let body;
+
+    let rendered = "";
+    let timer;
+    
+    const reader = new commonmark.Parser({smart: true});
+    const writer = new commonmark.HtmlRenderer({safe: true});
+
+    $: {
+        if( timer ) {
+            clearTimeout(timer);
+        }
+        timer = setTimeout( () => {
+            let parsed = reader.parse( body );
+            rendered = writer.render( parsed );
+        }, 250);
+    }
+
+</script>
+<style>
+    textarea {
+        resize: none;
+    }
+    .editor {
+        height: 350px;
+        display: flex;
+    }
+    .editor > * {
+        flex-grow: 1;
+        width: 50%;
+        max-height: 100%;
+        overflow: auto;
+    }
+    .preview {
+        padding: 1rem;
+    }
+</style>
+<div class="editor">
+    <textarea id={id} bind:value={body}></textarea>
+    <div class="preview">{@html rendered}</div>
+</div>

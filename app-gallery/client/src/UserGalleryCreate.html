@@ -1,0 +1,281 @@
+<script>
+    import Alert from "svelte-material-icons/Alert.svelte";
+    import CheckBold from "svelte-material-icons/CheckBold.svelte";
+    import Tags from "./Tags.html";
+    import Unique from "./Unique.html";
+    import Permissions from "./Permissions.html";
+    import Handle from "./Handle.html";
+
+    export let galleryId;
+
+    export let iconSize = 12;
+    export let alertColor = "#f80";
+    export let checkColor = "#080";
+
+    let items = [];
+    let galleryResult = Promise.resolve(true);
+
+    const api = "/api/v1";
+
+    const Loading = 0;
+    const Success = 1;
+    const Error   = 2;
+
+    const galleryInfo = {
+        kind : 0
+      , name : ""
+      , description : ""
+    };
+    
+    const userGalleryInfo = {
+        handle : ""
+      , permissions : 0
+      , ord : 0
+    };
+
+    const itemInfo = {
+        kind : 0
+      , name : ""
+      , description : ""
+      , files : null
+    };
+   
+    $: if(itemInfo.files && itemInfo.files.length > 0 && itemInfo.name.length === 0) {
+        itemInfo.name =  itemInfo.files[0].name.replace(/\.[^.]+$/,""); 
+    }
+
+
+    const userItemInfo = {
+        handle : ""
+      , permissions : 0
+      , ord : 0
+    };
+
+    let tags = [];
+    let fileInputElm;
+
+    function galleryIsValid(galleryInfo) {
+        return galleryInfo.name.length; 
+    }
+    
+    function addGallery() {
+        if( galleryIsValid(galleryInfo) ) {
+            galleryResult =
+              fetch(
+                `${api}/galleries`, {
+                    method : "POST"
+                 ,  headers : {
+                        "Content-Type" : "application/json"
+                   }
+                 , credentials: "same-origin"
+                 , body : JSON.stringify([galleryInfo,userGalleryInfo])
+                }).then( res => res.json() )
+                  .then( id => {
+                      galleryId = id;
+                      // Set a default permissions scheme once the gallery is added
+                      userItemInfo.permissions = userGalleryInfo.permissions;
+                      return fetch(
+                        `${api}/galleries/${id}/tags`, {
+                            method : "POST"
+                         ,  headers : {
+                                "Content-Type" : "application/json"
+                           }
+                         , credentials: "same-origin"
+                         , body : JSON.stringify(tags)
+                        }).then( res => res.json() )
+                  });
+        }
+    }
+
+    function updateGallery() {
+        if( galleryId && galleryIsValid(galleryInfo) ) {
+            galleryResult =
+              fetch(
+                  `${api}/galleries/${galleryId}`, {
+                    method : "POST"
+                 ,  headers : {
+                        "Content-Type" : "application/json"
+                   }
+                 , credentials: "same-origin"
+                 , body : JSON.stringify([galleryInfo,userGalleryInfo])
+                }).then( res => res.json() )
+                  .then( _ => 
+                      fetch(
+                        `${api}/galleries/${galleryId}/tags`, {
+                            method : "POST"
+                         ,  headers : {
+                                "Content-Type" : "application/json"
+                           }
+                         , credentials: "same-origin"
+                         , body : JSON.stringify(tags)
+                        }).then( res => res.json() )
+                   );
+        }
+    }
+    
+    function itemIsValid(itemInfo) {
+        return galleryId && itemInfo.files && itemInfo.files[0] && itemInfo.name.length;
+    }
+
+    function addItem() {
+        if( itemIsValid(itemInfo) ) {
+
+            const requestData = { 
+                status: Loading
+              , loaded : 0
+              , total : 0
+              , response: ""
+            };
+
+            let data = new FormData();
+            let request = new XMLHttpRequest();
+
+            data.append("itemInfo", JSON.stringify([{
+                name: itemInfo.name
+              , description: itemInfo.description
+              , kind: itemInfo.kind
+            }, userItemInfo]));
+           
+            data.append("file", itemInfo.files[0]);
+           
+            request.open("POST",  `${api}/galleries/${galleryId}/items`);
+
+            request.upload.addEventListener("progress", (e) => {
+                let {loaded, total} = e;
+                requestData.loaded = loaded;
+                requestData.total = total;
+                // Ensure refresh
+                items = items;
+            });
+            
+            request.addEventListener("load", (e) => {
+                if( request.status == 200 ||
+                    request.status == 201 ) 
+                    requestData.status = Success;
+                else
+                    requestData.status = Error;
+                
+                
+                // Ensure refresh
+                items = items;
+
+            });
+            
+            request.addEventListener("readystatechange", (e) => {
+                if( request.readyState === 4 && request.response.length )
+                    requestData.response = JSON.parse(request.response); 
+                // Ensure refresh
+                items = items;
+            });
+
+            request.send(data);
+
+            items.push({ 
+                name: itemInfo.name
+              , description: itemInfo.description
+              , kind: itemInfo.kind
+              , file : requestData
+            });
+
+            itemInfo.name = "";
+            itemInfo.description = "";
+            userItemInfo.url = "";
+            /// If they change permissions, it will persist to other images.
+            /// Uncomment this line to change this behaviour
+            // userItemInfo.permissions = userGalleryInfo.permissions;
+            itemInfo.files = [];
+            fileInputElm.value = "";
+            itemInfo.kind = 0;
+            items = items;
+        }
+    }
+
+</script>
+<Unique let:uniqueId={uniqueId}>
+<form>
+    <fieldset>
+        <legend>Gallery Information</legend>
+        {#await galleryResult}
+        <p>Submitting...</p>
+        {:then}
+        <div>
+            <label for="gallery-name-{uniqueId}">Name</label>
+            <input id="gallery-name-{uniqueId}" type="text" bind:value={galleryInfo.name}>
+        </div>
+        <div>
+            <label for="gallery-description-{uniqueId}">Description</label>
+            <input id="gallery-description-{uniqueId}" type="text" bind:value={galleryInfo.description}>
+        </div>
+        <div>
+            <label for="gallery-url-{uniqueId}">Url</label>
+            <Handle id="gallery-url-{uniqueId}" bind:input={galleryInfo.name} bind:value={userGalleryInfo.url} itemUrl="galleries" />
+        </div>
+        <div>
+            <label for="gallery-tags-{uniqueId}">Tags</label>
+            <Tags id="gallery-tags-{uniqueId}" bind:tags />
+        </div>
+        <div>
+            <label for="gallery-permissions-{uniqueId}">Permissions</label>
+            <Permissions id="gallery-permissions-{uniqueId}" bind:value={userGalleryInfo.permissions} />
+        </div>
+        {#if galleryId}
+        <button type="button" on:click={updateGallery} disabled={!galleryIsValid(galleryInfo)}>Update Gallery</button>
+        {:else}
+        <button type="button" on:click={addGallery} disabled={!galleryIsValid(galleryInfo)}>Add Gallery</button>
+        {/if}
+        {:catch err}
+        <p>{err.message}</p>
+        {/await}
+    </fieldset>
+    {#if galleryId}
+    {#if items && items.length > 0}
+    <fieldset>
+        <legend>Gallery Uploads</legend>
+        <ul>
+        {#each items as item}
+            <li>{item.name}
+                {#if item.file.status === Success}
+                <progress max="100" value="100"></progress>
+                <CheckBold size={iconSize} color={checkColor} />
+                {:else if item.file.status === Error}
+                <Alert size={iconSize} color={alertColor} />
+                <span class="error">Upload Failed: {item.file.response}</span>
+                {:else}
+                {#if item.file.total > 0}
+                <progress max={item.file.total} value={item.file.loaded}></progress>
+                {:else}
+                <progress></progress>
+                {/if}
+                {/if}
+            </li>
+        {/each}
+        </ul>
+    </fieldset>
+    {/if}
+    <fieldset>
+        <legend>New Item</legend>
+        <div>
+            <label for="gallery-item-name-{uniqueId}">Name</label> 
+            <input id="gallery-item-name-{uniqueId}" type="text" bind:value={itemInfo.name}>
+        </div>
+        <div>
+            <label for="gallery-item-description-{uniqueId}">Description</label> 
+            <input id="gallery-item-description-{uniqueId}" type="text" bind:value={itemInfo.description}>
+        </div>
+        <div>
+            <label for="gallery-item-url-{uniqueId}">URL</label> 
+            <Handle id="gallery-item-url-{uniqueId}" bind:input={itemInfo.name} bind:value={userItemInfo.url} itemUrl="galleries/items" />
+        </div>
+        <div>
+            <label for="gallery-item-permissions-{uniqueId}">Permissions</label>
+            <Permissions id="gallery-item-permissions-{uniqueId}" bind:value={userItemInfo.permissions} />
+        </div>
+        <div>
+            <label for="gallery-item-file-{uniqueId}">File</label> 
+            <input bind:this={fileInputElm} id="gallery-item-file-{uniqueId}" type="file" bind:files={itemInfo.files}>
+        </div>
+        <button type="button" on:click={addItem} disabled={!itemIsValid(itemInfo)}>Add Item</button>
+    </fieldset>
+    {/if}
+</form>
+</Unique>

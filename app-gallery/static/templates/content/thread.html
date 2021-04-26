@@ -1,0 +1,20 @@
+{{~#*inline "post-listing"~}}
+<div class="post">
+    {{~#if title}}
+    <h2>{{title}}</h2>
+    {{~/if}}
+    {{~#if description}}
+    <p>{{description}}<p>
+    {{~/if}}
+    <p>{{body}}</p>
+    {{~#each replies}}
+        {{~> post-listing }}
+    {{~/each}}
+</div>
+{{~/inline~}}
+{{~#*inline "content"~}}
+    {{~#with data}}
+        {{~> post-listing }}
+    {{~/with}}
+{{~/inline~}}
+{{~> (parent)~}}

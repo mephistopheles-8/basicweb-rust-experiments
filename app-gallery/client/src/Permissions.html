@@ -1,0 +1,18 @@
+<script>
+    export let value;
+    export let id;
+
+    let selectValue = "0";
+
+    $: if (value !== null && value !== undefined) {
+        selectValue = String(value);
+    }
+
+    function selectValueChanged() {
+        value = parseInt(selectValue);
+    }
+</script>
+<select {id} bind:value={selectValue} on:change={selectValueChanged}>
+    <option value="0">Only Me</option>
+    <option value="1">Public</option>
+</select>

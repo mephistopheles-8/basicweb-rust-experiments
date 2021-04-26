@@ -1,0 +1,128 @@
+<script>
+    import PostMarkdown from "./PostMarkdown.html";
+    import Tags from "./Tags.html";
+    import Unique from "./Unique.html";
+    import Permissions from "./Permissions.html";
+    import Handle from "./Handle.html";
+
+    export let postId;
+    export let title = "";
+    export let description = "";
+    export let body = "";
+    export let url = "";
+    export let permissions = 0;
+    export let ord = 0;
+
+    export let tags = [];
+
+    const api = "/api/v1";
+
+    let postRequest = Promise.resolve(true);
+    let saveRequest;
+
+    $: if (postId && !saveRequest) {
+        postRequest 
+            = Promise.all([
+                fetch(`${api}/posts/${postId}`)
+                . then( res => res.json() )
+              , fetch(`${api}/posts/${postId}/tags`)
+                . then( res => res.json() )
+             ]).then( ([post,tags0]) => {
+                let [usr,res] = post;
+                title = res.title;
+                description = res.description;
+                body = res.body;
+                url = usr.url;
+                permissions = usr.permissions;
+                ord = usr.ord;
+                tags = tags0.map(tag => tag.name);
+                saveRequest = Promise.resolve(res);
+                return res;
+            });
+    }
+    
+    function savePost () {
+        if( title && description && body) {
+            let endpoint 
+                = `${api}/posts`
+                + (postId ? `/${postId}` : "");
+
+            saveRequest
+                = fetch(endpoint,{
+                        method : "POST"
+                     ,  headers : {
+                            "Content-Type" : "application/json"
+                       }
+                     , credentials: "same-origin"
+                     , body : JSON.stringify([{
+                           title
+                         , description
+                         , body
+                         , format : 1
+                        },{permissions, ord, url}]) 
+                 })
+                . then(res => res.json())
+                . then(([usr,post]) => {
+                        if( !postId ) 
+                            postId = post.uuid;
+                      return fetch(
+                        `${api}/posts/${post.uuid}/tags`, {
+                            method : "POST"
+                         ,  headers : {
+                                "Content-Type" : "application/json"
+                           }
+                         , credentials: "same-origin"
+                         , body : JSON.stringify(tags)
+                        }).then( res => res.json() )
+                          .then( _ => post )
+                  });
+        }
+    }
+</script>
+{#await postRequest}
+<p>...</p>
+{:then}
+<Unique let:uniqueId={uniqueId}>
+<form>
+    <fieldset>
+        <legend>Post Information</legend>
+        <div>
+            <label for="post-title-{uniqueId}">Title</label>
+            <input id="post-title-{uniqueId}" bind:value={title} type="text">
+        </div>
+        <div>
+            <label for="post-description-{uniqueId}">Description</label>
+            <input id="post-description-{uniqueId}" bind:value={description} type="text">
+        </div>
+        <div>
+            <label for="post-url-{uniqueId}">URL</label>
+            <Handle id="post-url-{uniqueId}" bind:input={title} bind:value={url} itemUrl="posts" />
+        </div>
+        <div>
+            <label for="post-tags-{uniqueId}">Tags</label>
+            <Tags id="post-tags-{uniqueId}" bind:tags />
+        </div>
+        <div>
+            <label for="post-permissions-{uniqueId}">Permissions</label>
+            <Permissions id="post-permissions-{uniqueId}" bind:value={permissions} />
+        </div>
+        <div>
+            <label for="post-body-{uniqueId}">Body</label>
+            <PostMarkdown id="post-body-{uniqueId}" bind:body />
+        </div>
+        <button type="button" on:click={savePost}>Save</button>
+        {#if saveRequest}
+        {#await saveRequest}
+        <p>Saving...</p>
+        {:then p}
+        <p>Saved: {p.updated}</p>
+        {:catch err}
+        <p>Error: {err.message}</p>
+        {/await}
+        {/if}
+    </fieldset>
+</form>
+</Unique>
+{:catch err}
+<p>Error: {err.message}</p>
+{/await}

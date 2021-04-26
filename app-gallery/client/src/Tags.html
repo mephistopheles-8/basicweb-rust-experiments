@@ -1,0 +1,71 @@
+<script>
+    export let id; // id for form elm
+    export let tags = [];
+    let value = "";
+
+    function clearTag(ind) {
+        tags.splice(ind,1);
+        tags = tags;
+    }
+    function keyHandler(e) {
+        let trimmed = value.trim();
+        // Confirm a tag on enter or comma
+        if( trimmed.length > 0 && (e.keyCode === 13 || e.key === ",") ){
+            tags.push(trimmed);
+            value = "";
+            tags = tags;
+            e.preventDefault();
+
+        // Delete a tag with backspace
+        }else if (e.keyCode === 8 && value.length === 0){
+            tags.pop();
+            tags = tags;
+
+        // Make commas invalid from within tags
+        }else if ( e.key === "," ){
+            e.preventDefault();
+        }
+    }
+</script>
+<style>
+    .tags-editor {
+        border: solid 1px #ccc;
+        width: 173px;
+       overflow:hidden; 
+    }
+    input {
+        -moz-appearance:none;
+        -webkit-appearance:none;
+        appearance:none;
+        border-style: none;
+        box-sizing: border-box;
+        flex-grow: 1;
+    }
+    .tags-editor, ul {
+        display: inline-flex;
+        vertical-align: bottom;
+        margin-bottom: -0.1rem;
+    }
+    ul {
+        list-style-type: none;
+        margin: 0; padding: 0;
+    }
+    li {
+        background: #ddd;
+        margin:0 0.2em;
+        transition: background 0.5s;
+        border-radius:0.4em;
+        cursor: pointer;
+    }
+    li:hover {
+        background: #efefef;
+    }
+</style>
+<div class="tags-editor">
+    <ul class="tags-listing">
+        {#each tags as tag,i}
+        <li on:click={(e) => clearTag(i)}>{tag}</li>
+        {/each}
+    </ul>
+    <input id={id} bind:value={value} on:keydown={keyHandler} type="text">
+</div>

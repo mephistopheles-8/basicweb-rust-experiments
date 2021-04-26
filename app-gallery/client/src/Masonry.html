@@ -1,0 +1,61 @@
+<script>
+    import { onMount } from 'svelte'; 
+    import Masonry from "masonry-layout";
+    import Lazy from "svelte-lazy";
+
+    export let items;
+    export let columnWidth = 300;
+    export let captionsOn = false;
+    let masonry;
+    let masonryElm;
+    let mounted = false;
+    let loaded = 0;
+
+    $: if(masonryElm && mounted && items && loaded === items.length) {
+        masonry = new Masonry( masonryElm, {
+          itemSelector: '.card-image',
+          columnWidth,
+          fitWidth: true,
+          resize: true
+        });
+    }
+    function loadedInc() {
+        loaded++;
+    }
+
+    onMount(() => {
+        mounted = true;
+    });
+</script>
+<style>
+    figure {
+         overflow: hidden;
+         margin:0;
+         cursor: pointer;
+    }
+    .card-image img {
+        margin: 0 auto;
+        display: block;
+        object-fit: cover;
+        width: 300px;
+    }
+    .card-image:first-of-type img {
+        width: 600px;
+    }
+    .hidden {
+        visibility:hidden;
+    }
+</style>
+{#if items && items.length}
+<div bind:this={masonryElm} class:hidden={loaded !== items.length}>
+    {#each items as item}
+    <figure class="card-image">
+        <!-- FIXME: svelte-lazy goes here -->
+        <img alt={item.description} src="{item.src}" on:load={e => {loaded++;}}>
+        {#if captionsOn}
+        <figcaption>{item.name}</figcaption>
+        {/if}
+    </figure>
+   {/each}
+</div>
+{/if}

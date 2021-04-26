@@ -1,0 +1,22 @@
+.post > .post {
+    padding-left: 1em;
+}
+label {
+    min-width: 11rem;
+    display: inline-block;
+    /*display: block;*/
+}
+nav {
+    overflow-x:auto;
+    overflow-y:hidden;
+}
+nav a {
+    white-space:nowrap;
+}
+main {
+    position: relative;
+    min-height: 80vh;
+}
+.fill-main {
+    margin: -0.5rem -1rem;
+}

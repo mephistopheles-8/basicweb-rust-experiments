@@ -1,0 +1,23 @@
+<script>
+    import { dndzone } from 'svelte-dnd-action';
+    import { flip } from 'svelte/animate';
+    const flipDurationMs = 300;
+    
+    export let items = [];
+
+    function handleSortConsider(e) {
+        items = e.detail.items;
+    }
+
+    function handleSortFinalize(e) {
+        items = e.detail.items;
+    }
+</script>
+
+<section use:dndzone="{{items,flipDurationMs}}" on:consider={handleSortFinalize} on:finalize={handleSortFinalize} on:consider on:finalize>
+    {#each items as item(item.id)}
+    <div animate:flip="{{duration: flipDurationMs}}">
+        <slot {item} id={item.id}></slot>
+    </div>
+    {/each}
+</section>

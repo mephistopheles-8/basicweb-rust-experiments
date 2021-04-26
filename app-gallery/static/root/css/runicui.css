@@ -1,0 +1,290 @@
+:root {
+    --grid-size: 4px;
+    --bg-color-0: #222;
+    --bg-color-1: #333;
+    --bg-color-2: #555;
+    --bg-color-3: #ddd;
+    --fg-color-0: #efefef;
+    --fg-color-1: #efefef;
+    --fg-color-2: #efefef;
+    --fg-color-3: #222;
+    --link-color-0: #fff;
+    --link-color-1: #fff;
+    --link-color-2: #fff;
+    --link-color-3: #666;
+    --accent-color-0: #bbb;
+    --accent-color-1: #666;
+    --accent-color-2: #333;
+    --field-bg-color:#fff;
+    --field-fg-color:#333;
+    --highlight-color-0: #fff;
+    --font-default: DejaVu Sans, sans-serif;
+    --font-header: DejaVu Sans, sans-serif;
+    --font-mono: DejaVu Sans, sans-serif;
+    --default-shadow: 0.125rem 0.25rem 0.125rem #888; 
+}
+
+* {
+    margin: 0; padding: 0;
+    font-size: 1rem;
+    line-height: 1.5em;
+    outline:0;
+}
+
+html {
+    font-size: calc(3*var(--grid-size));
+    font-family: var(--font-default);
+    background: var(--bg-color-0);
+    color: var(--fg-color-0);
+}
+
+a {
+    text-decoration:none;
+}
+
+input:not([type="range"]):not([type="progress"]), button, select {
+    border-style:none;
+   -webkit-appearance: none;
+   -moz-appearance:    none;
+   appearance:         none;
+   outline:0;
+   background: var(--field-bg-color);
+   color: var(--field-fg-color);
+   border: solid 1px var(--accent-color-0);
+}
+button, input[type="submit"], input[type="reset"] {
+    padding: 0 1rem !important;
+    cursor:  pointer;
+}
+input[type="checkbox"], input[type="radio"] {
+    width: 1rem;
+    height: 1rem;
+    border: solid 0.2rem var(--field-bg-color);
+    background: var(--field-bg-color);
+}
+input[type="checkbox"]:checked, input[type="radio"]:checked {
+    background: var(--field-fg-color);
+}
+
+select {
+  background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position-x: 100%;
+  background-position-y: -0.25rem;
+  content: "▾";
+  padding-right: 1.5rem;
+  padding-left: 0.25rem;
+}
+
+label {
+    margin:0 0.5rem;
+}
+
+fieldset {
+    border:solid 1px var(--accent-color-0);
+    border-top: solid 1.5rem var(--bg-color-2);
+    padding: 0.5rem;
+}
+fieldset fieldset{
+    margin: 0.5rem calc(-0.5rem - 1px);
+}
+fieldset legend {
+    background: var(--bg-color-2);
+    color: var(--fg-color-2);
+    height: 1.5rem;
+    line-height:1.5rem;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin:0;
+}
+input[type=number] {
+    -moz-appearance:textfield !important;
+}
+
+input[type="range"] {
+ -webkit-appearance: none;
+ -moz-appearance:none;
+ appearance:none;
+ background: transparent;
+}
+
+input[type="range"]:focus {
+ outline: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+ background: var(--accent-color-1);
+ height: 0.25rem;
+ margin-top: -0.75rem;
+}
+
+input[type="range"]::-moz-range-track {
+ background: var(--accent-color-1);
+ height: 0.25rem;
+ margin-top: -0.75rem;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+ -webkit-appearance: none;
+ height: 1rem;
+ width: 0.5rem;
+ background: var(--field-bg-color);
+ border: solid 1px var(--accent-color-0);
+ margin-top: -5px;
+ box-shadow: var(--default-shadow);
+}
+
+input[type="range"]::-moz-range-thumb {
+ height: 1rem;
+ width: 0.5rem;
+ border: solid 1px var(--accent-color-0);
+ background: var(--field-bg-color);
+ margin-top: -5px;
+ box-shadow: var(--default-shadow);
+}
+
+
+
+textarea {
+    -webkit-appearance: none;
+    -moz-appearance:    none;
+    appearance:         none;
+    border: solid 1px var(--accent-color-0);
+    display:block;
+    margin-bottom: 1rem;
+    resize:none;
+    background: var(--field-bg-color);
+    color: var(--field-fg-color);
+    font-family: var(--font-default);
+    padding: 0.5rem;
+}
+
+header,main,footer {
+    padding: 0.5rem 1rem;
+}
+
+blockquote {
+    padding: 0.5rem 1rem;
+    font-style: italic;
+}
+
+header {
+    background: var(--bg-color-1);
+    color: var(--fg-color-1);
+}
+
+header a {
+    color: var(--link-color-1);
+}
+
+nav {
+    position:relative;
+    background: var(--bg-color-2);
+    color: var(--fg-color-2);
+    border-bottom: solid 0.2rem var(--accent-color-2);
+    display:flex;
+    box-shadow: var(--default-shadow);
+}
+
+nav a {
+    background: var(--bg-color-2);
+    color: var(--link-color-2);
+    border-bottom: solid 0.2rem var(--accent-color-2);
+    padding: 0.5rem 1rem;
+    display: inline-block;
+    border-right: solid 1px var(--accent-color-1);
+    margin:0;
+    margin-bottom:-0.2rem;
+}
+
+nav a.selected {
+    border-bottom-color: var(--highlight-color-0);
+}
+nav a:hover {
+    transition: all 0.5s;
+    border-bottom-color: var(--highlight-color-0);
+}
+
+main {
+    background: var(--bg-color-3);
+    color: var(--fg-color-3);
+}
+
+main a {
+    color: var(--link-color-3);
+}
+
+footer {
+    background: var(--bg-color-0);
+    color: var(--fg-color-0);
+}
+
+footer a {
+    color: var(--link-color-0);
+}
+
+hr {
+    border-style:none;
+    border-top: solid 1px var(--accent-color-0);
+}
+
+li,dd {
+    margin-left: 2rem;
+}
+
+code,pre {
+    font-family: var(--font-mono);
+}
+
+pre {
+    padding: 0.5rem;
+}
+
+h1,h2,h3,h4,h5,h6,p,pre,blockquote,ul,ol,form {
+    margin: 0.5rem 0;
+}
+form > fieldset:last-of-type:not(:last-child) {
+    margin-bottom: 1rem;
+}
+h1,h2,h3,h4,h5,h6,fieldset legend {
+    font-family: var(--font-header);
+}
+
+h1 {
+    font-size: 2.0rem;
+}
+
+h2 {
+    font-size: 1.8rem;
+}
+
+h3 {
+    font-size: 1.6rem;
+}
+
+h4 {
+    font-size: 1.4rem;
+}
+
+h5 {
+    font-size: 1.2rem;
+}
+
+h6 {
+    font-size: 1rem;
+}
+
+.kv-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 auto;
+}
+.kv-list .key {
+}
+.kv-list > * {
+    flex: 0 50%;
+    margin-bottom: 0.5rem;
+}

@@ -1,0 +1,23 @@
+<script>
+    import UserItemList from "./UserItemList.html";
+    export let galleryId;
+    let listingEndpoint = `galleries/${galleryId}/items`;
+    function processItems(gi) {
+       let g1 = gi[2];
+       g1.ord = gi[3].ord;
+       return g1; 
+    }
+    function processItemCallback(gi) {
+       return [gi[3],gi[2]]; 
+    }
+</script>
+<UserItemList 
+    itemUrl="galleries/items"
+    itemNamePlural="gallery items"
+    itemNameSingular="gallery item" 
+    on:orderChanged
+    on:orderSubmitted 
+    {listingEndpoint} 
+    {processItems}
+    {processItemCallback} 
+    />
