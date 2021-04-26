@@ -1,0 +1,24 @@
+{
+  "name": "basicweb-catalog-client",
+  "version": "0.0.1",
+  "description": "Client for basicweb-catalog",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "build:min": "TARGET=min rollup -c",
+    "build:install": "TARGET=install rollup -c"
+  },
+  "author": "M. Bellaire",
+  "devDependencies": {
+    "promise-polyfill": "^8.1.0",
+    "rollup": "^2.1.0",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-buble": "^0.21.1",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "rollup-plugin-polyfill": "^2.0.1",
+    "rollup-plugin-svelte": "^5.1.1",
+    "rollup-plugin-terser": "^5.3.0",
+    "svelte": "^3.20.1",
+    "whatwg-fetch": "^3.0.0"
+  }
+}
