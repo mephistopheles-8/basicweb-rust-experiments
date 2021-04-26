@@ -1,5 +1,4 @@
-# Basicweb: Microsite experiments with Rust, Actix-Web, Diesel, Svelte and
-SQLite.
+# Basicweb: Microsite experiments with Rust, Actix-Web, Diesel, Svelte and SQLite.
 
 *Note: this is no longer under active development.*
 
